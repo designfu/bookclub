@@ -32,7 +32,7 @@ class BooksPage_ extends React.Component<any, any> {
             <Typography variant='h4'>Your Books</Typography>
             {isLoggedIn ? <AddBookModalContainer /> : null }
           </div>
-          <EditableBookListContainer books={myBooks} />
+          <EditableBookListContainer books={myBooks} collapseFinished={true} />
         </div>
         <div className='l-books-page__column'>
           <Typography variant='h4'>Other Books</Typography>
