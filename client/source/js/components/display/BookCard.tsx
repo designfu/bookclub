@@ -65,6 +65,7 @@ export interface BookListItemProps {
   points?: string|number;
   rankings?: number[];
   borderless?: boolean;
+  statusBreak?: boolean;
 }
 
 export class BookCard extends React.Component<BookListItemProps, any> {
@@ -84,11 +85,12 @@ export class BookCard extends React.Component<BookListItemProps, any> {
   }
 
   render() {
-    const { myId, isAdmin, borderless } = this.props;
+    const { myId, isAdmin, borderless, statusBreak } = this.props;
     const { anchorEl } = this.state;
     const book = ensureProps(this.props.book);
     const className = classnames('c-book-card', {
       'c-book-card--borderless': borderless,
+      'c-book-card--status-break': statusBreak,
     });
 
     const canEdit = myId === book.suggestedBy || isAdmin;

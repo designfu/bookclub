@@ -36,7 +36,7 @@ class BooksPage_ extends React.Component<any, any> {
         </div>
         <div className='l-books-page__column'>
           <Typography variant='h4'>Other Books</Typography>
-          <EditableBookListContainer books={notMyBooks} />
+          <EditableBookListContainer books={notMyBooks} separateStatuses={true} />
         </div>
       </div>
     );

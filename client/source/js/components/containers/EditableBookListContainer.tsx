@@ -31,6 +31,7 @@ class EditableBookListContainer_ extends React.Component<any, any> {
           isAdmin={isAdmin}
           myId={myId}
           books={this.props.books}
+          separateStatuses={this.props.separateStatuses}
           onItemEdit={this.onEditClick.bind(this)}
           onItemDelete={this.onDeleteClick.bind(this)}
           onItemPropose={this.onProposeClick.bind(this)}

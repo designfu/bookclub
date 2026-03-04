@@ -19,7 +19,7 @@ export const UserActions = {
   }),
   fetchSelf: () => (dispatch) => {
     dispatch(UserActions.requestSelf_());
-    UserClient.fetchMe()
+    return UserClient.fetchMe()
       .then(user => {
         dispatch(UserActions.receiveSelf_(user));
       });
@@ -35,9 +35,11 @@ export const UserActions = {
   }),
   fetchAllUsers: () => (dispatch) => {
     dispatch(UserActions.requestAllUsers_());
-    UserClient.fetchAll()
+    return UserClient.fetchAll()
       .then(users => {
-        dispatch(UserActions.receiveAllUsers_(users));
+        if (users) {
+          dispatch(UserActions.receiveAllUsers_(users));
+        }
       });
   },
 };

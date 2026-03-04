@@ -5,9 +5,11 @@ const routes = express.Router();
 
 [
   '/',
+  '/home',
   '/books',
   '/voting',
   '/seasons',
+  '/users',
   '/current',
 ].forEach(route => {
   routes.get(route, (req, res) => {

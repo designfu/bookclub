@@ -9,6 +9,7 @@ import { BooksPage } from 'components/pages/BooksPage';
 import { VotingPage } from 'components/pages/VotingPage';
 import { SeasonsPage } from 'components/pages/SeasonsPage';
 import { CurrentPage } from 'components/pages/CurrentPage';
+import { UsersPage } from 'components/pages/UsersPage';
 import { AppContainer } from 'components/containers/AppContainer';
 import { UserActions } from 'actions/UserActions';
 import { BookActions } from 'actions/BookActions';
@@ -25,6 +26,7 @@ const routes = (
           <Route exact path='/books' components={{ main: BooksPage }} />
           <Route exact path='/voting' components={{ main: VotingPage }} />
           <Route exact path='/seasons' components={{ main: SeasonsPage }} />
+          <Route exact path='/users' components={{ main: UsersPage }} />
           <Route exact path='/current' components={{ main: CurrentPage }} />
         </div>
       </Route>

@@ -26,9 +26,11 @@ export const BookActions = {
   }),
   fetchBookList: (ids?, fields?) => (dispatch) => {
     dispatch(BookActions.requestBookList_());
-    BookClient.fetchAll(ids, fields)
+    return BookClient.fetchAll(ids, fields)
       .then(books => {
-        dispatch(BookActions.receiveBookList_(books));
+        if (books) {
+          dispatch(BookActions.receiveBookList_(books));
+        }
       });
   },
 

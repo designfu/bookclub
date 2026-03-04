@@ -98,7 +98,7 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
         onClose={this.handleCancel.bind(this)}
       >
         <DialogTitle id='edit-book-dialog-title'>
-          {this.props.book ? 'Edit book' : 'Add a book'}
+          {this.props.book ? `Edit book (${this.props.book._id})` : 'Add a book'}
           <div className='o-spinner-anchor'>
             {this.state.loading ? <div className='o-spinner'/> : null}
           </div>

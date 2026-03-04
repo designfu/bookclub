@@ -17,3 +17,5 @@ shared/**/*.js.map
 deploy.sh
 forever.sh
 npm-debug.log
+server/scripts
+backups

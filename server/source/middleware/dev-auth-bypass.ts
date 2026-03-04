@@ -43,6 +43,14 @@ const ADMIN_GOOGLE_ID = 'dev-test-user';
 let ensureDevUsersPromise: Promise<any> | null = null;
 
 async function ensureDevUsersAndGetAdmin() {
+  const existingAdmin = await (UserModel as any)
+    .findOne({ roles: 'ADMIN' })
+    .sort({ 'dates.created': 1 })
+    .exec();
+  if (existingAdmin) {
+    return existingAdmin;
+  }
+
   for (const userData of DEV_USERS) {
     let user = await (UserModel as any).findOne({ googleId: userData.googleId }).exec();
     if (!user) {
