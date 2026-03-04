@@ -2,9 +2,13 @@ import * as express from 'express';
 import passport from 'passport';
 const routes = express.Router();
 
-routes.get('/logout', (req, res) => {
-  req.logout();
-  res.redirect('/');
+routes.get('/logout', (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    res.redirect('/');
+  });
 });
 
 routes.get('/google',

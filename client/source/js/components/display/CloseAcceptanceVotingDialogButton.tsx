@@ -114,9 +114,11 @@ export class CloseAcceptanceVotingDialogButton extends React.Component<CloseAcce
     }
   }
 
-  componentWillReceiveProps(props) {
-    this.setState({
-      book: setBookProp(props),
-    });
+  componentDidUpdate(prevProps) {
+    if (prevProps !== this.props) {
+      this.setState({
+        book: setBookProp(this.props),
+      });
+    }
   }
 }

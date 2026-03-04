@@ -1,9 +1,7 @@
-const gulp = require('gulp');
-const clean = require('gulp-clean');
+const { deleteAsync } = require('del');
 
 module.exports = (config) => {
   return () => {
-    return gulp.src(config.input, { read: false })
-      .pipe(clean());
+    return deleteAsync(config.input, { force: true });
   }
 };

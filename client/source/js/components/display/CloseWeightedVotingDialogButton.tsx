@@ -113,9 +113,11 @@ export class CloseWeightedVotingDialogButton extends React.Component<CloseWeight
     }
   }
 
-  componentWillReceiveProps(props) {
-    this.setState({
-      book: setBookProp(props),
-    });
+  componentDidUpdate(prevProps) {
+    if (prevProps !== this.props) {
+      this.setState({
+        book: setBookProp(this.props),
+      });
+    }
   }
 }

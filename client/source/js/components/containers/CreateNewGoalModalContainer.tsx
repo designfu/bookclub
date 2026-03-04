@@ -33,7 +33,7 @@ export class CreateNewGoalModalContainer_ extends React.Component<any, any> {
         renderBody={(modal) => {
           return (
             <div>
-              <Typography variant='title' id='modal-title'>
+              <Typography variant='h6' id='modal-title'>
                 Create a new goal
               </Typography>
               <Typography variant='body2'>

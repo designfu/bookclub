@@ -179,8 +179,12 @@ routes.post('/vote-for-session',
   async (req, res) => {
     try {
       const session = await VotingSessionModel.getCurrentSession();
+      const user = req.user as any;
+      if (!user || !user._id) {
+        return res.status(401).send('Not authenticated.');
+      }
 
-      const result = await session.replaceVotesFromUser(req.user._id.toString(), req.body);
+      const result = await session.replaceVotesFromUser(user._id.toString(), req.body);
 
       res.status(200).json(result);
     } catch(err) {

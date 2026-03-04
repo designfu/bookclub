@@ -41,10 +41,12 @@ class ReorderableList extends React.Component<any, any> {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({
-      items: nextProps.children,
-    });
+  componentDidUpdate(prevProps) {
+    if (prevProps !== this.props) {
+      this.setState({
+        items: this.props.children,
+      });
+    }
   }
 
   render() {

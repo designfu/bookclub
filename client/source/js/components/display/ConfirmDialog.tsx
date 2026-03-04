@@ -124,10 +124,10 @@ export class ConfirmDialog extends React.Component<ConfirmDialogProps, any> {
     }
   }
 
-  componentWillReceiveProps(props) {
-    if(props.hasOwnProperty('open')) {
+  componentDidUpdate(prevProps) {
+    if (prevProps !== this.props && this.props.hasOwnProperty('open')) {
       this.setState({
-        open: props.open,
+        open: this.props.open,
       });
     }
   }

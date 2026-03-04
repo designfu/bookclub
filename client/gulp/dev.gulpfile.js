@@ -49,22 +49,6 @@ gulp.task('static:node_modules', recipe('copy', {
   output: './dist/vendor'
 }));
 
-const jsClientTasks = Config.JS_BUNDLES.map(title => {
-  const taskName = `js:source:${title}`;
-  gulp.task(taskName, recipe('tsify-sourcemaps', {
-    input: `./source/js/${title}.bundle.${Config.EXT.JS}`,
-    external: Config.NODE_MODULES,
-    output: './dist/js',
-    name: `${title}.js`,
-    baseUrl: './source/js',
-    ignoreErrors: [
-      /Error TS2686: '_' refers to a UMD global, but the current file is a module. Consider adding an import instead./
-    ]
-  }));
-  return taskName;
-});
-gulp.task('js:client', parallel(...jsClientTasks));
-
 gulp.task('inject', recipe('html', {
   cwd: './dist',
   input: './source/html/**/*.html',

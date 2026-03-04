@@ -17,12 +17,13 @@ export interface VoteCardRankProps {
 export class VoteCardRank extends React.Component<VoteCardRankProps, any> {
   render() {
     const { book, rank, maxRank } = this.props;
+    const image = (book && book.links && book.links.image) ? book.links.image : '/icons/icon-book-256.png';
 
     return (
       <Card className='c-vote-card'>
         <CardMedia
-          className={`c-vote-card__image-media${!book.links.image ? ' no-src':''}`}
-          image={book.links.image ? book.links.image : '/icons/icon-book-256.png'}
+          className={`c-vote-card__image-media${image === '/icons/icon-book-256.png' ? ' no-src':''}`}
+          image={image}
           title={`${book.title} - ${book.author}`}
         />
         <div className='c-vote-card__padded'>

@@ -29,13 +29,13 @@ class BooksPage_ extends React.Component<any, any> {
       <div className='l-books-page'>
         <div className='l-books-page__column'>
           <div className='o-action-title'>
-            <Typography variant='display1'>Your Books</Typography>
+            <Typography variant='h4'>Your Books</Typography>
             {isLoggedIn ? <AddBookModalContainer /> : null }
           </div>
           <EditableBookListContainer books={myBooks} />
         </div>
         <div className='l-books-page__column'>
-          <Typography variant='display1'>Other Books</Typography>
+          <Typography variant='h4'>Other Books</Typography>
           <EditableBookListContainer books={notMyBooks} />
         </div>
       </div>

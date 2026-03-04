@@ -185,7 +185,7 @@ export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptancePr
       <div>
         <Paper className='c-season-info' elevation={1}>
           <div className='c-season-info__header o-action-title'>
-            <Typography variant='headline' component='h3'>
+            <Typography variant='h5' component='h3'>
               {season.title || title}
             </Typography>
             {showMenu ?
@@ -422,9 +422,13 @@ export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptancePr
     });
   }
 
-  componentWillReceiveProps(props) {
-    this.setState({
-      seasonTitle: props.season ? props.season.title || '' : '',
-    })
+  componentDidUpdate(prevProps) {
+    const prevTitle = prevProps.season ? prevProps.season.title || '' : '';
+    const title = this.props.season ? this.props.season.title || '' : '';
+    if (prevTitle !== title) {
+      this.setState({
+        seasonTitle: title,
+      });
+    }
   }
 }

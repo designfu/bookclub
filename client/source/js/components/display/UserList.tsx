@@ -17,7 +17,7 @@ export class UserList extends React.Component<UserListProps, any> {
 
     return (
       <Paper className={className}>
-        <Typography variant='subheading' component='h4'>
+        <Typography variant='subtitle1' component='h4'>
           {label}
         </Typography>
         <Typography component='p'>

@@ -33,7 +33,7 @@ export class OpenSeasonModalContainer_ extends React.Component<any, any> {
         renderBody={(modal) => {
           return (
             <div>
-              <Typography variant='title' id='modal-title'>
+              <Typography variant='h6' id='modal-title'>
                 Open new season?
               </Typography>
               <Typography variant='body2'>

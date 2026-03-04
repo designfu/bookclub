@@ -160,10 +160,12 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({
-      books: extractBookList(nextProps),
-    });
+  componentDidUpdate(prevProps) {
+    if (prevProps !== this.props) {
+      this.setState({
+        books: extractBookList(this.props),
+      });
+    }
   }
 
   onVote(book, points) {

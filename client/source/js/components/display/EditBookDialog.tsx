@@ -271,9 +271,11 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
       });
   }
 
-  componentWillReceiveProps(nextProps) {
-    const newState = getFormState({ book: nextProps.book });
-    const formState = validate(newState);
-    this.setState(formState);
+  componentDidUpdate(prevProps) {
+    if (prevProps !== this.props) {
+      const newState = getFormState({ book: this.props.book });
+      const formState = validate(newState);
+      this.setState(formState);
+    }
   }
 }
