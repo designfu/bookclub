@@ -3,8 +3,11 @@ import Card from '@material-ui/core/Card';
 import CardMedia from '@material-ui/core/CardMedia';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
+import IconButton from '@material-ui/core/IconButton';
+import ChatBubbleOutlineIcon from '@material-ui/icons/ChatBubbleOutline';
 import { Book } from 'types';
 import { rankString } from '@client/utils/strings';
+import { LightTooltip } from 'components/display/LightTooltip';
 
 export interface VoteCardRankProps {
   book: Book;
@@ -45,6 +48,15 @@ export class VoteCardRank extends React.Component<VoteCardRankProps, any> {
               )}
               <MenuItem key={-1} value={-1}>{rankString(-1)}</MenuItem>
             </Select>
+            <LightTooltip
+              title={book.pitch || 'No pitch provided.'}
+              placement='right'
+              arrow
+            >
+              <IconButton className='c-vote-card__help' size='small' aria-label='Show pitch'>
+                <ChatBubbleOutlineIcon fontSize='small' />
+              </IconButton>
+            </LightTooltip>
           </div>
         </div>
       </Card>

@@ -3,7 +3,10 @@ import Card from '@material-ui/core/Card';
 import CardMedia from '@material-ui/core/CardMedia';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
+import IconButton from '@material-ui/core/IconButton';
+import ChatBubbleOutlineIcon from '@material-ui/icons/ChatBubbleOutline';
 import { Book } from 'types';
+import { LightTooltip } from 'components/display/LightTooltip';
 
 export interface VoteCardProps {
   book: Book;
@@ -43,6 +46,15 @@ export class VoteCard extends React.Component<VoteCardProps, any> {
               <MenuItem value={1}>1 pt</MenuItem>
               <MenuItem value={0}>0 pts</MenuItem>
             </Select>
+            <LightTooltip
+              title={book.pitch || 'No pitch provided.'}
+              placement='right'
+              arrow
+            >
+              <IconButton className='c-vote-card__help' size='small' aria-label='Show pitch'>
+                <ChatBubbleOutlineIcon fontSize='small' />
+              </IconButton>
+            </LightTooltip>
           </div>
         </div>
       </Card>
