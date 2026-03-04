@@ -95,10 +95,10 @@ export class ConfirmDialogButton extends React.Component<ConfirmDialogButtonProp
             {content}
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCancel} color={cancelColor} disabled={isConfirmDisabled}>
+            <Button onClick={this.handleCancel} color={cancelColor}>
               {cancelText}
             </Button>
-            <Button onClick={this.handleConfirm} color={confirmColor} autoFocus>
+            <Button onClick={this.handleConfirm} color={confirmColor} autoFocus disabled={isConfirmDisabled}>
               {confirmText}
             </Button>
           </DialogActions>

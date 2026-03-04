@@ -23,6 +23,10 @@ class VotingSessionClient extends BaseResourceClient {
       data: votes,
     });
   }
+
+  fetchLatestWithUserVotes() {
+    return this.fetchOne('latest-with-user-votes');
+  }
 }
 
 export default new VotingSessionClient(`${Config.API_HOST}/api/voting-sessions`, 'voting sessions');

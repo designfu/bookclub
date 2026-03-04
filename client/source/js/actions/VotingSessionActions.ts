@@ -8,6 +8,8 @@ export const VotingSessionActionTypes = {
   GOT_CURRENT: `${PREFIX}:GOT_CURRENT`,
   ASK_LATEST: `${PREFIX}:ASK_LATEST`,
   GOT_LATEST: `${PREFIX}:GOT_LATEST`,
+  ASK_LATEST_WITH_USER_VOTES: `${PREFIX}:ASK_LATEST_WITH_USER_VOTES`,
+  GOT_LATEST_WITH_USER_VOTES: `${PREFIX}:GOT_LATEST_WITH_USER_VOTES`,
   ASK_CLOSE: `${PREFIX}:ASK_CLOSE`,
   GOT_CLOSE: `${PREFIX}:GOT_CLOSE`,
   ASK_OPEN: `${PREFIX}:ASK_OPEN`,
@@ -62,6 +64,24 @@ export const VotingSessionActions = {
     VotingSessionClient.fetchOne('latest')
       .then(votingSession => {
         dispatch(VotingSessionActions.receiveLatest_(votingSession));
+      });
+  },
+
+  requestLatestWithUserVotes_: () => ({
+    type: VotingSessionActionTypes.ASK_LATEST_WITH_USER_VOTES,
+  }),
+  receiveLatestWithUserVotes_: (votingSession) => ({
+    type: VotingSessionActionTypes.GOT_LATEST_WITH_USER_VOTES,
+    votingSession,
+    receivedAt: Date.now(),
+  }),
+  fetchLatestWithUserVotes: () => (dispatch) => {
+    dispatch(VotingSessionActions.requestLatestWithUserVotes_());
+    VotingSessionClient.fetchLatestWithUserVotes()
+      .then(votingSession => {
+        if (votingSession && votingSession._id) {
+          dispatch(VotingSessionActions.receiveLatestWithUserVotes_(votingSession));
+        }
       });
   },
 

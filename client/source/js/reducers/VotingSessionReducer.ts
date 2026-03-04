@@ -5,6 +5,7 @@ import { SeasonActionTypes } from 'actions/SeasonActions';
 type VotingSessionState = {
   currentId: string;
   latestId: string;
+  latestWithUserVotesId: string;
   sessions: {
     [key: string]: VotingSession;
   };
@@ -13,6 +14,7 @@ type VotingSessionState = {
 const defaultState: VotingSessionState = {
   currentId: null,
   latestId: null,
+  latestWithUserVotesId: null,
   sessions: {},
 };
 
@@ -30,6 +32,15 @@ export const VotingSessionReducer = (state: VotingSessionState = defaultState, a
       return {
         ...state,
         latestId: action.votingSession._id,
+        sessions: {
+          ...state.sessions,
+          [action.votingSession._id]: action.votingSession,
+        },
+      };
+    case VotingSessionActionTypes.GOT_LATEST_WITH_USER_VOTES:
+      return {
+        ...state,
+        latestWithUserVotesId: action.votingSession._id,
         sessions: {
           ...state.sessions,
           [action.votingSession._id]: action.votingSession,

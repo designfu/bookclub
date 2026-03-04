@@ -3,13 +3,13 @@ import { BaseResourceClient } from 'clients/_BaseResourceClient';
 import { create, fetch_ } from 'utils/service';
 
 class SeasonClient extends BaseResourceClient {
-  open() {
+  open(system = 'ADVANCED_ACCEPTANCE') {
     return fetch_(`${Config.API_HOST}/api/actions/start-new-season`, {
       method: 'POST',
       shouldAcceptStatus: _ => _ === 201,
       data: {
         votingSession: {
-          system: 'ADVANCED_ACCEPTANCE',
+          system,
         },
       },
     });

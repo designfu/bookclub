@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { withRouter } from 'react-router';
 import Button from '@material-ui/core/Button';
+import Tooltip from '@material-ui/core/Tooltip';
 import { BookStatus, VotingSessionStatus } from 'types';
 import { ReorderableList } from 'lib/reorderable-lists';
 import { VotingSessionActions, VotingSessionActionTypes } from 'actions/VotingSessionActions';
@@ -13,6 +14,7 @@ import { VoteCardRank } from 'components/display/VoteCardRank';
 import { VoteCardDivider } from 'components/display/VoteCardDivider';
 import { CloseAcceptanceVotingDialogButton } from 'components/display/CloseAcceptanceVotingDialogButton';
 import { UserList } from 'components/display/UserList';
+import { buildResetOrderSectionsFromPrevious, hasUsableVotesForUser } from 'utils/vote-reset';
 
 const rankValueFor = (i, books: any[]) => {
   const divider = books.findIndex(book => book && book.isDivider === true);
@@ -84,9 +86,10 @@ class VotingSessionAcceptanceContainer_ extends React.Component<any, any> {
 
   render() {
     const { books, enabled } = this.state;
-    const { votingSession, users, isAdmin } = this.props;
+    const { votingSession, users, isAdmin, latestVotingSession } = this.props;
     const booksMap = this.props.books;
     const isOpen = this.props.votingSession.status === VotingSessionStatus.OPEN;
+    const canReset = hasUsableVotesForUser(latestVotingSession, this.props.myId);
     if (votingSession.votes) {
       votingSession.votes = populateBooks(votingSession.votes, booksMap);
       votingSession.votes = populateUsers(votingSession.votes, users);
@@ -136,6 +139,17 @@ class VotingSessionAcceptanceContainer_ extends React.Component<any, any> {
             >
               {hasVoted ? 'Update Vote': 'Cast Vote'}
             </Button>
+          : null}
+          {isOpen ?
+            <Tooltip title='Resets your list to your most recent voted-season order and places books new this season at the top.'>
+              <Button
+                className='o-action'
+                onClick={this.resetFromLastSeason.bind(this)}
+                disabled={!enabled || !canReset}
+              >
+                Reset
+              </Button>
+            </Tooltip>
           : null}
           {isAdmin ?
             <CloseAcceptanceVotingDialogButton
@@ -204,9 +218,33 @@ class VotingSessionAcceptanceContainer_ extends React.Component<any, any> {
       enabled: true,
     });
   }
+
+  resetFromLastSeason() {
+    const { latestVotingSession, myId } = this.props;
+    const currentBooks = this.state.books.filter((book) => !!book && !book.isDivider && book.status === BookStatus.SUGGESTED);
+    if (!latestVotingSession || currentBooks.length < 1) {
+      return;
+    }
+
+    const { topBooks, bottomBooks } = buildResetOrderSectionsFromPrevious({
+      currentBooks,
+      previousVotingSession: latestVotingSession,
+      myId,
+      voteOrderField: 'rank',
+      descending: false,
+      requireNonNegative: true,
+    });
+
+    this.setState({
+      books: [...topBooks, { _id: 'divider', isDivider: true }, ...bottomBooks],
+      enabled: true,
+    });
+  }
 }
 
 const mapStateToProps = (state: any) => {
+  const latestId = state.votingSession.latestWithUserVotesId;
+  const latestVotingSession = latestId ? state.votingSession.sessions[latestId] : null;
   return {
     isLoggedIn: state.users.isLoggedIn,
     isAdmin: state.users.isAdmin,
@@ -214,6 +252,7 @@ const mapStateToProps = (state: any) => {
     users: state.users.users || {},
     books: state.books || {},
     votingSession: state.votingSession.currentId ? state.votingSession.sessions[state.votingSession.currentId] : {},
+    latestVotingSession,
   }
 };
 

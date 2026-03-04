@@ -13,6 +13,7 @@ export enum AdvancedAcceptanceMethod {
 
 export type VotingSession = {
   _id: string;
+  system?: string;
   votes: Vote[];
   dates: any;
   status: string;

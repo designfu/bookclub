@@ -6,7 +6,6 @@ import { store } from 'reducers/store';
 import { syncHistoryWithStore } from 'react-router-redux';
 import { HomePage } from 'components/pages/HomePage';
 import { BooksPage } from 'components/pages/BooksPage';
-import { VotingPage } from 'components/pages/VotingPage';
 import { SeasonsPage } from 'components/pages/SeasonsPage';
 import { CurrentPage } from 'components/pages/CurrentPage';
 import { UsersPage } from 'components/pages/UsersPage';
@@ -24,7 +23,6 @@ const routes = (
           <Route exact path='/' components={{ main: CurrentPage }} />
           <Route exact path='/home' components={{ main: HomePage }} />
           <Route exact path='/books' components={{ main: BooksPage }} />
-          <Route exact path='/voting' components={{ main: VotingPage }} />
           <Route exact path='/seasons' components={{ main: SeasonsPage }} />
           <Route exact path='/users' components={{ main: UsersPage }} />
           <Route exact path='/current' components={{ main: CurrentPage }} />

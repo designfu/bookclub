@@ -5,8 +5,13 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { withRouter } from 'react-router';
 import DialogContentText from '@material-ui/core/DialogContentText';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 import { VotingSessionStatus } from 'types';
 import { SeasonActions } from 'actions/SeasonActions';
+import { VotingSessionActions } from 'actions/VotingSessionActions';
 import { ConfirmDialogButton } from 'components/display/ConfirmDialogButton';
 import { VotingSessionContainer } from 'components/hybrid/VotingSessionComponent';
 import { SeasonInfoAcceptance } from 'components/display/SeasonInfoAcceptance';
@@ -15,6 +20,9 @@ import { SeasonInfoAdvancedAcceptance } from '@client/components/display/SeasonI
 
 class CurrentPage_ extends React.Component<any, any> {
   openSeasonDialog: ConfirmDialogButton;
+  state = {
+    votingSystem: 'ADVANCED_ACCEPTANCE',
+  };
 
   render() {
     const {
@@ -40,11 +48,28 @@ class CurrentPage_ extends React.Component<any, any> {
               <ConfirmDialogButton
                 title='Open new season?'
                 content={
-                  <DialogContentText>This will start a brand new season, and start a voting session for a new book.</DialogContentText>
+                  <div>
+                    <DialogContentText>This will start a brand new season, and start a voting session for a new book.</DialogContentText>
+                    <FormControl className='o-field o-field--dropdown'>
+                      <InputLabel htmlFor='new-season-voting-system'>Voting System</InputLabel>
+                      <Select
+                        value={this.state.votingSystem}
+                        onChange={this.handleVotingSystemChange.bind(this)}
+                        inputProps={{
+                          name: 'votingSystem',
+                          id: 'new-season-voting-system',
+                        }}
+                      >
+                        <MenuItem value='ADVANCED_ACCEPTANCE'>Advanced Acceptance</MenuItem>
+                        <MenuItem value='ACCEPTANCE_WITH_RANKED_TIEBREAKER'>Acceptance With Ranked Tiebreaker</MenuItem>
+                        <MenuItem value='WEIGHTED_3X'>Weighted 3x</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
                 }
                 confirmText='Open Season'
                 onRef={(ref) => (this.openSeasonDialog = ref)}
-                onConfirm={this.props.openNewSeason.bind(this)}
+                onConfirm={this.openNewSeason.bind(this)}
               >
                 Open New Season
               </ConfirmDialogButton>
@@ -72,6 +97,16 @@ class CurrentPage_ extends React.Component<any, any> {
   componentDidMount() {
     this.props.componentDidMount();
   }
+
+  handleVotingSystemChange(event) {
+    this.setState({
+      votingSystem: event.target.value,
+    });
+  }
+
+  openNewSeason() {
+    this.props.openNewSeason(this.state.votingSystem);
+  }
 }
 
 const mapStateToProps = (state: any) => {
@@ -90,14 +125,15 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     componentDidMount() {
       dispatch(SeasonActions.fetchCurrent());
+      dispatch(VotingSessionActions.fetchLatestWithUserVotes());
     },
 
     closeCurrentSeason() {
       dispatch(SeasonActions.closeSeason(this.props.currentSeason));
     },
 
-    openNewSeason() {
-      dispatch(SeasonActions.openSeason());
+    openNewSeason(votingSystem) {
+      dispatch(SeasonActions.openSeason(votingSystem));
     },
   }
 };

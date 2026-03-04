@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { withRouter } from 'react-router';
 import Button from '@material-ui/core/Button';
+import Tooltip from '@material-ui/core/Tooltip';
 import Config from 'config';
 import { BookStatus, VotingSessionStatus } from 'types';
 import { ReorderableList } from 'lib/reorderable-lists';
@@ -13,6 +14,7 @@ import { ReduxActions } from 'actions/ReduxActions';
 import { VoteCard } from 'components/display/VoteCard';
 import { CloseWeightedVotingDialogButton } from 'components/display/CloseWeightedVotingDialogButton';
 import { UserList } from 'components/display/UserList';
+import { buildResetOrderFromPrevious, hasUsableVotesForUser } from 'utils/vote-reset';
 
 const pointsFor = (i) => Math.max(Config.MAX_VOTES - i, 0);
 
@@ -71,9 +73,10 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
 
   render() {
     const { books, enabled } = this.state;
-    const { votingSession, users, isAdmin } = this.props;
+    const { votingSession, users, isAdmin, latestVotingSession } = this.props;
     const booksMap = this.props.books;
     const isOpen = this.props.votingSession.status === VotingSessionStatus.OPEN;
+    const canReset = hasUsableVotesForUser(latestVotingSession, this.props.myId);
     if (votingSession.votes) {
       votingSession.votes = populateBooks(votingSession.votes, booksMap);
       votingSession.votes = populateUsers(votingSession.votes, users);
@@ -123,6 +126,17 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
             >
               {hasVoted ? 'Update Vote': 'Cast Vote'}
             </Button>
+          : null}
+          {isOpen ?
+            <Tooltip title='Resets your list to your most recent voted-season order and places books new this season at the top.'>
+              <Button
+                className='o-action'
+                onClick={this.resetFromLastSeason.bind(this)}
+                disabled={!enabled || !canReset}
+              >
+                Reset
+              </Button>
+            </Tooltip>
           : null}
           {isAdmin ?
             <CloseWeightedVotingDialogButton
@@ -179,9 +193,31 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
       enabled: true,
     });
   }
+
+  resetFromLastSeason() {
+    const { latestVotingSession, myId } = this.props;
+    const currentBooks = this.state.books.filter((book) => !!book && book.status === BookStatus.SUGGESTED);
+    if (!latestVotingSession || currentBooks.length < 1) {
+      return;
+    }
+    const reorderedBooks = buildResetOrderFromPrevious({
+      currentBooks,
+      previousVotingSession: latestVotingSession,
+      myId,
+      voteOrderField: 'points',
+      descending: true,
+    });
+
+    this.setState({
+      books: reorderedBooks,
+      enabled: true,
+    });
+  }
 }
 
 const mapStateToProps = (state: any) => {
+  const latestId = state.votingSession.latestWithUserVotesId;
+  const latestVotingSession = latestId ? state.votingSession.sessions[latestId] : null;
   return {
     isLoggedIn: state.users.isLoggedIn,
     isAdmin: state.users.isAdmin,
@@ -189,6 +225,7 @@ const mapStateToProps = (state: any) => {
     users: state.users.users || {},
     books: state.books || {},
     votingSession: state.votingSession.currentId ? state.votingSession.sessions[state.votingSession.currentId] : {},
+    latestVotingSession,
   }
 };
 

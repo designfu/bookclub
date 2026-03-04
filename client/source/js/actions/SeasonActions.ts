@@ -92,9 +92,9 @@ export const SeasonActions = {
     season,
     receivedAt: Date.now(),
   }),
-  openSeason: () => (dispatch) => {
+  openSeason: (system = 'ADVANCED_ACCEPTANCE') => (dispatch) => {
     dispatch(SeasonActions.requestOpenSeason_());
-    SeasonClient.open()
+    SeasonClient.open(system)
       .then(season_ => {
         dispatch(SeasonActions.receiveOpenSeason_(season_));
       });

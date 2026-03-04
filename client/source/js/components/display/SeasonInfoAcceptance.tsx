@@ -5,6 +5,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import { BookStatus, Season, VotingSession, VotingSessionStatus } from 'types';
 import { BookCard } from 'components/display/BookCard';
@@ -185,9 +186,18 @@ export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptancePr
       <div>
         <Paper className='c-season-info' elevation={1}>
           <div className='c-season-info__header o-action-title'>
-            <Typography variant='h5' component='h3'>
-              {season.title || title}
-            </Typography>
+            <div className='c-season-info__title-row'>
+              <Typography variant='h5' component='h3'>
+                {season.title || title}
+              </Typography>
+              <Tooltip
+                title='Ranks by acceptance count, then uses ranked preference distributions to break ties.'
+              >
+                <Typography component='span' className='c-season-info__system'>
+                  Acceptance + Ranked Tiebreaker
+                </Typography>
+              </Tooltip>
+            </div>
             {showMenu ?
               <div>
                 <IconButton

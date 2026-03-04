@@ -5,6 +5,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import { BookStatus, Season, VotingSession, VotingSessionStatus } from 'types';
 import { BookCard } from 'components/display/BookCard';
@@ -188,9 +189,18 @@ export class SeasonInfoAdvancedAcceptance extends React.Component<SeasonInfoAdva
       <div>
         <Paper className='c-season-info' elevation={1}>
           <div className='c-season-info__header o-action-title'>
-            <Typography variant='h5' component='h3'>
-              {season.title || title}
-            </Typography>
+            <div className='c-season-info__title-row'>
+              <Typography variant='h5' component='h3'>
+                {season.title || title}
+              </Typography>
+              <Tooltip
+                title='Approves ranked choices, then resolves ties with instant-runoff and priority-based tiebreaks.'
+              >
+                <Typography component='span' className='c-season-info__system'>
+                  Advanced Acceptance
+                </Typography>
+              </Tooltip>
+            </div>
             {showMenu ?
               <div>
                 <IconButton
