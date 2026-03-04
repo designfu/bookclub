@@ -108,7 +108,7 @@ SeasonSchema.statics.getPreviousSeason = function() {
     });
 };
 
-const SeasonModel = mongoose.model('Season', SeasonSchema);
+const SeasonModel: any = mongoose.model('Season', SeasonSchema);
 
 export {
   SeasonModel,

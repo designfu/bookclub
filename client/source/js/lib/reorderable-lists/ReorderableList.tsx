@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router';
-import { DragDropContext } from 'react-dnd';
-import HTML5Backend from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
 import List from '@material-ui/core/List';
 import ReorderableListItem from './ReorderableListItem';
@@ -51,23 +51,25 @@ class ReorderableList extends React.Component<any, any> {
     const { items } = this.state;
 
     return (
-      <div>
-        <List>
-          {items.map((item, i) => (
-            <ReorderableListItem
-              key={item.key}
-              handleOnClick={() => this.handleOnClick(item.key)}
-              index={i}
-              id={item.key}
-              moveListItem={this.moveListItem}
-            >
-              {item}
-            </ReorderableListItem>
-          ))}
-        </List>
-      </div>
+      <DndProvider backend={HTML5Backend}>
+        <div>
+          <List>
+            {items.map((item, i) => (
+              <ReorderableListItem
+                key={item.key}
+                handleOnClick={() => this.handleOnClick(item.key)}
+                index={i}
+                id={item.key}
+                moveListItem={this.moveListItem}
+              >
+                {item}
+              </ReorderableListItem>
+            ))}
+          </List>
+        </div>
+      </DndProvider>
     );
   }
 }
 
-export default DragDropContext(HTML5Backend)(ReorderableList);
+export default ReorderableList;

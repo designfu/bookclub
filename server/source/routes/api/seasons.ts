@@ -89,7 +89,7 @@ routes.patch('/:seasonId/goals/:goalId',
       },
     }).then(transaction => {
       res.header('Transaction', JSON.stringify(transaction));
-      return SeasonModel.findById({ _id: req.params._id });
+      return SeasonModel.findById({ _id: req.params.seasonId });
     })
       .then(entry => {
         res.status(200).json(entry);
@@ -116,7 +116,7 @@ routes.delete('/:seasonId/goals/:goalId',
       },
     }).then(transaction => {
       res.header('Transaction', JSON.stringify(transaction));
-      return SeasonModel.findById({ _id: req.params._id });
+      return SeasonModel.findById({ _id: req.params.seasonId });
     })
       .then(entry => {
         res.status(200).json(entry);

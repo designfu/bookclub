@@ -1,13 +1,14 @@
 const path = require('path');
-// var TsConfigPathsPlugin = require('awesome-typescript-loader').TsConfigPathsPlugin;
-
+const webpack = require('webpack');
 if(!process.env.ENV) {
-  throw 'ENV not set.'
+  throw new Error('ENV not set.');
 }
 const watch = process.env.WATCH !== 'false';
+const mode = process.env.ENV === 'production' ? 'production' : 'development';
 
 module.exports = {
   entry: "./source/js/index.tsx",
+  mode,
   output: {
     filename: "bundle.js",
     path: __dirname + "/dist/js"
@@ -37,22 +38,20 @@ module.exports = {
 
   module: {
     rules: [
-      {
-        test: /\.tsx?$/,
-        loader: 'string-replace-loader',
-        options: {
-          search: '@{ENV}',
-          replace: process.env.ENV.toLowerCase(),
-        }
-      },
-
-      // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
-      { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
+      // Compile TypeScript with type-checking.
+      { test: /\.tsx?$/, loader: "ts-loader" },
 
       // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
       { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
     ],
   },
+
+  plugins: [
+    new webpack.NormalModuleReplacementPlugin(
+      /@env\/@\{ENV\}-client$/,
+      `@env/${process.env.ENV.toLowerCase()}-client`
+    ),
+  ],
 
   // When importing a module whose path matches one of the following, just
   // assume a corresponding global variable exists and use that instead.

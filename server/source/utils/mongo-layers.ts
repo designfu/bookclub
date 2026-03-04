@@ -19,13 +19,13 @@ function findAll(Model) {
     }
 
     query
-      .exec((err, entries) => {
-        if(err) {
-          res.status(500).send(err);
-        } else {
-          res.status(200).json(entries);
-        }
+      .exec()
+      .then(entries => {
+        res.status(200).json(entries);
       })
+      .catch(err => {
+        res.status(500).send(err);
+      });
   }
 }
 function findOne(Model, idParam = '_id') {
