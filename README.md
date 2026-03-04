@@ -50,6 +50,21 @@ Open two terminal tabs. One in `./server` and one in `./client`. Run the followi
 
 Default port for local is `3000`. Navigate to `http://localhost:3000` in your browser, and you should see the application running.
 
+### Local OAuth Bypass (Temporary Dev Mode)
+
+For local development only, you can bypass Google OAuth and auto-login as a seeded test admin user.
+
+In `./server`, start with:
+
+    $ AUTH_BYPASS=true npm start
+
+This mode is only active when:
+
+- `ENV=local`
+- `AUTH_BYPASS=true`
+
+Do not use this in staging or production.
+
 ## Contributing
 
 ### Opening Issues

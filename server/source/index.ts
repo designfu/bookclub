@@ -8,6 +8,7 @@ import MongoStore from 'connect-mongo';
 import { server } from 'lib/io';
 import initPassport from 'lib/passport';
 import { mongoURI } from 'lib/mongoose';
+import { devAuthBypass } from 'middleware/dev-auth-bypass';
 const routes = require('routes');
 
 server.use(morgan('dev'));
@@ -26,6 +27,7 @@ sessionOptions.store = MongoStore.create({
 
 server.use(session(sessionOptions));
 initPassport(server);
+server.use(devAuthBypass);
 server.use(routes);
 
 // initSockets();
