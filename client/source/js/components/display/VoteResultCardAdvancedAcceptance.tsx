@@ -22,8 +22,10 @@ export class VoteResultCardAdvancedAcceptance extends React.Component<VoteResult
         />
         <div className='c-vote-card__padded'>
           <div className='c-vote-card__details'>
-            <span className='c-vote-card__title'>{book.title}</span> <span className='c-vote-card__dash'>-</span> <span className='c-vote-card__author'>{book.author || '??'}</span>
-            <span>{book.method} {book.tiedCount}</span>
+            <span>
+              <span className='c-vote-card__title'>{book.title}</span> <span className='c-vote-card__dash'>-</span> <span className='c-vote-card__author'>{book.author || '??'}</span>
+            </span>
+            <span className='c-vote-card__method'>{book.method} {book.tiedCount}</span>
           </div>
           <div className='c-vote-card__points'>
             <span className='c-vote-card__points-text'>{acceptanceVoteResultsString(book.rankings)}</span>
