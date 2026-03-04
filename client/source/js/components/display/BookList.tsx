@@ -42,13 +42,14 @@ export class BookList extends React.Component<any, any> {
   }
 
   renderBooks(books) {
-    return books.map(({ book, id }) => (
+    return books.map(({ book, id, isPlaceholder }) => (
       <BookCard
         isAdmin={this.props.isAdmin}
         myId={this.props.myId}
         key={id}
         book={book}
         isNew={this.isNewBook(book)}
+        isYourBook={!!isPlaceholder}
         onEdit={this.props.onItemEdit}
         onDelete={this.props.onItemDelete}
         onPropose={this.props.onItemPropose}
@@ -67,8 +68,19 @@ export class BookList extends React.Component<any, any> {
       });
 
     if (this.props.separateStatuses) {
+      const yourBookPlaceholders = (this.props.yourBookPlaceholders || []).map((book, i) => ({
+        id: `placeholder-${book._id || i}`,
+        book,
+        isPlaceholder: true,
+      }));
       const suggestedBooks = books.filter(({ book }) => book.status === BookStatus.SUGGESTED);
-      const nonSuggestedBooks = books.filter(({ book }) => book.status !== BookStatus.SUGGESTED);
+      const yourSuggestedPlaceholders = yourBookPlaceholders.filter(({ book }) => book.status === BookStatus.SUGGESTED);
+      const suggestedBooksWithPlaceholders = [...suggestedBooks, ...yourSuggestedPlaceholders]
+        .sort((a, b) => createdTimestamp(b.book) - createdTimestamp(a.book) || a.book.title.localeCompare(b.book.title));
+      const nonSuggestedBooks = [
+        ...books.filter(({ book }) => book.status !== BookStatus.SUGGESTED),
+        ...yourBookPlaceholders.filter(({ book }) => book.status !== BookStatus.SUGGESTED),
+      ];
       const byStatus = nonSuggestedBooks.reduce((acc, item) => {
         const status = item.book && item.book.status ? item.book.status : 'UNKNOWN';
         if (!acc[status]) {
@@ -77,13 +89,17 @@ export class BookList extends React.Component<any, any> {
         acc[status].push(item);
         return acc;
       }, {});
+      Object.keys(byStatus).forEach((status) => {
+        byStatus[status] = byStatus[status]
+          .sort((a, b) => createdTimestamp(b.book) - createdTimestamp(a.book) || a.book.title.localeCompare(b.book.title));
+      });
       const nonSuggestedStatuses = Object.keys(byStatus)
         .sort((a, b) => (STATUS_VALS[b] || -1) - (STATUS_VALS[a] || -1) || a.localeCompare(b));
 
       return (
         <div className='c-book-list'>
           <ul className='c-book-list__items'>
-            {this.renderBooks(suggestedBooks)}
+            {this.renderBooks(suggestedBooksWithPlaceholders)}
           </ul>
           {nonSuggestedStatuses.map((status) => (
             <details key={status} className='c-book-list__group'>
@@ -98,14 +114,36 @@ export class BookList extends React.Component<any, any> {
     }
 
     if (this.props.collapseFinished) {
-      const activeBooks = books.filter(({ book }) => book.status !== BookStatus.FINISHED);
+      const alwaysVisibleBooks = books.filter(({ book }) =>
+        book.status !== BookStatus.FINISHED
+        && book.status !== BookStatus.SUGGESTED
+        && book.status !== BookStatus.BACKLOG
+      );
+      const backlogBooks = books.filter(({ book }) => book.status === BookStatus.BACKLOG);
+      const suggestedBooks = books.filter(({ book }) => book.status === BookStatus.SUGGESTED);
       const finishedBooks = books.filter(({ book }) => book.status === BookStatus.FINISHED);
 
       return (
         <div className='c-book-list'>
           <ul className='c-book-list__items'>
-            {this.renderBooks(activeBooks)}
+            {this.renderBooks(alwaysVisibleBooks)}
           </ul>
+          {backlogBooks.length > 0 ? (
+            <details className='c-book-list__group' open>
+              <summary>Backlog ({backlogBooks.length})</summary>
+              <ul className='c-book-list__items'>
+                {this.renderBooks(backlogBooks)}
+              </ul>
+            </details>
+          ) : null}
+          {suggestedBooks.length > 0 ? (
+            <details className='c-book-list__group'>
+              <summary>Suggested ({suggestedBooks.length})</summary>
+              <ul className='c-book-list__items'>
+                {this.renderBooks(suggestedBooks)}
+              </ul>
+            </details>
+          ) : null}
           {finishedBooks.length > 0 ? (
             <details className='c-book-list__group'>
               <summary>Finished ({finishedBooks.length})</summary>

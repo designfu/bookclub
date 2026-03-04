@@ -34,6 +34,7 @@ class EditableBookListContainer_ extends React.Component<any, any> {
           separateStatuses={this.props.separateStatuses}
           collapseFinished={this.props.collapseFinished}
           newSince={this.props.newSince}
+          yourBookPlaceholders={this.props.yourBookPlaceholders}
           onItemEdit={this.onEditClick.bind(this)}
           onItemDelete={this.onDeleteClick.bind(this)}
           onItemPropose={this.onProposeClick.bind(this)}

@@ -68,6 +68,7 @@ export interface BookListItemProps {
   isAdmin?: boolean;
   myId?: string;
   isNew?: boolean;
+  isYourBook?: boolean;
   onEdit?: Function;
   onDelete?: Function;
   onPropose?: Function;
@@ -114,14 +115,16 @@ export class BookCard extends React.Component<BookListItemProps, any> {
 
     const showActionDropdown = actions.edit || actions.delete || actions.propose || actions.retract;
     const showStatusBadge = !!book.status && book.status !== BookStatus.BACKLOG && !this.props.points && !this.props.rankings;
+    const showYourBookBadge = !!this.props.isYourBook;
     const showNewBadge = !!this.props.isNew;
-    const showBadges = showStatusBadge || showNewBadge;
+    const showBadges = showStatusBadge || showYourBookBadge || showNewBadge;
 
     return (
       <Card className={className}>
         {showBadges ? (
           <span className='c-book-card__badges'>
             {showStatusBadge ? <span className={`c-book-card__badge c-book-card__badge--${normalize(book.status)}`}>{statusBadgeLabel(book.status)}</span> : null}
+            {showYourBookBadge ? <span className='c-book-card__badge c-book-card__badge--your-book'>Your Book</span> : null}
             {showNewBadge ? <span className='c-book-card__badge c-book-card__badge--new'>New</span> : null}
           </span>
         ) : null}

@@ -30,12 +30,14 @@ class BooksPage_ extends React.Component<any, any> {
     const { books, myId, isLoggedIn, previousSeason } = this.props;
     const myBooks = {};
     const notMyBooks = {};
+    const myBookList = [];
     const newSince = previousSeason && previousSeason.dates ? toTimestamp(previousSeason.dates.finished) : 0;
 
     for(let id in books) {
       const book = books[id];
       if(book.suggestedBy === myId) {
         myBooks[id] = book;
+        myBookList.push(book);
       } else {
         notMyBooks[id] = book;
       }
@@ -44,15 +46,20 @@ class BooksPage_ extends React.Component<any, any> {
     return (
       <div className='l-books-page'>
         <div className='l-books-page__column'>
+          <Typography variant='h4'>All Books</Typography>
+          <EditableBookListContainer
+            books={notMyBooks}
+            separateStatuses={true}
+            newSince={newSince}
+            yourBookPlaceholders={myBookList}
+          />
+        </div>
+        <div className='l-books-page__column'>
           <div className='o-action-title'>
             <Typography variant='h4'>Your Books</Typography>
             {isLoggedIn ? <AddBookModalContainer /> : null }
           </div>
           <EditableBookListContainer books={myBooks} collapseFinished={true} />
-        </div>
-        <div className='l-books-page__column'>
-          <Typography variant='h4'>Other Books</Typography>
-          <EditableBookListContainer books={notMyBooks} separateStatuses={true} newSince={newSince} />
         </div>
       </div>
     );
