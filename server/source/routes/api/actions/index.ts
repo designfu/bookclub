@@ -1,7 +1,7 @@
 import * as express from 'express';
 const routes = express.Router();
 import { requireAuthentication, requireAdmin, setReqDate } from 'middleware/index';
-import bookscraps from 'services/bookscraps';
+import goodreads from 'services/goodreads';
 import { BookModel } from 'schemas/book';
 import { SeasonModel } from 'schemas/season';
 import { VotingSessionModel } from 'schemas/voting-session';
@@ -197,7 +197,7 @@ routes.get('/find-book-details',
   async (req, res) => {
     const url = req.query.url;
     try {
-      const details = await bookscraps.discover(url);
+      const details = await goodreads.discover(url);
       res.status(200).json(details);
     } catch(err) {
       let body = err;

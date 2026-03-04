@@ -52,7 +52,7 @@ const getFormState = ({ book } = { book: null }) => {
 };
 
 function validate(formState) {
-  const isUrlRegExp = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
+  const isUrlRegExp = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/i;
   formState.submittable = true;
 
   const requiredFields = [
@@ -232,8 +232,17 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
     });
     ActionClient.findBookDetails(url)
       .then(details => {
+        if(!details || typeof details !== 'object') {
+          this.setState({ loading: false });
+          return;
+        }
+
         const stateDelta = {};
         for(const key in details) {
+          if(!this.state[key]) {
+            continue;
+          }
+
           const value = details[key];
           const hasValue = !!this.state[key].value;
           if(!hasValue) {
@@ -253,7 +262,12 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
           formState = validate(formState);
 
           this.setState(formState);
+        } else {
+          this.setState({ loading: false });
         }
+      })
+      .catch(() => {
+        this.setState({ loading: false });
       });
   }
 
