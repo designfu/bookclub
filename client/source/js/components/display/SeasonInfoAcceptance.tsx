@@ -11,26 +11,17 @@ import { BookStatus, Season, VotingSession, VotingSessionStatus } from 'types';
 import { BookCard } from 'components/display/BookCard';
 import { ConfirmDialog } from 'components/display/ConfirmDialog';
 import { VoteResultCardAcceptance } from 'components/display/VoteResultCardAcceptance';
-import { toStandardString } from 'utils/dates';
 import { toJSON } from 'utils/objects';
 import TextField from '@material-ui/core/TextField/TextField';
 import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { DeleteSeasonMenuItem } from 'components/containers/DeleteSeasonMenuItem';
-
-const RatingDescriptions = [
-  `5 - I would recommend this book to everyone - regardless of their interested in the genre. Everyone should read this book.`,
-  `4 - I would recommend this book to someone interested in the genre.`,
-  `3 - Good book to read if you have the time.`,
-  `2 - Don't recommend. It was ok.`,
-  `1 - I didn't like it, and no one should read this book.`,
-];
-
-function getUserRating(book, myId?): number {
-  if(!myId) return -1;
-  const rating = book ? book.ratings.find(rating => rating.user === myId) : null;
-  return rating ? rating.value : -1;
-}
+import {
+  ensureSeasonInfoProps,
+  getUserRating,
+  RatingDescriptions,
+  renderSeasonInfoDate,
+} from 'components/display/season-info-common';
 
 function rankingsForBookFromVoting(book, votingSession) {
   if(votingSession.status !== VotingSessionStatus.COMPLETE) return;
@@ -89,13 +80,6 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
   return list;
 }
 
-function renderDate(label, timestamp) {
-  return <Typography component='p' className='c-season-info__date'>
-    <label>{label}: </label>
-    <span>{toStandardString(timestamp)}</span>
-  </Typography>
-}
-
 export interface SeasonInfoAcceptanceProps {
   season: Season;
   votingSession: VotingSession;
@@ -120,24 +104,6 @@ export interface SeasonInfoAcceptanceState {
   seasonTitle: string;
   userBookRating: number;
   isRatingValid: boolean;
-}
-
-function ensure(props: SeasonInfoAcceptanceProps): SeasonInfoAcceptanceProps {
-  return {
-    season: {
-      dates: {
-        created: null,
-        ...props.season.dates,
-      },
-      ...props.season,
-    },
-    votingSession: {
-      ...props.votingSession,
-      status: null,
-    },
-    startVotingOpen: props.hasOwnProperty('startVotingOpen') ? props.startVotingOpen : true,
-    ...props,
-  }
 }
 
 export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptanceProps, SeasonInfoAcceptanceState> {
@@ -175,7 +141,7 @@ export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptancePr
   }
 
   render() {
-    const { season, votingSession, onSeasonRename, allowClosing, title } = ensure(this.props);
+    const { season, votingSession, onSeasonRename, allowClosing, title } = ensureSeasonInfoProps(this.props);
     const { anchorEl, showJson, showVotingResults } = this.state;
 
     const isVotingSessionClosed = votingSession.status === VotingSessionStatus.COMPLETE;
@@ -302,13 +268,13 @@ export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptancePr
 
           <div className='c-season-info__details'>
             {season.dates.created ?
-              renderDate('Started', season.dates.created)
+              renderSeasonInfoDate('Started', season.dates.created)
               : null}
             {season.dates.started ?
-              renderDate('Book Chosen', season.dates.started)
+              renderSeasonInfoDate('Book Chosen', season.dates.started)
               : null}
             {season.dates.finished ?
-              renderDate('Finished', season.dates.finished)
+              renderSeasonInfoDate('Finished', season.dates.finished)
               : null}
           </div>
           {showJson ?

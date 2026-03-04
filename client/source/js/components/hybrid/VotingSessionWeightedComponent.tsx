@@ -7,57 +7,28 @@ import { withRouter } from 'react-router';
 import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import Config from 'config';
-import { BookStatus, VotingSessionStatus } from 'types';
+import { VotingSessionStatus } from 'types';
 import { ReorderableList } from 'lib/reorderable-lists';
 import { VotingSessionActions, VotingSessionActionTypes } from 'actions/VotingSessionActions';
 import { ReduxActions } from 'actions/ReduxActions';
 import { VoteCard } from 'components/display/VoteCard';
 import { CloseWeightedVotingDialogButton } from 'components/display/CloseWeightedVotingDialogButton';
 import { UserList } from 'components/display/UserList';
-import { buildResetOrderFromPrevious, hasUsableVotesForUser } from 'utils/vote-reset';
+import { hasUsableVotesForUser } from 'utils/vote-reset';
+import {
+  buildWeightedResetBooks,
+  extractWeightedBookList,
+  mapReorderableListToWeightedBooks,
+  moveWeightedBookToPoints,
+} from 'utils/vote-reset-weighted';
+import {
+  buildVotingParticipation,
+  hasUserVoted,
+  hydrateVotingSession,
+  selectVotingSessionContainerState,
+} from 'utils/voting-session-container';
 
 const pointsFor = (i) => Math.max(Config.MAX_VOTES - i, 0);
-
-function populateBooks(list = [], books = {}) {
-  return list.map(_ => ({
-    ..._,
-    book: books[_.book] || _.book,
-  }));
-}
-function populateUsers(list = [], users = {}) {
-  return list.map(_ => ({
-    ..._,
-    user: users[_.user] || _.user,
-  }));
-}
-
-function sortBooks(books = {}, votes = [], me = null) {
-  if(Object.keys(books).length < 1) return [];
-  const myVotes = votes.filter(_ => (_.user._id || _.user) === me._id).reduce((map, vote) => {
-    return {
-      ...map,
-      [(vote.book._id || vote.book)]: vote.points,
-    }
-  }, {});
-  const bookList = Object.keys(books).map(id => books[id]);
-  let chosenBooks = [];
-  let otherBooks = [];
-  bookList.forEach(book => {
-    if(book.status !== BookStatus.SUGGESTED) return;
-    if(myVotes[book._id] > 0) {
-      chosenBooks.push(book);
-    } else {
-      otherBooks.push(book);
-    }
-  });
-  chosenBooks = chosenBooks.sort((a, b) => myVotes[b._id] - myVotes[a._id]);
-
-  return [...chosenBooks, ...otherBooks];
-}
-
-function extractBookList(props) {
-  return sortBooks(props.books, props.votingSession.votes, props.users[props.myId]);
-}
 
 class VotingSessionWeightedContainer_ extends React.Component<any, any> {
   closeVotingDialog: CloseWeightedVotingDialogButton;
@@ -66,38 +37,20 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
     super(props);
 
     this.state = {
-      books: extractBookList(props),
+      books: extractWeightedBookList(props),
       enabled: true,
     };
   }
 
   render() {
     const { books, enabled } = this.state;
-    const { votingSession, users, isAdmin, latestVotingSession } = this.props;
+    const { users, isAdmin, latestVotingSession } = this.props;
     const booksMap = this.props.books;
     const isOpen = this.props.votingSession.status === VotingSessionStatus.OPEN;
     const canReset = hasUsableVotesForUser(latestVotingSession, this.props.myId);
-    if (votingSession.votes) {
-      votingSession.votes = populateBooks(votingSession.votes, booksMap);
-      votingSession.votes = populateUsers(votingSession.votes, users);
-    }
-    if (votingSession.results) {
-      votingSession.results = populateBooks(votingSession.results, booksMap);
-    }
-    const hasVoted = votingSession.votes ? votingSession.votes.some(_ => _.user._id === this.props.myId) : false;
-
-    let usersHaveVoted: any = votingSession.votes.reduce((users, vote: any) => ({
-      ...users,
-      [vote.user._id]: true,
-    }), {});
-    let usersHaveNotVoted: any = Object.values(users).reduce((users, user: any) => {
-      if(!usersHaveVoted[user._id]) {
-        users[user._id] = true;
-      }
-      return users;
-    }, {});
-    usersHaveVoted = Object.keys(usersHaveVoted).map(_id => users[_id]).filter(_ => !!_);
-    usersHaveNotVoted = Object.keys(usersHaveNotVoted).map(_id => users[_id]).filter(_ => !!_);
+    const votingSession = hydrateVotingSession(this.props.votingSession, booksMap, users);
+    const hasVoted = hasUserVoted(votingSession.votes, this.props.myId);
+    const { usersHaveVoted, usersHaveNotVoted } = buildVotingParticipation(users, votingSession.votes);
 
     return (
       <div className='c-voting-session'>
@@ -167,9 +120,8 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
   }
 
   onListUpdate(list) {
-    const books = list.map(item => this.props.books[item.key]);
     this.setState({
-      books,
+      books: mapReorderableListToWeightedBooks(list, this.props.books),
       enabled: true,
     });
   }
@@ -177,56 +129,32 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
   componentDidUpdate(prevProps) {
     if (prevProps !== this.props) {
       this.setState({
-        books: extractBookList(this.props),
+        books: extractWeightedBookList(this.props),
       });
     }
   }
 
   onVote(book, points) {
-    let books = this.state.books.slice(0);
-    let i = Config.MAX_VOTES - points;
-    books = books.filter(_ => _._id != book._id);
-    books.splice(i, 0, book);
-
     this.setState({
-      books,
+      books: moveWeightedBookToPoints(this.state.books, book, points, Config.MAX_VOTES),
       enabled: true,
     });
   }
 
   resetFromLastSeason() {
-    const { latestVotingSession, myId } = this.props;
-    const currentBooks = this.state.books.filter((book) => !!book && book.status === BookStatus.SUGGESTED);
-    if (!latestVotingSession || currentBooks.length < 1) {
-      return;
-    }
-    const reorderedBooks = buildResetOrderFromPrevious({
-      currentBooks,
-      previousVotingSession: latestVotingSession,
-      myId,
-      voteOrderField: 'points',
-      descending: true,
-    });
-
     this.setState({
-      books: reorderedBooks,
+      books: buildWeightedResetBooks({
+        books: this.state.books,
+        latestVotingSession: this.props.latestVotingSession,
+        myId: this.props.myId,
+      }),
       enabled: true,
     });
   }
 }
 
 const mapStateToProps = (state: any) => {
-  const latestId = state.votingSession.latestWithUserVotesId;
-  const latestVotingSession = latestId ? state.votingSession.sessions[latestId] : null;
-  return {
-    isLoggedIn: state.users.isLoggedIn,
-    isAdmin: state.users.isAdmin,
-    myId: state.users.myId,
-    users: state.users.users || {},
-    books: state.books || {},
-    votingSession: state.votingSession.currentId ? state.votingSession.sessions[state.votingSession.currentId] : {},
-    latestVotingSession,
-  }
+  return selectVotingSessionContainerState(state);
 };
 
 const mapDispatchToProps = (dispatch: any) => {

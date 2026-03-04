@@ -18,69 +18,15 @@ import VotingSessionClient from 'clients/VotingSessionClient';
 import BookClient from 'clients/BookClient';
 import { UserActions } from 'actions/UserActions';
 import { BookActions } from 'actions/BookActions';
-
-function getRefId(value) {
-  if (!value) {
-    return null;
-  }
-  if (typeof value === 'object' && value._id) {
-    return value._id;
-  }
-  return value;
-}
-
-function toTimestamp(season) {
-  if (!season || !season.dates) {
-    return 0;
-  }
-  const raw = season.dates.finished || season.dates.started || season.dates.created;
-  if (!raw) {
-    return 0;
-  }
-  if (typeof raw === 'number') {
-    return raw;
-  }
-  const parsed = Date.parse(raw);
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
-function toDateValue(raw) {
-  if (!raw) {
-    return null;
-  }
-  if (typeof raw === 'number') {
-    return new Date(raw);
-  }
-  const parsed = new Date(raw);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-function getSeasonSortTimestamp(season) {
-  if (!season || !season.dates) {
-    return 0;
-  }
-  const preferred = season.dates.finished || season.dates.started || season.dates.created;
-  const dateValue = toDateValue(preferred);
-  return dateValue ? dateValue.getTime() : 0;
-}
-
-function formatDateShort(raw) {
-  const dateValue = toDateValue(raw);
-  return dateValue ? dateValue.toLocaleDateString() : '--';
-}
-
-function formatSeasonDateRange(season) {
-  if (!season || !season.dates) {
-    return '-- to --';
-  }
-  const start = season.dates.started || season.dates.created;
-  const end = season.dates.finished;
-  return `${formatDateShort(start)} to ${end ? formatDateShort(end) : 'Open'}`;
-}
-
-function isAdmin(user) {
-  return !!(user && Array.isArray(user.roles) && user.roles.indexOf('ADMIN') > -1);
-}
+import {
+  buildDeletePreview as buildDeletePreviewData,
+  buildTransferItemsWithData as buildTransferItemsData,
+  getRefId,
+  getTransferTargetCandidates,
+  getUsersWithStats,
+  isAdminUser,
+  sortUsersByRoleAndRecentSeason,
+} from 'components/pages/users-page-utils';
 
 class UsersPage_ extends React.Component<any, any> {
   state = {
@@ -149,22 +95,14 @@ class UsersPage_ extends React.Component<any, any> {
       );
     }
 
-    const users = Object.keys(this.props.users || {})
-      .map((id) => this.props.users[id])
-      .filter((user) => !!user)
-      .map((user) => this.withStats(user));
-
-    users.sort((a, b) => {
-      const roleDiff = (isAdmin(a.user) ? 0 : 1) - (isAdmin(b.user) ? 0 : 1);
-      if (roleDiff !== 0) {
-        return roleDiff;
-      }
-      const seasonDiff = b.lastSeasonTimestamp - a.lastSeasonTimestamp;
-      if (seasonDiff !== 0) {
-        return seasonDiff;
-      }
-      return (a.user.name || '').localeCompare(b.user.name || '');
-    });
+    const users = sortUsersByRoleAndRecentSeason(
+      getUsersWithStats(
+        this.props.users || {},
+        this.props.books || {},
+        this.state.seasons || {},
+        this.state.votingSessions || {},
+      ),
+    );
     return (
       <div className='l-users-page'>
         <div className='o-action-title'>
@@ -190,7 +128,7 @@ class UsersPage_ extends React.Component<any, any> {
               <tr key={user._id}>
                 <td>{user.name || '--'}</td>
                 <td>{user._id || '--'}</td>
-                <td>{isAdmin(user) ? 'ADMIN' : 'MEMBER'}</td>
+                <td>{isAdminUser(user) ? 'ADMIN' : 'MEMBER'}</td>
                 <td>{booksSuggestedCount}</td>
                 <td>{seasonsVotedCount}</td>
                 <td>
@@ -240,10 +178,7 @@ class UsersPage_ extends React.Component<any, any> {
       transferSummary,
     } = this.state;
     const sourceUser = this.props.users[transferSourceUserId];
-    const targetCandidates = Object.keys(this.props.users || {})
-      .map((id) => this.props.users[id])
-      .filter((user) => !!user && user._id !== transferSourceUserId)
-      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    const targetCandidates = getTransferTargetCandidates(this.props.users || {}, transferSourceUserId);
     const selectedCount = transferItems.filter((item) => item.checked).length;
 
     return (
@@ -272,7 +207,7 @@ class UsersPage_ extends React.Component<any, any> {
               >
                 {targetCandidates.map((user) => (
                   <MenuItem key={user._id} value={user._id}>
-                    {user.name} ({user._id}) {isAdmin(user) ? '(ADMIN)' : '(MEMBER)'}
+                    {user.name} ({user._id}) {isAdminUser(user) ? '(ADMIN)' : '(MEMBER)'}
                   </MenuItem>
                 ))}
               </Select>
@@ -394,39 +329,6 @@ class UsersPage_ extends React.Component<any, any> {
     );
   }
 
-  withStats(user) {
-    const seasons = Object.keys(this.state.seasons || {}).map((id) => this.state.seasons[id]);
-    const votingSessions = this.state.votingSessions || {};
-    const votedSeasons = seasons.filter((season) => {
-      const votingSessionId = getRefId(season.votingSession);
-      if (!votingSessionId || !votingSessions[votingSessionId]) {
-        return false;
-      }
-      const session = votingSessions[votingSessionId];
-      const votes = Array.isArray(session.votes) ? session.votes : [];
-      return votes.some((vote) => getRefId(vote.user) === user._id);
-    });
-
-    votedSeasons.sort((a, b) => toTimestamp(b) - toTimestamp(a));
-    const latestSeason = votedSeasons[0];
-    const lastSeasonTitle = latestSeason ? (latestSeason._id || '--') : '--';
-    const lastSeasonDateRange = latestSeason ? formatSeasonDateRange(latestSeason) : '--';
-
-    const booksSuggestedCount = Object.keys(this.props.books || {})
-      .map((id) => this.props.books[id])
-      .filter((book) => getRefId(book.suggestedBy) === user._id)
-      .length;
-
-    return {
-      user,
-      booksSuggestedCount,
-      seasonsVotedCount: votedSeasons.length,
-      lastSeasonTimestamp: latestSeason ? toTimestamp(latestSeason) : 0,
-      lastSeasonTitle,
-      lastSeasonDateRange,
-    };
-  }
-
   openTransferDialog(sourceUserId) {
     this.setState({
       transferDialogOpen: true,
@@ -472,80 +374,13 @@ class UsersPage_ extends React.Component<any, any> {
   }
 
   buildTransferItems(sourceUserId, targetUserId) {
-    return this.buildTransferItemsWithData(
+    return buildTransferItemsData(
       sourceUserId,
       targetUserId,
       this.props.books || {},
       this.state.seasons || {},
       this.state.votingSessions || {},
     );
-  }
-
-  buildTransferItemsWithData(sourceUserId, targetUserId, booksById, seasonsById, votingSessionsById) {
-    const items = [];
-    const seasonVoteItems = [];
-    const allBooks = Object.keys(booksById || {}).map((id) => booksById[id]);
-    const sourceBooks = allBooks.filter((book) => getRefId(book.suggestedBy) === sourceUserId);
-
-    sourceBooks.forEach((book) => {
-      items.push({
-        id: `book:${book._id}`,
-        type: 'BOOK',
-        checked: true,
-        conflict: false,
-        conflictReason: '',
-        description: `${book.title || '--'} by ${book.author || '--'} (${book._id})`,
-        bookId: book._id,
-      });
-    });
-
-    const seasons = Object.keys(seasonsById || {}).map((id) => seasonsById[id]);
-    const seasonsBySessionId = Object.keys(seasonsById || {}).reduce((map, seasonId) => {
-      const season = seasonsById[seasonId];
-      const votingSessionId = getRefId(season.votingSession);
-      if (votingSessionId) {
-        map[votingSessionId] = season;
-      }
-      return map;
-    }, {});
-
-    seasons.forEach((season) => {
-      const sessionId = getRefId(season.votingSession);
-      if (!sessionId) {
-        return;
-      }
-      const session = votingSessionsById[sessionId];
-      if (!session) {
-        return;
-      }
-      const votes = Array.isArray(session.votes) ? session.votes : [];
-      const sourceVotes = votes.filter((vote) => getRefId(vote.user) === sourceUserId);
-      if (sourceVotes.length < 1) {
-        return;
-      }
-      const conflict = votes.some((vote) => getRefId(vote.user) === targetUserId);
-      const seasonInfo = seasonsBySessionId[sessionId];
-      const seasonLabel = seasonInfo ? (seasonInfo.title || seasonInfo._id) : sessionId;
-      seasonVoteItems.push({
-        id: `season-votes:${season._id || sessionId}`,
-        type: 'SEASON_VOTES',
-        checked: !conflict,
-        conflict,
-        conflictReason: conflict ? 'Target user already has vote(s) in this season.' : '',
-        description: `Season ${seasonLabel} (${formatSeasonDateRange(season)}) | ${sourceVotes.length} vote(s) from source user`,
-        seasonId: season._id,
-        sessionId,
-        sortTimestamp: getSeasonSortTimestamp(season),
-      });
-    });
-
-    seasonVoteItems.sort((a, b) => b.sortTimestamp - a.sortTimestamp);
-    seasonVoteItems.forEach((item) => {
-      const { sortTimestamp, ...rest } = item;
-      items.push(rest);
-    });
-
-    return items;
   }
 
   async applyTransfer() {
@@ -608,7 +443,7 @@ class UsersPage_ extends React.Component<any, any> {
         map[item.id] = !!item.checked;
         return map;
       }, {});
-      const nextTransferItems = this.buildTransferItemsWithData(
+      const nextTransferItems = buildTransferItemsData(
         sourceUserId,
         targetUserId,
         books || {},
@@ -659,41 +494,12 @@ class UsersPage_ extends React.Component<any, any> {
   }
 
   buildDeletePreview(userId) {
-    const books = Object.keys(this.props.books || {})
-      .map((id) => this.props.books[id])
-      .filter((book) => getRefId(book.suggestedBy) === userId);
-
-    const seasonsBySessionId = Object.keys(this.state.seasons || {}).reduce((map, seasonId) => {
-      const season = this.state.seasons[seasonId];
-      const votingSessionId = getRefId(season.votingSession);
-      if (votingSessionId) {
-        map[votingSessionId] = season;
-      }
-      return map;
-    }, {});
-
-    const voteItems = Object.keys(this.state.votingSessions || {})
-      .map((sessionId) => {
-        const session = this.state.votingSessions[sessionId];
-        const votes = Array.isArray(session && session.votes) ? session.votes : [];
-        const count = votes.filter((vote) => getRefId(vote.user) === userId).length;
-        if (count < 1) {
-          return null;
-        }
-        const season = seasonsBySessionId[sessionId];
-        return {
-          sessionId,
-          count,
-          seasonLabel: season ? (season.title || season._id) : sessionId,
-        };
-      })
-      .filter((item) => !!item)
-      .sort((a, b) => (a.seasonLabel || '').localeCompare(b.seasonLabel || ''));
-
-    return {
-      books,
-      voteItems,
-    };
+    return buildDeletePreviewData(
+      userId,
+      this.props.books || {},
+      this.state.seasons || {},
+      this.state.votingSessions || {},
+    );
   }
 
   async applyDelete() {
