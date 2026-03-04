@@ -64,6 +64,7 @@ class SeasonsPage_ extends React.Component<any, any> {
             season={season}
             votingSession={votingSession}
             onSeasonRename={isLoggedIn && isAdmin && season && season.status === SeasonStatus.COMPLETE && this.props.renameSeason.bind(this, season)}
+            onSeasonDelete={isLoggedIn && isAdmin && season && season.status === SeasonStatus.COMPLETE && this.props.deleteSeason.bind(this, season)}
             onSeasonClose={this.props.closeSeason.bind(this, season)}
             onRateBook={isLoggedIn && season && season.status === SeasonStatus.COMPLETE &&  this.props.rateBook.bind(this)}
             allowClosing={isLoggedIn && isAdmin && season && season.status === SeasonStatus.STARTED}
@@ -115,6 +116,10 @@ const mapDispatchToProps = (dispatch: any) => {
 
     openNewSeason() {
       dispatch(SeasonActions.openSeason());
+    },
+
+    deleteSeason(season: Season) {
+      dispatch(SeasonActions.deleteSeason(season));
     },
 
     rateBook({ book, value } : { book: Book, value: number }) {

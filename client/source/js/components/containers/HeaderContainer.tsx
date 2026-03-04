@@ -35,6 +35,7 @@ class HeaderContainer_ extends React.Component<any, any> {
     this.handleCloseSwitchDialog = this.handleCloseSwitchDialog.bind(this);
     this.handleSwitchUserConfirm = this.handleSwitchUserConfirm.bind(this);
     this.handleSwitchUserChange = this.handleSwitchUserChange.bind(this);
+    this.formatUserLabel = this.formatUserLabel.bind(this);
   }
 
   render() {
@@ -59,9 +60,13 @@ class HeaderContainer_ extends React.Component<any, any> {
           <NavTab to='/'>Voting</NavTab>
           <NavTab to='/books'>Books</NavTab>
           <NavTab to='/seasons'>Previous Seasons</NavTab>
-          {users.isAdmin ? <NavTab to='/users'>Users</NavTab> : null}
         </ul>
-        <div>
+        <div className='c-header__right'>
+          {users.isAdmin ? (
+            <ul className='c-header__nav-tabs c-header__nav-tabs--right'>
+              <NavTab to='/users'>Users</NavTab>
+            </ul>
+          ) : null}
           {me
             ? (<div className='c-header__user' onClick={this.handleMenuOpen}>
                 {me.avatar ? <img className='o-avatar' src={me.avatar} /> : null}
@@ -98,11 +103,11 @@ class HeaderContainer_ extends React.Component<any, any> {
                 >
                   {adminUsers.length > 0 ? <ListSubheader>Admins</ListSubheader> : null}
                   {adminUsers.map((user: User) => (
-                    <MenuItem key={user._id} value={user._id}>{user.name}</MenuItem>
+                    <MenuItem key={user._id} value={user._id}>{this.formatUserLabel(user)}</MenuItem>
                   ))}
                   {memberUsers.length > 0 ? <ListSubheader>Members</ListSubheader> : null}
                   {memberUsers.map((user: User) => (
-                    <MenuItem key={user._id} value={user._id}>{user.name}</MenuItem>
+                    <MenuItem key={user._id} value={user._id}>{this.formatUserLabel(user)}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -158,6 +163,11 @@ class HeaderContainer_ extends React.Component<any, any> {
 
   handleSwitchUserConfirm() {
     this.handleSwitchUser(this.state.switchUserId);
+  }
+
+  formatUserLabel(user: User): string {
+    const name = user && user.name ? user.name : 'Unnamed User';
+    return `${name} (${user._id})`;
   }
 }
 

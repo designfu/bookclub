@@ -58,6 +58,39 @@
     background #eee
     font-size 12px
 
+  &__badges
+    position absolute
+    bottom 8px
+    right 8px
+    z-index 2
+    display inline-flex
+    flex-wrap wrap
+    gap 4px
+    justify-content flex-end
+    max-width calc(100% - 150px)
+
+  &__badge
+    padding 2px 6px
+    border-radius 3px
+    font-size 11px
+    text-transform uppercase
+
+    &--suggested
+      background #eee
+      color #333
+
+    &--reading
+      background #1976d2
+      color #fff
+
+    &--finished
+      background #9e9e9e
+      color #fff
+
+    &--new
+      background #2e7d32
+      color #fff
+
   &__edit-icon
     margin-left auto
 
@@ -96,3 +129,6 @@
   &__details
     flex-grow 1
     margin-left -5px
+
+    .c-book-card__content--with-badges
+      padding-bottom 32px

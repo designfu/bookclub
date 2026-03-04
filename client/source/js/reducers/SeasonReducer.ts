@@ -83,6 +83,14 @@ export const SeasonReducer = (state: SeasonState = defaultState, action: ReduxAc
           [action.season._id]: action.season,
         },
       };
+    case SeasonActionTypes.GOT_DELETE:
+      const { [action.seasonId]: deletedSeason, ...remainingSeasons } = state.seasons;
+      return {
+        ...state,
+        seasons: remainingSeasons,
+        currentId: state.currentId === action.seasonId ? null : state.currentId,
+        previousId: state.previousId === action.seasonId ? null : state.previousId,
+      };
     case VotingSessionActionTypes.GOT_CLOSE:
       return {
         ...state,

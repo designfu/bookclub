@@ -104,6 +104,18 @@ export const VotingSessionReducer = (state: VotingSessionState = defaultState, a
           [action.season && action.season.votingSession ? action.season.votingSession._id : null]: action.season.votingSession,
         },
       };
+    case SeasonActionTypes.GOT_DELETE:
+      if(!action.votingSessionId) {
+        return state;
+      }
+      const { [action.votingSessionId]: removedVotingSession, ...remainingSessions } = state.sessions;
+      return {
+        ...state,
+        sessions: remainingSessions,
+        currentId: state.currentId === action.votingSessionId ? null : state.currentId,
+        latestId: state.latestId === action.votingSessionId ? null : state.latestId,
+        latestWithUserVotesId: state.latestWithUserVotesId === action.votingSessionId ? null : state.latestWithUserVotesId,
+      };
     default:
       return state
   }

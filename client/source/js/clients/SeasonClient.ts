@@ -29,6 +29,13 @@ class SeasonClient extends BaseResourceClient {
       shouldAcceptStatus: _ => _ === 200,
     });
   }
+
+  deleteSeason(seasonId) {
+    return fetch_(`${this.basePath}/${seasonId}`, {
+      method: 'DELETE',
+      shouldAcceptStatus: _ => _ === 200,
+    });
+  }
 }
 
 export default new SeasonClient(`${Config.API_HOST}/api/seasons`, 'seasons');

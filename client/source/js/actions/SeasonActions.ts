@@ -14,6 +14,8 @@ export const SeasonActionTypes = {
   GOT_GOAL_CREATE: `${PREFIX}:GOT_GOAL_CREATE`,
   ASK_UPDATE: `${PREFIX}:ASK_UPDATE`,
   GOT_UPDATE: `${PREFIX}:GOT_UPDATE`,
+  ASK_DELETE: `${PREFIX}:ASK_DELETE`,
+  GOT_DELETE: `${PREFIX}:GOT_DELETE`,
 };
 
 export const SeasonActions = {
@@ -117,6 +119,26 @@ export const SeasonActions = {
     })
       .then(season_ => {
         dispatch(SeasonActions.receiveCreateNewGoal_(season_));
+      });
+  },
+
+  requestDeleteSeason_: (season) => ({
+    type: SeasonActionTypes.ASK_DELETE,
+    season,
+  }),
+  receiveDeleteSeason_: ({ seasonId, votingSessionId }) => ({
+    type: SeasonActionTypes.GOT_DELETE,
+    seasonId,
+    votingSessionId,
+    receivedAt: Date.now(),
+  }),
+  deleteSeason: (season) => (dispatch) => {
+    dispatch(SeasonActions.requestDeleteSeason_(season));
+    SeasonClient.deleteSeason(season._id)
+      .then((result) => {
+        if(result && result.seasonId) {
+          dispatch(SeasonActions.receiveDeleteSeason_(result));
+        }
       });
   },
 };

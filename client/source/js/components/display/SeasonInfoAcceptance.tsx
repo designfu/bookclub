@@ -16,6 +16,7 @@ import { toJSON } from 'utils/objects';
 import TextField from '@material-ui/core/TextField/TextField';
 import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
+import { DeleteSeasonMenuItem } from 'components/containers/DeleteSeasonMenuItem';
 
 const RatingDescriptions = [
   `5 - I would recommend this book to everyone - regardless of their interested in the genre. Everyone should read this book.`,
@@ -100,6 +101,7 @@ export interface SeasonInfoAcceptanceProps {
   votingSession: VotingSession;
   onSeasonClose: Function;
   onSeasonRename?: Function;
+  onSeasonDelete?: Function;
   onRateBook?: Function;
   allowClosing: boolean;
   title: string;
@@ -179,8 +181,9 @@ export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptancePr
     const isVotingSessionClosed = votingSession.status === VotingSessionStatus.COMPLETE;
     const allowToggleVotingResults = isVotingSessionClosed;
     const allowRenaming = !!onSeasonRename;
+    const allowDeleting = !!this.props.onSeasonDelete;
     const allowRating = isVotingSessionClosed && this.props.myId && this.props.onRateBook;
-    const showMenu = allowClosing || allowToggleVotingResults || allowRenaming || allowRating;
+    const showMenu = allowClosing || allowToggleVotingResults || allowRenaming || allowDeleting || allowRating;
 
     return (
       <div>
@@ -216,6 +219,7 @@ export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptancePr
                 >
                   {allowToggleVotingResults ? <MenuItem onClick={this.handleToggleVotingResultsClick}>{showVotingResults ? 'Hide Voting Results' : 'Show Voting Results'}</MenuItem> : null}
                   {allowRenaming ? <MenuItem onClick={this.handleRenameSeasonClick}>Rename Season</MenuItem> : null}
+                  {allowDeleting ? <DeleteSeasonMenuItem onDelete={this.props.onSeasonDelete} onMenuClose={this.handleMenuClose} /> : null}
                   {allowClosing ? <MenuItem onClick={this.handleCloseSeasonClick}>Close Season</MenuItem> : null}
                   {allowRating ? <MenuItem onClick={this.handleRateBookClick}>Rate Book</MenuItem> : null}
                 </Menu>

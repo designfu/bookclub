@@ -17,7 +17,30 @@ function formatStatusLabel(status) {
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
+function createdTimestamp(book): number {
+  const raw = book && book.dates ? book.dates.created : null;
+  if (typeof raw === 'number') {
+    return raw;
+  }
+  if (raw instanceof Date) {
+    return raw.getTime();
+  }
+  if (typeof raw === 'string') {
+    const parsed = Date.parse(raw);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+}
+
 export class BookList extends React.Component<any, any> {
+  isNewBook(book): boolean {
+    const cutoff = this.props.newSince || 0;
+    if (!cutoff) {
+      return false;
+    }
+    return createdTimestamp(book) > cutoff;
+  }
+
   renderBooks(books) {
     return books.map(({ book, id }) => (
       <BookCard
@@ -25,6 +48,7 @@ export class BookList extends React.Component<any, any> {
         myId={this.props.myId}
         key={id}
         book={book}
+        isNew={this.isNewBook(book)}
         onEdit={this.props.onItemEdit}
         onDelete={this.props.onItemDelete}
         onPropose={this.props.onItemPropose}
@@ -37,7 +61,9 @@ export class BookList extends React.Component<any, any> {
     const books = Object.keys(this.props.books || {})
       .map((id) => ({ id, book: this.props.books[id] }))
       .sort((a, b) => {
-        return STATUS_VALS[b.book.status] - STATUS_VALS[a.book.status] || a.book.title.localeCompare(b.book.title);
+        return STATUS_VALS[b.book.status] - STATUS_VALS[a.book.status]
+          || createdTimestamp(b.book) - createdTimestamp(a.book)
+          || a.book.title.localeCompare(b.book.title);
       });
 
     if (this.props.separateStatuses) {

@@ -9,12 +9,28 @@ import { EditableBookListContainer } from 'components/containers/EditableBookLis
 import { AddBookModalContainer } from 'components/containers/AddBookModalContainer';
 import { AppstateActions } from 'actions/AppstateActions';
 import { BookActions } from 'actions/BookActions';
+import { SeasonActions } from 'actions/SeasonActions';
+
+function toTimestamp(value): number {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+}
 
 class BooksPage_ extends React.Component<any, any> {
   render() {
-    const { books, myId, isLoggedIn } = this.props;
+    const { books, myId, isLoggedIn, previousSeason } = this.props;
     const myBooks = {};
     const notMyBooks = {};
+    const newSince = previousSeason && previousSeason.dates ? toTimestamp(previousSeason.dates.finished) : 0;
 
     for(let id in books) {
       const book = books[id];
@@ -36,7 +52,7 @@ class BooksPage_ extends React.Component<any, any> {
         </div>
         <div className='l-books-page__column'>
           <Typography variant='h4'>Other Books</Typography>
-          <EditableBookListContainer books={notMyBooks} separateStatuses={true} />
+          <EditableBookListContainer books={notMyBooks} separateStatuses={true} newSince={newSince} />
         </div>
       </div>
     );
@@ -53,6 +69,7 @@ const mapStateToProps = (state: any) => {
     isAdmin: state.users.isAdmin,
     myId: state.users.myId,
     books: state.books || {},
+    previousSeason: state.seasons.previousId ? state.seasons.seasons[state.seasons.previousId] : null,
   }
 };
 
@@ -60,6 +77,7 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     componentDidMount() {
       dispatch(BookActions.fetchBookList());
+      dispatch(SeasonActions.fetchCurrent());
     },
     openAddBookModal() {
       dispatch(AppstateActions.openAddBookModal());

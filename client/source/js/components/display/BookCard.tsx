@@ -32,6 +32,7 @@ const ensureProps = (book) => ({
 
 function renderStatus(status, points = null, votes = null) {
   if(status === BookStatus.BACKLOG) return null;
+  if(!points && !votes) return null;
 
   const className = classnames({
     'c-book-card__status': true,
@@ -43,6 +44,14 @@ function renderStatus(status, points = null, votes = null) {
   } else {
     return <span className={className}>{points ? pointString(points) : status}</span>;
   }
+}
+
+function statusBadgeLabel(status: string): string {
+  if (!status) {
+    return '';
+  }
+  const lower = status.toString().toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
 function yourRating(ratings: any[], myId: string) {
@@ -58,6 +67,7 @@ export interface BookListItemProps {
   book: Book;
   isAdmin?: boolean;
   myId?: string;
+  isNew?: boolean;
   onEdit?: Function;
   onDelete?: Function;
   onPropose?: Function;
@@ -103,9 +113,18 @@ export class BookCard extends React.Component<BookListItemProps, any> {
     };
 
     const showActionDropdown = actions.edit || actions.delete || actions.propose || actions.retract;
+    const showStatusBadge = !!book.status && book.status !== BookStatus.BACKLOG && !this.props.points && !this.props.rankings;
+    const showNewBadge = !!this.props.isNew;
+    const showBadges = showStatusBadge || showNewBadge;
 
     return (
       <Card className={className}>
+        {showBadges ? (
+          <span className='c-book-card__badges'>
+            {showStatusBadge ? <span className={`c-book-card__badge c-book-card__badge--${normalize(book.status)}`}>{statusBadgeLabel(book.status)}</span> : null}
+            {showNewBadge ? <span className='c-book-card__badge c-book-card__badge--new'>New</span> : null}
+          </span>
+        ) : null}
         <CardMedia
           className={`c-book-card__image-media${!book.links.image ? ' no-src':''}`}
           image={book.links.image ? book.links.image : '/icons/icon-book-256.png'}
@@ -140,7 +159,7 @@ export class BookCard extends React.Component<BookListItemProps, any> {
             </Menu>
           : null}
 
-          <CardContent>
+          <CardContent className={showBadges ? 'c-book-card__content--with-badges' : undefined}>
             {renderStatus(book.status, this.props.points, this.props.rankings)}
             {book.status === BookStatus.FINISHED ?
               <span className='c-book-card__detail c-book-card__detail--rating'>
