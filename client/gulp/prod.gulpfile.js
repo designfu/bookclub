@@ -62,15 +62,14 @@ gulp.task('inject', recipe('html', {
   cwd: './dist',
   input: './source/html/**/*.html',
   sources: [[
-    '!vendor/lodash.js',
-    '!vendor/jquery.js',
-    '!vendor/lockr.js',
-    '!vendor/react.development.js',
-    '!vendor/react-dom.development.js',
-    'vendor/**/*'
+    'vendor/jquery.js',
+    'vendor/lockr.js',
+    'vendor/lodash.js',
+    'vendor/react.development.js',
+    'vendor/react-dom.development.js',
   ], [
-    'css/**/*',
-    'js/**/*',
+    'css/main.css',
+    'js/bundle.js',
   ]],
   output: './dist',
   replacements: [

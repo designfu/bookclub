@@ -69,16 +69,14 @@ gulp.task('inject', recipe('html', {
   cwd: './dist',
   input: './source/html/**/*.html',
   sources: [[
-    '!vendor/lodash.js',
-    '!vendor/jquery.js',
-    '!vendor/lockr.js',
-    '!vendor/react.development.js',
-    '!vendor/react-dom.development.js',
-    'vendor/**/*'
+    'vendor/jquery.js',
+    'vendor/lockr.js',
+    'vendor/lodash.js',
+    'vendor/react.development.js',
+    'vendor/react-dom.development.js',
   ], [
-    '!js/bundle.js',
-    'css/**/*',
-    'js/**/*',
+    'css/main.css',
+    'js/bundle.js',
   ]],
   output: './dist',
   replacements: [
@@ -102,7 +100,6 @@ gulp.task('watch', () => {
 
 gulp.task('compile', series(
   'env',
-  'clean',
   parallel('js:node_modules', 'static:node_modules', 'static', 'css'),
   'inject'
 ));

@@ -108,7 +108,7 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
             <div className='u-flex--col'>
               <TextField
                 id='goodreads'
-                label='Goodreanks Link **'
+                label='Goodreads Link **'
                 className='o-field o-field--text'
                 value={this.state.goodreads.value}
                 onChange={this.handleChange('goodreads')}

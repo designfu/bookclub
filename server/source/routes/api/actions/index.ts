@@ -28,14 +28,12 @@ routes.post('/start-new-season',
       }
       const entry = await SeasonModel.create(req.body);
 
-      await VotingSessionModel.update({
+      await VotingSessionModel.updateMany({
         "dates.finished": {
           $exists: false,
         },
       }, {
         $set: { 'dates.finished': now }
-      }, {
-        multi: true,
       });
 
       entry.votingSession = await VotingSessionModel.create({
@@ -78,7 +76,7 @@ routes.post('/close-current-season',
 
       const season = await SeasonModel.findById({ _id: openSeason._id });
 
-      const updateBookTransaction = await BookModel.update({ _id: season.book }, {
+      const updateBookTransaction = await BookModel.updateOne({ _id: season.book }, {
         $set: { 'dates.finished': now },
       });
 
@@ -153,8 +151,8 @@ routes.post('/close-current-voting-session',
         },
       });
 
-      const updateBookTransaction = await BookModel.update({ _id: bookId }, {
-        'dates.chosen': now,
+      const updateBookTransaction = await BookModel.updateOne({ _id: bookId }, {
+        $set: { 'dates.chosen': now },
       });
 
       const season = await SeasonModel

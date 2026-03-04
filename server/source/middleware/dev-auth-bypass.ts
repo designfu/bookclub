@@ -4,23 +4,52 @@ import { UserModel } from 'schemas/user';
 
 const DEV_BYPASS_ENABLED = Config.ENV === Environment.LOCAL && process.env.AUTH_BYPASS === 'true';
 
-const TEST_USER = {
-  googleId: 'dev-test-user',
-  name: 'Test Admin',
-  avatar: '',
-  roles: ['ADMIN'],
-  suggestions: [],
-  dates: {
-    created: new Date(),
+const DEV_USERS = [
+  {
+    googleId: 'dev-test-user',
+    name: 'Test Admin',
+    avatar: '',
+    roles: ['ADMIN'],
+    suggestions: [],
+    dates: { created: new Date() },
   },
-};
+  {
+    googleId: 'dev-member-1',
+    name: 'Sample Member One',
+    avatar: '',
+    roles: ['MEMBER'],
+    suggestions: [],
+    dates: { created: new Date() },
+  },
+  {
+    googleId: 'dev-member-2',
+    name: 'Sample Member Two',
+    avatar: '',
+    roles: ['MEMBER'],
+    suggestions: [],
+    dates: { created: new Date() },
+  },
+  {
+    googleId: 'dev-member-3',
+    name: 'Sample Member Three',
+    avatar: '',
+    roles: ['MEMBER'],
+    suggestions: [],
+    dates: { created: new Date() },
+  },
+];
 
-async function ensureDevUser() {
-  let user = await (UserModel as any).findOne({ googleId: TEST_USER.googleId }).exec();
-  if(!user) {
-    user = await (UserModel as any).create(TEST_USER);
+const ADMIN_GOOGLE_ID = 'dev-test-user';
+let ensureDevUsersPromise: Promise<any> | null = null;
+
+async function ensureDevUsersAndGetAdmin() {
+  for (const userData of DEV_USERS) {
+    let user = await (UserModel as any).findOne({ googleId: userData.googleId }).exec();
+    if (!user) {
+      await (UserModel as any).create(userData);
+    }
   }
-  return user;
+  return await (UserModel as any).findOne({ googleId: ADMIN_GOOGLE_ID }).exec();
 }
 
 export function devAuthBypass(req, res, next) {
@@ -32,7 +61,11 @@ export function devAuthBypass(req, res, next) {
     return next();
   }
 
-  ensureDevUser()
+  if(!ensureDevUsersPromise) {
+    ensureDevUsersPromise = ensureDevUsersAndGetAdmin();
+  }
+
+  ensureDevUsersPromise
     .then(user => {
       req.login(user, (err) => {
         if(err) {
@@ -45,4 +78,3 @@ export function devAuthBypass(req, res, next) {
       next(err);
     });
 }
-
