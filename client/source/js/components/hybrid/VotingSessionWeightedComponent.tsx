@@ -83,7 +83,6 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
               <Button
                 className='o-action'
                 onClick={this.resetFromLastSeason.bind(this)}
-                disabled={!enabled}
               >
                 Reset
               </Button>

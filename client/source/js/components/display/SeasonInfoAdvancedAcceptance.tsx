@@ -90,6 +90,7 @@ export interface SeasonInfoAdvancedAcceptanceProps {
   books?: any;
   startVotingOpen?: boolean;
   myId?: any;
+  hideBookPitch?: boolean;
 }
 
 export interface SeasonInfoAdvancedAcceptanceState {
@@ -143,6 +144,7 @@ export class SeasonInfoAdvancedAcceptance extends React.Component<SeasonInfoAdva
     const { anchorEl, showJson, showVotingResults } = this.state;
 
     const isVotingSessionClosed = votingSession.status === VotingSessionStatus.COMPLETE;
+    const showSystemBadge = !!votingSession.system;
     const allowToggleVotingResults = isVotingSessionClosed;
     const allowRenaming = !!onSeasonRename;
     const allowDeleting = !!this.props.onSeasonDelete;
@@ -157,13 +159,15 @@ export class SeasonInfoAdvancedAcceptance extends React.Component<SeasonInfoAdva
               <Typography variant='h5' component='h3'>
                 {season.title || title}
               </Typography>
-              <Tooltip
-                title='Approves ranked choices, then resolves ties with instant-runoff and priority-based tiebreaks.'
-              >
-                <Typography component='span' className='c-season-info__system'>
-                  Advanced Acceptance
-                </Typography>
-              </Tooltip>
+              {showSystemBadge ? (
+                <Tooltip
+                  title='Approves ranked choices, then resolves ties with instant-runoff and priority-based tiebreaks.'
+                >
+                  <Typography component='span' className='c-season-info__system'>
+                    Advanced Acceptance
+                  </Typography>
+                </Tooltip>
+              ) : null}
             </div>
             {showMenu ?
               <div>
@@ -289,6 +293,7 @@ export class SeasonInfoAdvancedAcceptance extends React.Component<SeasonInfoAdva
                 book={season.book}
                 rankings={showVotingResults ? rankingsForBookFromVoting(season.book, votingSession) : undefined}
                 borderless={true}
+                hidePitch={this.props.hideBookPitch}
               />
             </div>
             : null}

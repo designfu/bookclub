@@ -69,6 +69,7 @@ export interface BookListItemProps {
   myId?: string;
   isNew?: boolean;
   isYourBook?: boolean;
+  hidePitch?: boolean;
   onEdit?: Function;
   onDelete?: Function;
   onPropose?: Function;
@@ -118,81 +119,86 @@ export class BookCard extends React.Component<BookListItemProps, any> {
     const showYourBookBadge = !!this.props.isYourBook;
     const showNewBadge = !!this.props.isNew;
     const showBadges = showStatusBadge || showYourBookBadge || showNewBadge;
+    const showPitch = !!book.pitch && !this.props.hidePitch;
 
     return (
       <Card className={className}>
-        {showBadges ? (
-          <span className='c-book-card__badges'>
-            {showStatusBadge ? <span className={`c-book-card__badge c-book-card__badge--${normalize(book.status)}`}>{statusBadgeLabel(book.status)}</span> : null}
-            {showYourBookBadge ? <span className='c-book-card__badge c-book-card__badge--your-book'>Your Book</span> : null}
-            {showNewBadge ? <span className='c-book-card__badge c-book-card__badge--new'>New</span> : null}
-          </span>
-        ) : null}
-        <CardMedia
-          className={`c-book-card__image-media${!book.links.image ? ' no-src':''}`}
-          image={book.links.image ? book.links.image : '/icons/icon-book-256.png'}
-          title={`${book.title} - ${book.author}`}
-        />
-        <div className='c-book-card__details'>
-          <CardHeader
-            title={book.title}
-            subheader={book.author}
-            action={
-              showActionDropdown ? <IconButton
-                aria-owns={anchorEl ? 'simple-menu' : null}
-                aria-haspopup='true'
-                onClick={this.handleMenuOpen}
-              >
-                <MoreVertIcon />
-              </IconButton> : null
-            }
-          />
-
-          {showActionDropdown ?
-            <Menu
-              id='book-card-menu'
-              anchorEl={anchorEl}
-              open={!!anchorEl}
-              onClose={this.handleMenuClose}
-            >
-              {actions.edit ? <MenuItem onClick={this.handleEdit}>Edit</MenuItem> : null}
-              {actions.delete ? <MenuItem onClick={this.handleDelete}>Delete</MenuItem> : null}
-              {actions.propose ? <MenuItem onClick={this.handlePropose}>Suggest</MenuItem> : null}
-              {actions.retract ? <MenuItem onClick={this.handleRetract}>Move to backlog</MenuItem> : null}
-            </Menu>
-          : null}
-
-          <CardContent className={showBadges ? 'c-book-card__content--with-badges' : undefined}>
-            {renderStatus(book.status, this.props.points, this.props.rankings)}
-            {book.status === BookStatus.FINISHED ?
-              <span className='c-book-card__detail c-book-card__detail--rating'>
-                <label>Rating: </label>
-                <span>
-                  {book.hasOwnProperty('averageRating') && book.averageRating > -1
-                    ? `${formatRating(book.averageRating)} average from ${book.ratings.length} ratings ${yourRating(book.ratings, myId)}`
-                    : 'No ratings yet'
-                  }
-                </span>
-              </span>
-            : null}
-            {book.genre ?
-              <span className='c-book-card__detail c-book-card__detail--genre'>
-                <label>Genre: </label>
-                <span>{book.genre}</span>
-              </span>
-            : null}
-            <span className='c-book-card__detail c-book-card__detail--goodreads'>
-              <label>Goodreads: </label>
-              <a href={book.links.goodreads ? ensureGoodreadsUrlIsValid(book.links.goodreads) : '#'} target='_blank'>{ensureGoodreadsUrlIsShort(book.links.goodreads)}</a>
+        <div className='c-book-card__top'>
+          {showBadges ? (
+            <span className='c-book-card__badges'>
+              {showStatusBadge ? <span className={`c-book-card__badge c-book-card__badge--${normalize(book.status)}`}>{statusBadgeLabel(book.status)}</span> : null}
+              {showYourBookBadge ? <span className='c-book-card__badge c-book-card__badge--your-book'>Your Book</span> : null}
+              {showNewBadge ? <span className='c-book-card__badge c-book-card__badge--new'>New</span> : null}
             </span>
-            {book.pitch ?
-              <span className='c-book-card__detail c-book-card__detail--pitch'>
-                <label>Pitch: </label>
-                <span>{book.pitch}</span>
-              </span>
+          ) : null}
+          <CardMedia
+            className={`c-book-card__image-media${!book.links.image ? ' no-src':''}`}
+            image={book.links.image ? book.links.image : '/icons/icon-book-256.png'}
+            title={`${book.title} - ${book.author}`}
+          />
+          <div className='c-book-card__details'>
+            <CardHeader
+              title={book.title}
+              subheader={book.author}
+              action={
+                showActionDropdown ? <IconButton
+                  aria-owns={anchorEl ? 'simple-menu' : null}
+                  aria-haspopup='true'
+                  onClick={this.handleMenuOpen}
+                >
+                  <MoreVertIcon />
+                </IconButton> : null
+              }
+            />
+
+            {showActionDropdown ?
+              <Menu
+                id='book-card-menu'
+                anchorEl={anchorEl}
+                open={!!anchorEl}
+                onClose={this.handleMenuClose}
+              >
+                {actions.edit ? <MenuItem onClick={this.handleEdit}>Edit</MenuItem> : null}
+                {actions.delete ? <MenuItem onClick={this.handleDelete}>Delete</MenuItem> : null}
+                {actions.propose ? <MenuItem onClick={this.handlePropose}>Suggest</MenuItem> : null}
+                {actions.retract ? <MenuItem onClick={this.handleRetract}>Move to backlog</MenuItem> : null}
+              </Menu>
             : null}
-          </CardContent>
+
+            <CardContent>
+              {renderStatus(book.status, this.props.points, this.props.rankings)}
+              {book.status === BookStatus.FINISHED ?
+                <span className='c-book-card__detail c-book-card__detail--rating'>
+                  <label>Rating: </label>
+                  <span>
+                    {book.hasOwnProperty('averageRating') && book.averageRating > -1
+                      ? `${formatRating(book.averageRating)} average from ${book.ratings.length} ratings ${yourRating(book.ratings, myId)}`
+                      : 'No ratings yet'
+                    }
+                  </span>
+                </span>
+              : null}
+              {book.genre ?
+                <span className='c-book-card__detail c-book-card__detail--genre'>
+                  <label>Genre: </label>
+                  <span>{book.genre}</span>
+                </span>
+              : null}
+              <span className='c-book-card__detail c-book-card__detail--goodreads'>
+                <label>Goodreads: </label>
+                <a href={book.links.goodreads ? ensureGoodreadsUrlIsValid(book.links.goodreads) : '#'} target='_blank'>{ensureGoodreadsUrlIsShort(book.links.goodreads)}</a>
+              </span>
+            </CardContent>
+          </div>
         </div>
+        {showPitch ? (
+          <CardContent className='c-book-card__secondary'>
+            <span className='c-book-card__detail c-book-card__detail--pitch'>
+              <label>Pitch: </label>
+              <span>{book.pitch}</span>
+            </span>
+          </CardContent>
+        ) : null}
       </Card>
     );
   }

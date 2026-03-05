@@ -64,6 +64,7 @@ export interface SeasonInfoWeightedProps {
   books?: any;
   startVotingOpen?: boolean;
   myId?: any;
+  hideBookPitch?: boolean;
 }
 
 export interface SeasonInfoWeightedState {
@@ -117,6 +118,7 @@ export class SeasonInfoWeighted extends React.Component<SeasonInfoWeightedProps,
     const { anchorEl, showJson, showVotingResults } = this.state;
 
     const isVotingSessionClosed = votingSession.status === VotingSessionStatus.COMPLETE;
+    const showSystemBadge = !!votingSession.system;
     const allowToggleVotingResults = isVotingSessionClosed;
     const allowRenaming = !!onSeasonRename;
     const allowDeleting = !!this.props.onSeasonDelete;
@@ -131,13 +133,15 @@ export class SeasonInfoWeighted extends React.Component<SeasonInfoWeightedProps,
               <Typography variant='h5' component='h3'>
                 {season.title || title}
               </Typography>
-              <Tooltip
-                title='Assigns weighted points (3, 2, 1) to top choices and ranks by total points.'
-              >
-                <Typography component='span' className='c-season-info__system'>
-                  Weighted 3x
-                </Typography>
-              </Tooltip>
+              {showSystemBadge ? (
+                <Tooltip
+                  title='Assigns weighted points (3, 2, 1) to top choices and ranks by total points.'
+                >
+                  <Typography component='span' className='c-season-info__system'>
+                    Weighted 3x
+                  </Typography>
+                </Tooltip>
+              ) : null}
             </div>
             {showMenu ?
               <div>
@@ -263,6 +267,7 @@ export class SeasonInfoWeighted extends React.Component<SeasonInfoWeightedProps,
                 book={season.book}
                 points={showVotingResults ? pointsForBookFromVoting(season.book, votingSession) : undefined}
                 borderless={true}
+                hidePitch={this.props.hideBookPitch}
               />
             </div>
             : null}

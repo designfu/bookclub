@@ -3,25 +3,37 @@
   top 0
   z-index 20
   display flex
-  justify-content space-between
-  align-items center
+  justify-content flex-start
+  align-items stretch
   min-height 37px
   margin-bottom 5px
   border-bottom 1px solid #f2f2f2
   background #fff
 
+  &__tabs-scroll
+    flex 1 1 auto
+    display flex
+    align-items stretch
+    min-width 0
+    overflow-x auto
+    overflow-y hidden
+    -webkit-overflow-scrolling touch
+
   &__nav-tabs
     padding 0
     margin 0
     list-style none
-    display inline-block
-
-    &--right
-      margin-right 12px
+    display inline-flex
+    align-items stretch
+    white-space nowrap
+    min-width max-content
+    height 100%
 
   &__right
     display inline-flex
     align-items center
+    flex 0 0 auto
+    margin-left 12px
 
   &__user
     display inline-flex
@@ -29,5 +41,27 @@
     cursor pointer
     padding-right 10px
 
+  &__avatar-fallback
+    width 28px
+    height 28px
+    border-radius 50%
+    background #607d8b
+    color #fff
+    font-size 13px
+    font-weight 600
+    display inline-flex
+    align-items center
+    justify-content center
+    margin-right 6px
+
+  &__user .o-avatar
+    margin-right 4px
+
+  &__user--compact
+    padding-right 4px
+
     .o-avatar
-      margin-right 4px
+      margin-right 0
+
+    .c-header__avatar-fallback
+      margin-right 0

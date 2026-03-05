@@ -30,10 +30,25 @@
     margin-right 10px
 
   &__system
+    display inline-flex
+    align-items center
+    justify-content center
+    -webkit-user-select none
+    user-select none
     font-size 12px
     color #666
     border 1px solid #ddd
     border-radius 10px
     padding 2px 8px
     margin-left auto
-    text-align right
+    text-align center
+
+@media (hover: none) and (pointer: coarse)
+  .c-season-info
+    &__voting-results
+      overflow-x auto
+      overflow-y hidden
+      -webkit-overflow-scrolling touch
+
+      .c-vote-card--result
+        min-width 560px

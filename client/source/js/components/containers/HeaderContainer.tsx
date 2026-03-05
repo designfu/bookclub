@@ -6,6 +6,8 @@ import { push } from 'react-router-redux';
 import Button from '@material-ui/core/Button';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { useTheme } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -56,21 +58,20 @@ class HeaderContainer_ extends React.Component<any, any> {
 
     return (
       <header className='c-header'>
-        <ul className='c-header__nav-tabs'>
-          <NavTab to='/'>Voting</NavTab>
-          <NavTab to='/books'>Books</NavTab>
-          <NavTab to='/seasons'>Previous Seasons</NavTab>
-        </ul>
+        <div className='c-header__tabs-scroll'>
+          <ul className='c-header__nav-tabs'>
+            <NavTab to='/'>Voting</NavTab>
+            <NavTab to='/books'>Books</NavTab>
+            <NavTab to='/seasons'>Previous Seasons</NavTab>
+            {users.isAdmin ? <NavTab to='/users'>Users</NavTab> : null}
+          </ul>
+        </div>
         <div className='c-header__right'>
-          {users.isAdmin ? (
-            <ul className='c-header__nav-tabs c-header__nav-tabs--right'>
-              <NavTab to='/users'>Users</NavTab>
-            </ul>
-          ) : null}
           {me
-            ? (<div className='c-header__user' onClick={this.handleMenuOpen}>
+            ? (<div className={`c-header__user${this.props.isSmallScreen ? ' c-header__user--compact' : ''}`} onClick={this.handleMenuOpen}>
                 {me.avatar ? <img className='o-avatar' src={me.avatar} /> : null}
-                <span>{me.name}</span>
+                {!me.avatar ? <span className='c-header__avatar-fallback'>{this.fallbackInitialForUser(me)}</span> : null}
+                {!this.props.isSmallScreen ? <span className='c-header__user-name'>{me.name}</span> : null}
               </div>
               )
             : <Button color='primary' href='/auth/google'>Sign in with Google</Button>
@@ -169,7 +170,24 @@ class HeaderContainer_ extends React.Component<any, any> {
     const name = user && user.name ? user.name : 'Unnamed User';
     return `${name} (${user._id})`;
   }
+
+  fallbackInitialForUser(user: User): string {
+    const name = user && user.name ? user.name.trim() : '';
+    return name ? name.charAt(0).toUpperCase() : '?';
+  }
 }
+
+const HeaderContainerResponsive = (props) => {
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
+  return (
+    <HeaderContainer_
+      {...props}
+      isSmallScreen={isSmallScreen}
+    />
+  );
+};
 
 const mapStateToProps = (state: any) => {
   return {
@@ -185,4 +203,4 @@ const mapDispatchToProps = (dispatch: any) => {
 export const HeaderContainer = withRouter(connect(
   mapStateToProps,
   mapDispatchToProps,
-)(HeaderContainer_));
+)(HeaderContainerResponsive));

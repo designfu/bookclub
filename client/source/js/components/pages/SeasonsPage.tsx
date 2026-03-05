@@ -70,6 +70,7 @@ class SeasonsPage_ extends React.Component<any, any> {
             allowClosing={isLoggedIn && isAdmin && season && season.status === SeasonStatus.STARTED}
             startVotingOpen={false}
             myId={myId}
+            hideBookPitch={true}
           />
         })}
       </div>

@@ -27,6 +27,7 @@ function PitchTooltip(props) {
       placement='right'
       arrow
       disableHoverListener={isSmall}
+      disableTouchListener={isSmall}
     >
       {props.children}
     </LightTooltip>

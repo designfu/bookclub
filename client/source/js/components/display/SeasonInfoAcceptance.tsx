@@ -92,6 +92,7 @@ export interface SeasonInfoAcceptanceProps {
   books?: any;
   startVotingOpen?: boolean;
   myId?: any;
+  hideBookPitch?: boolean;
 }
 
 export interface SeasonInfoAcceptanceState {
@@ -145,6 +146,7 @@ export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptancePr
     const { anchorEl, showJson, showVotingResults } = this.state;
 
     const isVotingSessionClosed = votingSession.status === VotingSessionStatus.COMPLETE;
+    const showSystemBadge = !!votingSession.system;
     const allowToggleVotingResults = isVotingSessionClosed;
     const allowRenaming = !!onSeasonRename;
     const allowDeleting = !!this.props.onSeasonDelete;
@@ -159,13 +161,15 @@ export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptancePr
               <Typography variant='h5' component='h3'>
                 {season.title || title}
               </Typography>
-              <Tooltip
-                title='Ranks by acceptance count, then uses ranked preference distributions to break ties.'
-              >
-                <Typography component='span' className='c-season-info__system'>
-                  Acceptance + Ranked Tiebreaker
-                </Typography>
-              </Tooltip>
+              {showSystemBadge ? (
+                <Tooltip
+                  title='Ranks by acceptance count, then uses ranked preference distributions to break ties.'
+                >
+                  <Typography component='span' className='c-season-info__system'>
+                    Acceptance + Ranked Tiebreaker
+                  </Typography>
+                </Tooltip>
+              ) : null}
             </div>
             {showMenu ?
               <div>
@@ -291,6 +295,7 @@ export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptancePr
                 book={season.book}
                 rankings={showVotingResults ? rankingsForBookFromVoting(season.book, votingSession) : undefined}
                 borderless={true}
+                hidePitch={this.props.hideBookPitch}
               />
             </div>
             : null}
