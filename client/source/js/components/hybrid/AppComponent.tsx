@@ -21,6 +21,7 @@ const routes = (
       <Route component={AppContainer}>
         <div>
           <Route exact path='/' components={{ main: CurrentPage }} />
+          <Route exact path='/voting' components={{ main: CurrentPage }} />
           <Route exact path='/home' components={{ main: HomePage }} />
           <Route exact path='/books' components={{ main: BooksPage }} />
           <Route exact path='/seasons' components={{ main: SeasonsPage }} />

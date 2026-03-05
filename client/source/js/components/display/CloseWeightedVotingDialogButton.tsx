@@ -12,8 +12,23 @@ function bookText(book) {
   return book ? `${book.title} - ${book.author}` : '?? - ??';
 }
 
+function toBookId(value) {
+  if (!value) {
+    return '';
+  }
+  if (typeof value === 'object') {
+    return value._id || '';
+  }
+  return value;
+}
+
+function withPoints(results = []) {
+  return results.filter(result => (result && result.points ? result.points > 0 : false));
+}
+
 function setBookProp(props) {
-  return (props.results && props.results[0] && props.results[0].book && props.results[0].book._id) || '';
+  const result = withPoints(props.results || [])[0];
+  return toBookId(result ? result.book : '') || '';
 }
 
 export interface CloseWeightedVotingDialogButtonProps {
@@ -34,7 +49,9 @@ export class CloseWeightedVotingDialogButton extends React.Component<CloseWeight
   render() {
     const { results, books } = this.props;
     const { book } = this.state;
-    const bookList: any[] = Object.values(books);
+    const resultsWithPoints = withPoints(results || []);
+    const booksWithPoints = new Set(resultsWithPoints.map(result => `${toBookId(result.book)}`));
+    const bookList: any[] = Object.values(books).filter(book => booksWithPoints.has(`${book._id}`));
 
     return (
       <ConfirmDialogButton
@@ -64,7 +81,7 @@ export class CloseWeightedVotingDialogButton extends React.Component<CloseWeight
               What the people want:
             </DialogContentText>
             <ul className='c-close-voting-dialog__result-list'>
-              {results.map((result, i) => <li key={i} className='c-close-voting-dialog__result'>
+              {resultsWithPoints.map((result, i) => <li key={i} className='c-close-voting-dialog__result'>
                 <span className='c-close-voting-dialog__result-points'>{pointString(result.points)}</span>
                 <span className='c-close-voting-dialog__result-book'>{bookText(result.book)}</span>
               </li>)}
@@ -78,6 +95,7 @@ export class CloseWeightedVotingDialogButton extends React.Component<CloseWeight
         onCancel={this.closeDialog.bind(this)}
         color='secondary'
         closeOnConfirm={false}
+        isConfirmDisabled={!book}
       >
         Close Voting
       </ConfirmDialogButton>

@@ -38,49 +38,44 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
     booksVotedOn: [],
     ...votingSession
   };
-  const winner = results[0];
-  const list = (booksVotedOn && booksVotedOn.length > 0 ? booksVotedOn : Object.keys(books))
+  const toId = (value) => value && value.toString ? value.toString() : value;
+  const winnerId = results[0] ? toId(results[0].book) : null;
+  const resultsByBookId = results.reduce((acc, result) => ({
+    ...acc,
+    [toId(result.book)]: result,
+  }), {});
+
+  const rankedList = results
+    .slice(1)
+    .map(result => {
+      const bookId = toId(result.book);
+      const book = books[bookId];
+      if(!book) {
+        return null;
+      }
+      book.rankings = result.rankings || [];
+      book.method = result.method || null;
+      book.tiedCount = result.tiedCount || 1;
+      return book;
+    })
+    .filter(_ => !!_ && _.status !== BookStatus.BACKLOG && _._id);
+
+  if(rankedList.length > 0) {
+    return rankedList;
+  }
+
+  return (booksVotedOn && booksVotedOn.length > 0 ? booksVotedOn : Object.keys(books))
+    .map(toId)
     .filter(bookId => books[bookId])
     .map(bookId => {
       const book = books[bookId];
-      const result = results.find(_ => _.book === book._id);
+      const result = resultsByBookId[bookId];
       book.rankings = result ? result.rankings : [];
       book.method = result ? result.method : null;
       book.tiedCount = result ? result.tiedCount : 1;
       return book;
     })
-    .filter(_ => _._id !== winner.book && (booksVotedOn.length > 0 || _.status !== BookStatus.BACKLOG) && _._id)
-  ;
-    // .sort((a, b) => {
-    //   const diff = b.rankings.length - a.rankings.length;
-    //   if (diff > 0) {
-    //     return 1;
-    //   }
-    //   if (diff < 0) {
-    //     return -1;
-    //   }
-    //
-    //   const maxRank = Math.max(
-    //     a.rankings[a.rankings.length - 1],
-    //     b.rankings[b.rankings.length - 1],
-    //   );
-    //
-    //   for(let rank = 0; rank <= maxRank; rank++) {
-    //     const aVotesAtRank = a.rankings.filter(vote => vote === rank).length;
-    //     const bVotesAtRank = b.rankings.filter(vote => vote === rank).length;
-    //     const votesAtRankDiff = bVotesAtRank - aVotesAtRank;
-    //
-    //     if (votesAtRankDiff > 0) {
-    //       return 1;
-    //     }
-    //     if (votesAtRankDiff < 0) {
-    //       return -1;
-    //     }
-    //   }
-    //
-    //   return 0;
-    // });
-  return list;
+    .filter(_ => toId(_._id) !== winnerId && (booksVotedOn.length > 0 || _.status !== BookStatus.BACKLOG) && _._id);
 }
 
 export interface SeasonInfoAdvancedAcceptanceProps {

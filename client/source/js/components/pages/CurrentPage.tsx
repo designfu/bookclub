@@ -125,7 +125,6 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     componentDidMount() {
       dispatch(SeasonActions.fetchCurrent());
-      dispatch(VotingSessionActions.fetchLatestWithUserVotes());
     },
 
     closeCurrentSeason() {

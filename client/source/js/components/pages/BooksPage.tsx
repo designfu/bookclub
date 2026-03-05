@@ -5,6 +5,9 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { withRouter } from 'react-router';
 import Typography from '@material-ui/core/Typography';
+import TextField from '@material-ui/core/TextField';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { useTheme } from '@material-ui/core/styles';
 import { EditableBookListContainer } from 'components/containers/EditableBookListContainer';
 import { AddBookModalContainer } from 'components/containers/AddBookModalContainer';
 import { AppstateActions } from 'actions/AppstateActions';
@@ -26,32 +29,57 @@ function toTimestamp(value): number {
 }
 
 class BooksPage_ extends React.Component<any, any> {
+  state = {
+    query: '',
+  };
+
   render() {
     const { books, myId, isLoggedIn, previousSeason } = this.props;
+    const layoutClassName = this.props.isSmallScreen ? 'l-books-page l-books-page--single-column' : 'l-books-page';
+    const query = (this.state.query || '').trim().toLowerCase();
     const myBooks = {};
     const notMyBooks = {};
     const myBookList = [];
-    const newSince = previousSeason && previousSeason.dates ? toTimestamp(previousSeason.dates.finished) : 0;
+    const filteredMyBookList = [];
+    const newSince = previousSeason && previousSeason.dates ? toTimestamp(previousSeason.dates.started) : 0;
 
     for(let id in books) {
       const book = books[id];
+      const title = (book && book.title ? book.title : '').toLowerCase();
+      const author = (book && book.author ? book.author : '').toLowerCase();
+      const matches = !query || title.includes(query) || author.includes(query);
       if(book.suggestedBy === myId) {
         myBooks[id] = book;
         myBookList.push(book);
+        if(matches) {
+          filteredMyBookList.push(book);
+        }
       } else {
+        if(!matches) {
+          continue;
+        }
         notMyBooks[id] = book;
       }
     }
 
     return (
-      <div className='l-books-page'>
+      <div className={layoutClassName}>
         <div className='l-books-page__column'>
-          <Typography variant='h4'>All Books</Typography>
+          <div className='l-books-page__header'>
+            <Typography variant='h4'>All Books</Typography>
+            <TextField
+              className='l-books-page__search'
+              placeholder='Search title or author'
+              value={this.state.query}
+              onChange={this.handleQueryChange}
+              margin='dense'
+            />
+          </div>
           <EditableBookListContainer
             books={notMyBooks}
             separateStatuses={true}
             newSince={newSince}
-            yourBookPlaceholders={myBookList}
+            yourBookPlaceholders={filteredMyBookList}
           />
         </div>
         <div className='l-books-page__column'>
@@ -68,7 +96,25 @@ class BooksPage_ extends React.Component<any, any> {
   componentDidMount() {
     this.props.componentDidMount();
   }
+
+  handleQueryChange = (event) => {
+    this.setState({
+      query: event.target.value,
+    });
+  }
 }
+
+const BooksPageResponsive = (props) => {
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
+  return (
+    <BooksPage_
+      {...props}
+      isSmallScreen={isSmallScreen}
+    />
+  );
+};
 
 const mapStateToProps = (state: any) => {
   return {
@@ -95,4 +141,4 @@ const mapDispatchToProps = (dispatch: any) => {
 export const BooksPage = withRouter(connect(
   mapStateToProps,
   mapDispatchToProps,
-)(BooksPage_));
+)(BooksPageResponsive));

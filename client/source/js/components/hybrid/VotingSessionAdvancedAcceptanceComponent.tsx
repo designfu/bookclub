@@ -11,7 +11,6 @@ import { VoteCardRank } from 'components/display/VoteCardRank';
 import { VoteCardDivider } from 'components/display/VoteCardDivider';
 import { CloseAdvancedAcceptanceVotingDialogButton } from 'components/display/CloseAdvancedAcceptanceVotingDialogButton';
 import { UserList } from 'components/display/UserList';
-import { hasUsableVotesForUser } from 'utils/vote-reset';
 import {
   buildAcceptanceResetBooks,
   extractAcceptanceBookList,
@@ -43,7 +42,6 @@ class VotingSessionAdvancedAcceptanceContainer_ extends React.Component<any, any
     const { users, isAdmin, latestVotingSession } = this.props;
     const booksMap = this.props.books;
     const isOpen = this.props.votingSession.status === VotingSessionStatus.OPEN;
-    const canReset = hasUsableVotesForUser(latestVotingSession, this.props.myId);
     const votingSession = hydrateVotingSession(this.props.votingSession, booksMap, users);
     const hasVoted = hasUserVoted(votingSession.votes, this.props.myId);
     const { usersHaveVoted, usersHaveNotVoted } = buildVotingParticipation(users, votingSession.votes);
@@ -81,7 +79,7 @@ class VotingSessionAdvancedAcceptanceContainer_ extends React.Component<any, any
               <Button
                 className='o-action'
                 onClick={this.resetFromLastSeason.bind(this)}
-                disabled={!enabled || !canReset}
+                disabled={!enabled}
               >
                 Reset
               </Button>
@@ -142,11 +140,12 @@ class VotingSessionAdvancedAcceptanceContainer_ extends React.Component<any, any
     });
   }
 
-  resetFromLastSeason() {
+  async resetFromLastSeason() {
+    const latestVotingSession = await this.props.fetchLatestWithUserVotes();
     this.setState({
       books: buildAcceptanceResetBooks({
         books: this.state.books,
-        latestVotingSession: this.props.latestVotingSession,
+        latestVotingSession: latestVotingSession || this.props.latestVotingSession,
         myId: this.props.myId,
       }),
       enabled: true,
@@ -182,6 +181,10 @@ const mapDispatchToProps = (dispatch: any) => {
         this.closeVotingDialog.closeDialog();
       }));
       dispatch(VotingSessionActions.closeVotingSession(book));
+    },
+
+    fetchLatestWithUserVotes() {
+      return dispatch(VotingSessionActions.fetchLatestWithUserVotes());
     },
   }
 };

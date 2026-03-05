@@ -77,11 +77,13 @@ export const VotingSessionActions = {
   }),
   fetchLatestWithUserVotes: () => (dispatch) => {
     dispatch(VotingSessionActions.requestLatestWithUserVotes_());
-    VotingSessionClient.fetchLatestWithUserVotes()
+    return VotingSessionClient.fetchLatestWithUserVotes()
       .then(votingSession => {
         if (votingSession && votingSession._id) {
           dispatch(VotingSessionActions.receiveLatestWithUserVotes_(votingSession));
+          return votingSession;
         }
+        return null;
       });
   },
 

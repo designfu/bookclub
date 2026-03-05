@@ -3,9 +3,32 @@
   align-items flex-start
   flex-direction row
   padding 10px 40px
+  gap 40px
+
+  &__header
+    display flex
+    align-items center
+    justify-content space-between
+    gap 12px
+
+  &__search
+    width 220px
 
   &__column
-    min-width 400px
+    flex 1 1 0
+    min-width 0
 
-    &:first-child
-      margin-right 40px
+  &--single-column
+    flex-direction column
+    gap 20px
+    padding 10px 16px
+
+    .l-books-page__column
+      width 100%
+
+    .l-books-page__header
+      flex-wrap wrap
+      align-items flex-start
+
+    .l-books-page__search
+      width 100%

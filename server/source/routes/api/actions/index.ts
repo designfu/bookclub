@@ -1,5 +1,6 @@
 import * as express from 'express';
 const routes = express.Router();
+import mongoose from 'lib/mongoose';
 import { requireAuthentication, requireAdmin, setReqDate } from 'middleware/index';
 import goodreads from 'services/goodreads';
 import { BookModel } from 'schemas/book';
@@ -122,12 +123,21 @@ routes.post('/close-current-voting-session',
   async (req, res, next) => {
     const bookID = req.body.book;
 
-    const book = await BookModel.findOne({ _id: bookID });
+    if(!bookID || typeof bookID !== 'string' || !mongoose.Types.ObjectId.isValid(bookID)) {
+      return res.status(400).send(`Cannot close voting session with invalid book ID ${bookID}.`);
+    }
 
-    if(book) {
-      next();
-    } else {
-      res.status(403).send(`Cannot close voting session with invalid book ID ${bookID}.`);
+    try {
+      const book = await BookModel.findOne({ _id: bookID });
+
+      if(book) {
+        next();
+      } else {
+        res.status(403).send(`Cannot close voting session with invalid book ID ${bookID}.`);
+      }
+    } catch(err) {
+      console.log(err);
+      res.status(500).send(err);
     }
   },
   async (req, res) => {

@@ -17,6 +17,12 @@ function formatStatusLabel(status) {
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
+function titleCompare(a, b): number {
+  const aTitle = a && a.book && a.book.title ? a.book.title : '';
+  const bTitle = b && b.book && b.book.title ? b.book.title : '';
+  return aTitle.localeCompare(bTitle);
+}
+
 function createdTimestamp(book): number {
   const raw = book && book.dates ? book.dates.created : null;
   if (typeof raw === 'number') {
@@ -32,13 +38,52 @@ function createdTimestamp(book): number {
   return 0;
 }
 
+function proposedTimestamp(book): number {
+  const raw = book && book.dates ? book.dates.proposed : null;
+  if (typeof raw === 'number') {
+    return raw;
+  }
+  if (raw instanceof Date) {
+    return raw.getTime();
+  }
+  if (typeof raw === 'string') {
+    const parsed = Date.parse(raw);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+}
+
+function finishedTimestamp(book): number {
+  const raw = book && book.dates ? book.dates.finished : null;
+  if (typeof raw === 'number') {
+    return raw;
+  }
+  if (raw instanceof Date) {
+    return raw.getTime();
+  }
+  if (typeof raw === 'string') {
+    const parsed = Date.parse(raw);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+}
+
+function sortBooksByDateForStatus(a, b, status?: string) {
+  if (status === BookStatus.FINISHED) {
+    return finishedTimestamp(b.book) - finishedTimestamp(a.book)
+      || a.book.title.localeCompare(b.book.title);
+  }
+  return createdTimestamp(b.book) - createdTimestamp(a.book)
+    || a.book.title.localeCompare(b.book.title);
+}
+
 export class BookList extends React.Component<any, any> {
   isNewBook(book): boolean {
     const cutoff = this.props.newSince || 0;
     if (!cutoff) {
       return false;
     }
-    return createdTimestamp(book) > cutoff;
+    return proposedTimestamp(book) > cutoff;
   }
 
   renderBooks(books) {
@@ -63,7 +108,7 @@ export class BookList extends React.Component<any, any> {
       .map((id) => ({ id, book: this.props.books[id] }))
       .sort((a, b) => {
         return STATUS_VALS[b.book.status] - STATUS_VALS[a.book.status]
-          || createdTimestamp(b.book) - createdTimestamp(a.book)
+          || sortBooksByDateForStatus(a, b, a.book.status)
           || a.book.title.localeCompare(b.book.title);
       });
 
@@ -76,7 +121,12 @@ export class BookList extends React.Component<any, any> {
       const suggestedBooks = books.filter(({ book }) => book.status === BookStatus.SUGGESTED);
       const yourSuggestedPlaceholders = yourBookPlaceholders.filter(({ book }) => book.status === BookStatus.SUGGESTED);
       const suggestedBooksWithPlaceholders = [...suggestedBooks, ...yourSuggestedPlaceholders]
-        .sort((a, b) => createdTimestamp(b.book) - createdTimestamp(a.book) || a.book.title.localeCompare(b.book.title));
+        .sort((a, b) => {
+          const aIsNew = this.isNewBook(a.book);
+          const bIsNew = this.isNewBook(b.book);
+          return Number(bIsNew) - Number(aIsNew)
+            || titleCompare(a, b);
+        });
       const nonSuggestedBooks = [
         ...books.filter(({ book }) => book.status !== BookStatus.SUGGESTED),
         ...yourBookPlaceholders.filter(({ book }) => book.status !== BookStatus.SUGGESTED),
@@ -91,7 +141,7 @@ export class BookList extends React.Component<any, any> {
       }, {});
       Object.keys(byStatus).forEach((status) => {
         byStatus[status] = byStatus[status]
-          .sort((a, b) => createdTimestamp(b.book) - createdTimestamp(a.book) || a.book.title.localeCompare(b.book.title));
+          .sort((a, b) => sortBooksByDateForStatus(a, b, status));
       });
       const nonSuggestedStatuses = Object.keys(byStatus)
         .sort((a, b) => (STATUS_VALS[b] || -1) - (STATUS_VALS[a] || -1) || a.localeCompare(b));
@@ -122,6 +172,8 @@ export class BookList extends React.Component<any, any> {
       const backlogBooks = books.filter(({ book }) => book.status === BookStatus.BACKLOG);
       const suggestedBooks = books.filter(({ book }) => book.status === BookStatus.SUGGESTED);
       const finishedBooks = books.filter(({ book }) => book.status === BookStatus.FINISHED);
+      const sortedFinishedBooks = finishedBooks
+        .sort((a, b) => sortBooksByDateForStatus(a, b, BookStatus.FINISHED));
 
       return (
         <div className='c-book-list'>
@@ -148,7 +200,7 @@ export class BookList extends React.Component<any, any> {
             <details className='c-book-list__group'>
               <summary>Finished ({finishedBooks.length})</summary>
               <ul className='c-book-list__items'>
-                {this.renderBooks(finishedBooks)}
+                {this.renderBooks(sortedFinishedBooks)}
               </ul>
             </details>
           ) : null}
