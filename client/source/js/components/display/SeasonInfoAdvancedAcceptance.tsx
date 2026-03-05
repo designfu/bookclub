@@ -91,6 +91,7 @@ export interface SeasonInfoAdvancedAcceptanceProps {
   startVotingOpen?: boolean;
   myId?: any;
   hideBookPitch?: boolean;
+  seasonNumber?: number;
 }
 
 export interface SeasonInfoAdvancedAcceptanceState {

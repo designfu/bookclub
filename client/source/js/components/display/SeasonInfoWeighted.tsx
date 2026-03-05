@@ -65,6 +65,7 @@ export interface SeasonInfoWeightedProps {
   startVotingOpen?: boolean;
   myId?: any;
   hideBookPitch?: boolean;
+  seasonNumber?: number;
 }
 
 export interface SeasonInfoWeightedState {

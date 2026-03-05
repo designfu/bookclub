@@ -9,6 +9,14 @@
   &--result
     box-shadow none
 
+  &--divider
+    .c-vote-card__padded
+      justify-content center
+
+    .c-vote-card__details
+      justify-content center
+      padding 0 12px
+
   &__padded
     padding 8px
     flex-grow 1
@@ -41,6 +49,27 @@
   &__author
     color #999
     font-size 12px
+
+  &__no-interest-divider
+    display flex
+    align-items center
+    width 100%
+    text-transform uppercase
+
+    &:before,
+    &:after
+      content ''
+      flex 1 1 auto
+      border-top 1px solid #c7c7c7
+
+    &:before
+      margin-right 8px
+
+    &:after
+      margin-left 8px
+
+  &__no-interest-label
+    white-space nowrap
 
   .i-star
     cursor pointer
