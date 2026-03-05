@@ -3,11 +3,9 @@ import Card from '@material-ui/core/Card';
 import CardMedia from '@material-ui/core/CardMedia';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { useTheme } from '@material-ui/core/styles';
 import { Book } from 'types';
 import { rankString } from '@client/utils/strings';
-import { LightTooltip } from 'components/display/LightTooltip';
+import { VotePitchTooltip } from 'components/display/VotePitchTooltip';
 
 export interface VoteCardRankProps {
   book: Book;
@@ -15,23 +13,6 @@ export interface VoteCardRankProps {
   rank: number;
   maxRank: number;
   onVote?: Function;
-}
-
-function PitchTooltip(props) {
-  const theme = useTheme();
-  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
-
-  return (
-    <LightTooltip
-      title={props.title}
-      placement='right'
-      arrow
-      disableHoverListener={isSmall}
-      disableTouchListener={isSmall}
-    >
-      {props.children}
-    </LightTooltip>
-  );
 }
 
 export class VoteCardRank extends React.Component<VoteCardRankProps, any> {
@@ -71,9 +52,9 @@ export class VoteCardRank extends React.Component<VoteCardRankProps, any> {
     );
 
     return (
-      <PitchTooltip title={book.pitch || 'No pitch provided.'}>
+      <VotePitchTooltip title={book.pitch || 'No pitch provided.'}>
         {card}
-      </PitchTooltip>
+      </VotePitchTooltip>
     );
   }
 
