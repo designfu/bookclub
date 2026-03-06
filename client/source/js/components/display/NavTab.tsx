@@ -1,25 +1,23 @@
 import * as React from 'react';
 import classnames from 'classnames';
-import { Link, withRouter } from 'react-router';
-import { extractCurrentPath } from 'utils/routes';
+import { Link, useLocation } from 'react-router-dom';
 
 export interface NavTabProps {
   to: string;
 }
 
-export const NavTab = withRouter(class NavTab extends React.Component<NavTabProps, any> {
-  render() {
-    const isActive = extractCurrentPath(this) === this.props.to;
-    const className = classnames(`c-nav-tab`, {
-      'is-active': isActive,
-    });
+export function NavTab(props: React.PropsWithChildren<NavTabProps>) {
+  const location = useLocation();
+  const isActive = location.pathname === props.to;
+  const className = classnames('c-nav-tab', {
+    'is-active': isActive,
+  });
 
-    return (
-      <li className={className}>
-        <Link {...this.props}>
-          {this.props.children}
-        </Link>
-      </li>
-    );
-  }
-});
+  return (
+    <li className={className}>
+      <Link to={props.to}>
+        {props.children}
+      </Link>
+    </li>
+  );
+}

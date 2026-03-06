@@ -1,9 +1,5 @@
 import * as React from 'react';
-import { Router, Route, Switch, browserHistory } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
-import { withRouter } from 'react-router';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -241,7 +237,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const SeasonsPage = withWidth()(withRouter(connect(
+export const SeasonsPage = withWidth()(connect(
   mapStateToProps,
   mapDispatchToProps,
-)(SeasonsPage_)));
+)(SeasonsPage_));

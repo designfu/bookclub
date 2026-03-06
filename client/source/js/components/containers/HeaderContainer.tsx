@@ -1,8 +1,5 @@
 import * as React from 'react';
-import { Router, Route, Switch, browserHistory, withRouter } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 import Button from '@material-ui/core/Button';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -200,7 +197,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const HeaderContainer = withRouter(connect(
+export const HeaderContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(HeaderContainerResponsive));
+)(HeaderContainerResponsive);

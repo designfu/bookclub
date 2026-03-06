@@ -1,9 +1,5 @@
 import * as React from 'react';
-import { Router, Route, Switch, browserHistory } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
-import { withRouter } from 'react-router';
 import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import Config from 'config';
@@ -245,7 +241,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const VotingSessionWeightedContainer = withRouter(connect(
+export const VotingSessionWeightedContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(VotingSessionWeightedContainer_));
+)(VotingSessionWeightedContainer_);

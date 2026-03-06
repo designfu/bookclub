@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
 import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { VotingSessionStatus } from 'types';
@@ -249,7 +248,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const VotingSessionAdvancedAcceptanceContainer = withRouter(connect(
+export const VotingSessionAdvancedAcceptanceContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(VotingSessionAdvancedAcceptanceContainer_));
+)(VotingSessionAdvancedAcceptanceContainer_);

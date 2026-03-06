@@ -1,9 +1,5 @@
 import * as React from 'react';
-import { Router, Route, Switch, browserHistory } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
-import { withRouter } from 'react-router';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -139,7 +135,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const BooksPage = withRouter(connect(
+export const BooksPage = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(BooksPageResponsive));
+)(BooksPageResponsive);

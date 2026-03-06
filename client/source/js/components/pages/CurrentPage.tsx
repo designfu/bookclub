@@ -1,9 +1,5 @@
 import * as React from 'react';
-import { Router, Route, Switch, browserHistory } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
-import { withRouter } from 'react-router';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -165,7 +161,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const CurrentPage = withWidth()(withRouter(connect(
+export const CurrentPage = withWidth()(connect(
   mapStateToProps,
   mapDispatchToProps,
-)(CurrentPage_)));
+)(CurrentPage_));

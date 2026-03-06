@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
 import { VotingSessionAcceptanceContainer } from 'components/hybrid/VotingSessionAcceptanceComponent';
 import { VotingSessionWeightedContainer } from 'components/hybrid/VotingSessionWeightedComponent';
 import {
@@ -31,7 +30,7 @@ const mapStateToProps = (state: any) => {
   }
 };
 
-export const VotingSessionContainer = withRouter(connect(
+export const VotingSessionContainer = connect(
   mapStateToProps,
   null,
-)(VotingSessionContainer_));
+)(VotingSessionContainer_);

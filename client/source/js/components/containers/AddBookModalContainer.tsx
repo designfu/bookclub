@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
 import Button from '@material-ui/core/Button';
 import { AppstateActions } from 'actions/AppstateActions';
 import { BookActions, BookActionTypes } from 'actions/BookActions';
@@ -66,7 +65,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const AddBookModalContainer = withRouter(connect(
+export const AddBookModalContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(AddBookModalContainer_));
+)(AddBookModalContainer_);

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
 
 export class GenericModalContainer_ extends React.Component<any, any> {
   constructor(props) {
@@ -56,7 +55,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const GenericModalContainer = withRouter(connect(
+export const GenericModalContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(GenericModalContainer_));
+)(GenericModalContainer_);

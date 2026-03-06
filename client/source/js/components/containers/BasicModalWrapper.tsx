@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
 import Modal from '@material-ui/core/Modal';
 
 export class BasicModalWrapper_ extends React.Component<any, any> {
@@ -75,7 +74,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const BasicModalWrapper = withRouter(connect(
+export const BasicModalWrapper = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(BasicModalWrapper_));
+)(BasicModalWrapper_);

@@ -1,9 +1,5 @@
 import * as React from 'react';
-import { Router, Route, Switch, browserHistory } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
-import { withRouter } from 'react-router';
 import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import { BookList } from 'components/display/BookList';
@@ -159,7 +155,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const EditableBookListContainer = withRouter(connect(
+export const EditableBookListContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(EditableBookListContainer_));
+)(EditableBookListContainer_);
