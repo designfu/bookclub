@@ -55,7 +55,16 @@ function statusBadgeLabel(status: string): string {
 }
 
 function yourRating(ratings: any[], myId: string) {
-  const yours = ratings.find(rating => rating.user === myId);
+  if (!myId) {
+    return '';
+  }
+  const yours = ratings.find((rating) => {
+    if (!rating) {
+      return false;
+    }
+    const ratingUser = rating.user && rating.user._id ? rating.user._id : rating.user;
+    return ratingUser === myId;
+  });
   return yours ? `(you gave ${yours.value})` : '';
 }
 

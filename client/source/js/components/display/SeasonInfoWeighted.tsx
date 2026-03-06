@@ -271,6 +271,7 @@ export class SeasonInfoWeighted extends React.Component<SeasonInfoWeightedProps,
               <BookCard
                 book={season.book}
                 points={showVotingResults ? pointsForBookFromVoting(season.book, votingSession) : undefined}
+                myId={this.props.myId}
                 borderless={true}
                 hidePitch={this.props.hideBookPitch}
               />

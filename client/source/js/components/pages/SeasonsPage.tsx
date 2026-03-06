@@ -33,6 +33,43 @@ function averageRatingOf(book): number {
   return total / ratings.length;
 }
 
+function userRatingOf(book, myId): number {
+  if (!book || !myId) {
+    return -1;
+  }
+  const ratings = Array.isArray(book.ratings) ? book.ratings : [];
+  const myRating = ratings.find((rating) => {
+    if (!rating || typeof rating.value !== 'number') {
+      return false;
+    }
+    const ratingUser = rating.user && rating.user._id ? rating.user._id : rating.user;
+    return ratingUser === myId;
+  });
+  return myRating ? myRating.value : -1;
+}
+
+function hasUserVotedInVotingSession(votingSession, myId): boolean {
+  if (!votingSession || !myId) {
+    return false;
+  }
+  const votes = Array.isArray(votingSession.votes) ? votingSession.votes : [];
+  return votes.some((vote) => {
+    if (!vote) {
+      return false;
+    }
+    const voteUser = vote.user && vote.user._id ? vote.user._id : vote.user;
+    return voteUser === myId;
+  });
+}
+
+function resolvedSeasonBook(season, books = {}) {
+  if (!season || !season.book) {
+    return null;
+  }
+  const seasonBookId = season.book._id || season.book;
+  return books[seasonBookId] || season.book;
+}
+
 class SeasonsPage_ extends React.Component<any, any> {
   state = {
     sortMode: 'finishedDate',
@@ -51,10 +88,26 @@ class SeasonsPage_ extends React.Component<any, any> {
     const seasonList = Object.keys(seasons)
       .map(id => seasons[id])
       .filter(season => season.status === SeasonStatus.COMPLETE)
+      .filter((season) => {
+        const book = resolvedSeasonBook(season, this.props.books);
+        if (this.state.sortMode !== 'personalBookRating') {
+          return true;
+        }
+        const votingSession = this.props.votingSessions[season.votingSession] || {};
+        return userRatingOf(book, myId) >= 0 || hasUserVotedInVotingSession(votingSession, myId);
+      })
       .sort((a, b) => {
+        const aBook = resolvedSeasonBook(a, this.props.books);
+        const bBook = resolvedSeasonBook(b, this.props.books);
         if (this.state.sortMode === 'bookRating') {
-          const aRating = averageRatingOf(a.book);
-          const bRating = averageRatingOf(b.book);
+          const aRating = averageRatingOf(aBook);
+          const bRating = averageRatingOf(bBook);
+          return bRating - aRating
+            || timeOf(b.dates.finished) - timeOf(a.dates.finished);
+        }
+        if (this.state.sortMode === 'personalBookRating') {
+          const aRating = userRatingOf(aBook, myId);
+          const bRating = userRatingOf(bBook, myId);
           return bRating - aRating
             || timeOf(b.dates.finished) - timeOf(a.dates.finished);
         }
@@ -74,17 +127,16 @@ class SeasonsPage_ extends React.Component<any, any> {
                 id: 'previous-seasons-sort',
               }}
             >
-              <MenuItem value='finishedDate'>Finished Date (Newest)</MenuItem>
-              <MenuItem value='bookRating'>Finished Book Rating (Highest)</MenuItem>
+              <MenuItem value='finishedDate'>Finish Date (Most Recent)</MenuItem>
+              <MenuItem value='bookRating'>Book Rating (Highest)</MenuItem>
+              <MenuItem value='personalBookRating'>Your Book Rating (Highest)</MenuItem>
             </Select>
           </FormControl>
           {seasonList.map((season, i) => {
-          if (season.book) {
-            season.book = this.props.books[season.book._id || season.book] || season.book;
-          }
+          const seasonBook = resolvedSeasonBook(season, this.props.books);
 
-          const title = season.book && season.book.title
-            ? season.book.title
+          const title = seasonBook && seasonBook.title
+            ? seasonBook.title
             : season.dates.finished
               ? toStandardString(season.dates.finished)
               : 'Current Season';
@@ -117,7 +169,10 @@ class SeasonsPage_ extends React.Component<any, any> {
                   <SeasonInfo
                     books={books}
                     title={title}
-                    season={season}
+                    season={{
+                      ...season,
+                      book: seasonBook,
+                    }}
                     votingSession={votingSession}
                     onSeasonRename={isLoggedIn && isAdmin && season && season.status === SeasonStatus.COMPLETE && this.props.renameSeason.bind(this, season)}
                     onSeasonDelete={isLoggedIn && isAdmin && season && season.status === SeasonStatus.COMPLETE && this.props.deleteSeason.bind(this, season)}

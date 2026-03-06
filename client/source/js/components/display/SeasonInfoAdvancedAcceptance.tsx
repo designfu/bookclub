@@ -299,6 +299,7 @@ export class SeasonInfoAdvancedAcceptance extends React.Component<SeasonInfoAdva
               <BookCard
                 book={season.book}
                 rankings={showVotingResults ? rankingsForBookFromVoting(season.book, votingSession) : undefined}
+                myId={this.props.myId}
                 borderless={true}
                 hidePitch={this.props.hideBookPitch}
               />
