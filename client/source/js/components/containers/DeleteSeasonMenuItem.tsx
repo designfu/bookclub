@@ -1,6 +1,6 @@
 import * as React from 'react';
-import MenuItem from '@material-ui/core/MenuItem';
-import DialogContentText from '@material-ui/core/DialogContentText';
+import MenuItem from '@mui/material/MenuItem';
+import DialogContentText from '@mui/material/DialogContentText';
 import { ConfirmDialog } from 'components/display/ConfirmDialog';
 
 export interface DeleteSeasonMenuItemProps {

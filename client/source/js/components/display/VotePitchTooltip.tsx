@@ -1,6 +1,6 @@
 import * as React from 'react';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { useTheme } from '@material-ui/core/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import { LightTooltip } from 'components/display/LightTooltip';
 
 export interface VotePitchTooltipProps {

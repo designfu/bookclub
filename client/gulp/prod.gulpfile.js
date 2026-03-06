@@ -34,14 +34,6 @@ gulp.task('js:node_modules', recipe('copy', {
   output: './dist/vendor',
 }));
 
-gulp.task('static:node_modules', recipe('copy', {
-  input: [
-    './node_modules/react/umd/react.development.js',
-    './node_modules/react-dom/umd/react-dom.development.js',
-  ],
-  output: './dist/vendor'
-}));
-
 gulp.task('inject', recipe('html', {
   cwd: './dist',
   input: './source/html/**/*.html',
@@ -49,8 +41,6 @@ gulp.task('inject', recipe('html', {
     'vendor/jquery.js',
     'vendor/lockr.js',
     'vendor/lodash.js',
-    'vendor/react.development.js',
-    'vendor/react-dom.development.js',
   ], [
     'css/main.css',
     'js/bundle.js',
@@ -82,7 +72,7 @@ gulp.task('watch', () => {
 
 gulp.task('compile', series(
   'env',
-  parallel('js:node_modules', 'static:node_modules', 'static', 'css'),
+  parallel('js:node_modules', 'static', 'css'),
   'inject'
 ));
 

@@ -1,8 +1,8 @@
 import * as React from 'react';
-import Card from '@material-ui/core/Card';
-import CardMedia from '@material-ui/core/CardMedia';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
+import Card from '@mui/material/Card';
+import CardMedia from '@mui/material/CardMedia';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import { Book } from 'types';
 import { VotePitchTooltip } from 'components/display/VotePitchTooltip';
 

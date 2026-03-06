@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
-import withWidth, { isWidthDown } from '@material-ui/core/withWidth';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import { timeOf, toStandardString } from '@client/utils/dates';
 import { SeasonActions } from 'actions/SeasonActions';
 import { BookActions } from 'actions/BookActions';
@@ -63,9 +64,8 @@ class SeasonsPage_ extends React.Component<any, any> {
       isLoggedIn,
       isAdmin,
       myId,
-      width,
+      isSmallScreen,
     } = this.props;
-    const isSmallScreen = isWidthDown('sm', width);
 
     const seasonList = Object.keys(seasons)
       .map(id => seasons[id])
@@ -237,7 +237,13 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const SeasonsPage = withWidth()(connect(
+const SeasonsPageConnected = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(SeasonsPage_));
+)(SeasonsPage_);
+
+export const SeasonsPage = () => {
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  return <SeasonsPageConnected isSmallScreen={isSmallScreen} />;
+};

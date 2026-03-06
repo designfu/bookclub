@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import Typography from '@material-ui/core/Typography';
-import TextField from '@material-ui/core/TextField';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { useTheme } from '@material-ui/core/styles';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import { EditableBookListContainer } from 'components/containers/EditableBookListContainer';
 import { AddBookModalContainer } from 'components/containers/AddBookModalContainer';
 import { AppstateActions } from 'actions/AppstateActions';

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import Modal from '@material-ui/core/Modal';
+import Modal from '@mui/material/Modal';
 
 export class BasicModalWrapper_ extends React.Component<any, any> {
   constructor(props) {

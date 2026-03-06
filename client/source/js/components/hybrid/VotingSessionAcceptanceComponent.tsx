@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import Button from '@material-ui/core/Button';
-import Tooltip from '@material-ui/core/Tooltip';
+import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
 import { VotingSessionStatus } from 'types';
 import { ReorderableList } from 'lib/reorderable-lists';
 import { VotingSessionActions, VotingSessionActionTypes } from 'actions/VotingSessionActions';
@@ -143,7 +143,11 @@ class VotingSessionAcceptanceContainer_ extends React.Component<any, any> {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps !== this.props) {
+    if (
+      prevProps.votingSession !== this.props.votingSession
+      || prevProps.books !== this.props.books
+      || prevProps.myId !== this.props.myId
+    ) {
       const { books, resetAddedBookIds } = this.booksAndResetIdsFromProps(this.props);
       this.setState({
         books,

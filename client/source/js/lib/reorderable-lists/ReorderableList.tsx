@@ -2,7 +2,7 @@ import * as React from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
-import List from '@material-ui/core/List';
+import List from '@mui/material/List';
 import ReorderableListItem from './ReorderableListItem';
 
 class ReorderableList extends React.Component<any, any> {
@@ -41,7 +41,7 @@ class ReorderableList extends React.Component<any, any> {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps !== this.props) {
+    if (prevProps.children !== this.props.children) {
       this.setState({
         items: this.props.children,
       });

@@ -1,7 +1,7 @@
 import * as React from 'react';
-import Button from '@material-ui/core/Button';
-import Paper from '@material-ui/core/Paper';
-import Alert from '@material-ui/lab/Alert';
+import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import Alert from '@mui/material/Alert';
 import { ConfirmDialog } from 'components/display/ConfirmDialog';
 import { RateBookDialogContent } from 'components/display/RateBookDialogContent';
 

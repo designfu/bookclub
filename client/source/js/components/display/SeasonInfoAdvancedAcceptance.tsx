@@ -1,5 +1,5 @@
 import * as React from 'react';
-import Paper from '@material-ui/core/Paper';
+import Paper from '@mui/material/Paper';
 import { BookStatus, Season, VotingSession, VotingSessionStatus } from 'types';
 import { BookCard } from 'components/display/BookCard';
 import { SeasonInfoBase } from 'components/display/SeasonInfoBase';

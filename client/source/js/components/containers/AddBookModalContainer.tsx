@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import { AppstateActions } from 'actions/AppstateActions';
 import { BookActions, BookActionTypes } from 'actions/BookActions';
 import { ReduxActions } from 'actions/ReduxActions';

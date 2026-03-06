@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import Snackbar from '@material-ui/core/Snackbar';
-import SnackbarContent from '@material-ui/core/SnackbarContent';
+import Snackbar from '@mui/material/Snackbar';
+import SnackbarContent from '@mui/material/SnackbarContent';
 import { BookList } from 'components/display/BookList';
 import { EditBookDialog } from 'components/display/EditBookDialog';
 import { BookActions, BookActionTypes } from 'actions/BookActions';

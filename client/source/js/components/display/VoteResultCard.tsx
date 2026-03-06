@@ -1,6 +1,6 @@
 import * as React from 'react';
-import Card from '@material-ui/core/Card';
-import CardMedia from '@material-ui/core/CardMedia';
+import Card from '@mui/material/Card';
+import CardMedia from '@mui/material/CardMedia';
 import { Book } from 'types';
 import { pointString } from 'utils/strings';
 

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-import ListItem from '@material-ui/core/ListItem';
+import ListItem from '@mui/material/ListItem';
 
 const style = {
   cursor: 'move',

@@ -1,8 +1,8 @@
 import * as React from 'react';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import FormControl from '@material-ui/core/FormControl';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import TextField from '@material-ui/core/TextField/TextField';
+import DialogContentText from '@mui/material/DialogContentText';
+import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
+import TextField from '@mui/material/TextField';
 import { RatingDescriptions } from 'components/display/season-info-common';
 
 export interface RateBookDialogContentProps {

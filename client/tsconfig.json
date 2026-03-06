@@ -8,6 +8,8 @@
         "baseUrl": "./source/js",
         "module": "commonjs",
         "moduleResolution": "node",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
         "jsx": "react",
         "paths": {
             "@shared/*": ["../../../shared/@shared/*"],

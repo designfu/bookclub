@@ -1,11 +1,11 @@
 import * as React from 'react';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import { debounce } from '@shared/utils/functions';
 import { Book } from 'types';
 import ActionClient from 'clients/ActionClient';
@@ -272,7 +272,7 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps !== this.props) {
+    if (prevProps.book !== this.props.book || prevProps.open !== this.props.open) {
       const newState = getFormState({ book: this.props.book });
       const formState = validate(newState);
       this.setState(formState);

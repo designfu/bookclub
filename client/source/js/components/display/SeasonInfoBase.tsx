@@ -1,13 +1,13 @@
 import * as React from 'react';
-import Button from '@material-ui/core/Button';
-import Box from '@material-ui/core/Box';
-import CardActions from '@material-ui/core/CardActions';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import CardActions from '@mui/material/CardActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 import { ConfirmDialog } from 'components/display/ConfirmDialog';
 import { toJSON } from 'utils/objects';
-import TextField from '@material-ui/core/TextField/TextField';
+import TextField from '@mui/material/TextField';
 import { RateBookDialogContent } from 'components/display/RateBookDialogContent';
 import { renderSeasonInfoDate } from 'components/display/season-info-common';
 

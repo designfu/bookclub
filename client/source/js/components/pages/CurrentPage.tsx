@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import withWidth, { isWidthDown } from '@material-ui/core/withWidth';
+import DialogContentText from '@mui/material/DialogContentText';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import { VotingSessionStatus } from 'types';
 import { SeasonActions } from 'actions/SeasonActions';
 import { VotingSessionActions } from 'actions/VotingSessionActions';
@@ -29,9 +30,8 @@ class CurrentPage_ extends React.Component<any, any> {
       currentSeason,
       isLoggedIn,
       isAdmin,
-      width,
+      isSmallScreen,
     } = this.props;
-    const isSmallScreen = isWidthDown('sm', width);
 
     const isVotingOpen = votingSession.status === VotingSessionStatus.OPEN;
     const ratingNotice = (
@@ -161,7 +161,13 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const CurrentPage = withWidth()(connect(
+const CurrentPageConnected = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(CurrentPage_));
+)(CurrentPage_);
+
+export const CurrentPage = () => {
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  return <CurrentPageConnected isSmallScreen={isSmallScreen} />;
+};
