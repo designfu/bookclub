@@ -56,3 +56,29 @@ export function computeResetAddedBookIds({
     .map((book) => toBookId(book))
     .filter((id) => !!id);
 }
+
+export function orderBooksByResetAdded(books = [], resetAddedBookIds = []) {
+  const resetAddedSet = (resetAddedBookIds || []).reduce((set, id) => {
+    if (id) {
+      set[id] = true;
+    }
+    return set;
+  }, {});
+  if (!books || books.length < 1 || Object.keys(resetAddedSet).length < 1) {
+    return books;
+  }
+
+  const dividerIndex = books.findIndex((book) => !!book && !!book.isDivider);
+
+  if (dividerIndex > -1) {
+    const topSection = books.slice(0, dividerIndex + 1);
+    const bottomSection = books.slice(dividerIndex + 1);
+    const greenBottom = bottomSection.filter((book) => !!resetAddedSet[toBookId(book)]);
+    const nonGreenBottom = bottomSection.filter((book) => !resetAddedSet[toBookId(book)]);
+    return [...topSection, ...greenBottom, ...nonGreenBottom];
+  }
+
+  const green = books.filter((book) => !!resetAddedSet[toBookId(book)]);
+  const nonGreen = books.filter((book) => !resetAddedSet[toBookId(book)]);
+  return [...nonGreen, ...green];
+}

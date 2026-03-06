@@ -90,6 +90,10 @@ export function getVoteOrderDraftResetAddedBookIds(votingSessionId, myId) {
   return loadDraftPayload(votingSessionId, myId).resetAddedBookIds || [];
 }
 
+export function hasVoteOrderDraft(votingSessionId, myId): boolean {
+  return loadDraft(votingSessionId, myId).length > 0;
+}
+
 export function hydrateVoteOrderDraft(votingSessionId, myId, books = []) {
   const { books: draftBooks, addedFromLocalSessionMissIds } = applyVoteOrderDraftWithMeta(
     votingSessionId,

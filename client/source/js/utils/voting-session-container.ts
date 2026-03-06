@@ -26,7 +26,13 @@ export function hydrateVotingSession(votingSession = {}, books = {}, users = {})
 }
 
 export function hasUserVoted(votes = [], myId = null) {
-  return votes.some((vote: any) => vote && vote.user && vote.user._id === myId);
+  return votes.some((vote: any) => {
+    if (!vote || !vote.user) {
+      return false;
+    }
+    const voteUserId = vote.user && vote.user._id ? vote.user._id : vote.user;
+    return voteUserId === myId;
+  });
 }
 
 export function buildVotingParticipation(users = {}, votes = []) {

@@ -28,9 +28,10 @@ import {
 } from 'utils/voting-session-container';
 import {
   hydrateVoteOrderDraft,
+  hasVoteOrderDraft,
   saveVoteOrderDraft,
 } from 'utils/vote-order-draft';
-import { computeResetAddedBookIds, toBookId } from 'utils/vote-reset-highlight';
+import { computeResetAddedBookIds, orderBooksByResetAdded, toBookId } from 'utils/vote-reset-highlight';
 
 const pointsFor = (i) => Math.max(Config.MAX_VOTES - i, 0);
 
@@ -86,7 +87,7 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
             </Button>
           : null}
           {isOpen ?
-            <Tooltip title='Resets your list to your most recent voted-season order and places books new this season at the top.'>
+            <Tooltip title='Resets your list to your most recent voted-season order.'>
               <Button
                 className='o-action'
                 onClick={this.resetFromLastSeason.bind(this)}
@@ -133,6 +134,15 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
     });
   }
 
+  async componentDidMount() {
+    const votingSession = hydrateVotingSession(this.props.votingSession, this.props.books, this.props.users);
+    const hasCurrentVote = hasUserVoted(votingSession.votes, this.props.myId);
+    const hasDraft = hasVoteOrderDraft(this.props.votingSession && this.props.votingSession._id, this.props.myId);
+    if (!hasCurrentVote && !hasDraft) {
+      await this.resetFromLastSeason();
+    }
+  }
+
   componentDidUpdate(prevProps) {
     if (prevProps !== this.props) {
       const { books, resetAddedBookIds } = this.booksAndResetIdsFromProps(this.props);
@@ -159,12 +169,13 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
   async resetFromLastSeason() {
     const latestVotingSession = await this.props.fetchLatestWithUserVotes();
     const previousSession = latestVotingSession || this.props.latestVotingSession;
-    const books = buildWeightedResetBooks({
+    const resetBooks = buildWeightedResetBooks({
       books: this.state.books,
       latestVotingSession: previousSession,
       myId: this.props.myId,
     });
-    const resetAddedBookIds = this.resetAddedIdsForBooks(books, previousSession);
+    const resetAddedBookIds = this.resetAddedIdsForBooks(resetBooks, previousSession);
+    const books = orderBooksByResetAdded(resetBooks, resetAddedBookIds);
     this.persistVoteOrderDraft(books, resetAddedBookIds);
     this.setState({
       books,
