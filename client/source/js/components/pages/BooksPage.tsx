@@ -65,6 +65,7 @@ class BooksPage_ extends React.Component<any, any> {
             <Typography variant='h4'>All Books</Typography>
             <TextField
               className='l-books-page__search'
+              variant='standard'
               placeholder='Search title or author'
               value={this.state.query}
               onChange={this.handleQueryChange}

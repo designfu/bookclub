@@ -6,6 +6,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import { SemanticButtonColor, toMuiButtonColor } from 'components/display/button-colors';
 
 export interface ConfirmDialogProps {
   onOpen?: Function;
@@ -14,9 +15,9 @@ export interface ConfirmDialogProps {
   title: string;
   content: any;
   confirmText?: string;
-  confirmColor?: ButtonProps['color'];
+  confirmColor?: SemanticButtonColor;
   cancelText?: string;
-  cancelColor?: ButtonProps['color'];
+  cancelColor?: SemanticButtonColor;
   onRef?: Function;
   closeOnConfirm?: boolean;
   closeOnCancel?: boolean;
@@ -84,8 +85,8 @@ export class ConfirmDialog extends React.Component<ConfirmDialogProps, any> {
       ...this.props
     };
 
-    const confirmColor: ButtonProps['color'] = this.props.confirmColor || 'primary';
-    const cancelColor: ButtonProps['color'] = this.props.cancelColor || 'primary';
+    const confirmColor: ButtonProps['color'] = toMuiButtonColor(this.props.confirmColor);
+    const cancelColor: ButtonProps['color'] = toMuiButtonColor(this.props.cancelColor);
 
     return (
       <div>

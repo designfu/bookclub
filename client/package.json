@@ -26,7 +26,6 @@
         "gulp-plumber": "^1.2.1",
         "gulp-replace": "^1.1.4",
         "gulp-sourcemaps": "^3.0.0",
-        "history": "^4.7.2",
         "immutability-helper": "^3.1.1",
         "jquery": "^3.7.1",
         "lockr": "^0.8.5",

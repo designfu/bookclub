@@ -1,11 +1,11 @@
 import * as React from 'react';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
-import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { Book } from 'types';
 import { rankString } from '@client/utils/strings';
 import { VotePitchTooltip } from 'components/display/VotePitchTooltip';
+import { VotingSelect } from 'components/display/VotingSelect';
 
 export interface VoteCardRankProps {
   book: Book;
@@ -30,23 +30,22 @@ export class VoteCardRank extends React.Component<VoteCardRankProps, any> {
         />
         <div className='c-vote-card__padded'>
           <div className='c-vote-card__details'>
-            <span className='c-vote-card__title'>{book.title}</span> <span className='c-vote-card__dash'>-</span> <span className='c-vote-card__author'>{book.author || '??'}</span>
+            <span className='c-vote-card__title'>{book.title}</span>
+            <span className='c-vote-card__author'>{book.author || '??'}</span>
           </div>
           <div className='c-vote-card__points'>
-            <Select
+            <VotingSelect
               className='c-vote-card__point-dropdown'
+              size='small'
+              name='points'
               value={rank}
               onChange={this.onDropdownChange}
-              inputProps={{
-                name: 'points',
-                id: 'book-points',
-              }}
             >
               {Array.from({ length: maxRank }, (_, i) =>
                 <MenuItem key={i} value={i}>{rankString(i)}</MenuItem>
               )}
               <MenuItem key={-1} value={-1}>{rankString(-1)}</MenuItem>
-            </Select>
+            </VotingSelect>
           </div>
         </div>
       </Card>

@@ -10,6 +10,7 @@ import { toJSON } from 'utils/objects';
 import TextField from '@mui/material/TextField';
 import { RateBookDialogContent } from 'components/display/RateBookDialogContent';
 import { renderSeasonInfoDate } from 'components/display/season-info-common';
+import { toMuiButtonColor } from 'components/display/button-colors';
 
 function getUserRating(book, myId?): number {
   if(!myId) return -1;
@@ -217,7 +218,7 @@ export class SeasonInfoBase extends React.Component<SeasonInfoBaseProps, SeasonI
               <DialogContentText>Are you sure you want to delete this season and all votes in its voting session? This action cannot be undone.</DialogContentText>
             }
             confirmText='Delete Season'
-            confirmColor='secondary'
+            confirmColor='danger'
             onConfirm={this.handleDeleteSeasonConfirm}
             onCancel={this.handleDialogClose}
           />
@@ -274,7 +275,7 @@ export class SeasonInfoBase extends React.Component<SeasonInfoBaseProps, SeasonI
         <Box sx={{ flexGrow: 1 }} />
         {allowRenaming ? <Button size='small' onClick={this.handleRenameSeasonClick}>Rename Season</Button> : null}
         {allowClosing ? <Button size='small' color='secondary' onClick={this.handleCloseSeasonClick}>Close Season</Button> : null}
-        {allowDeleting ? <Button size='small' color='secondary' onClick={this.handleDeleteSeasonClick}>Delete Season</Button> : null}
+        {allowDeleting ? <Button size='small' color={toMuiButtonColor('danger')} onClick={this.handleDeleteSeasonClick}>Delete Season</Button> : null}
       </CardActions>
     );
   }

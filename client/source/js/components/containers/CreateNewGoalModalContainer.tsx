@@ -30,6 +30,7 @@ export class CreateNewGoalModalContainer_ extends React.Component<any, any> {
         onClose={this.onClose.bind(this)}
         renderTrigger={(modal) => this.props.isAdmin ? <Button onClick={modal.openModal}>Create New Goal</Button> : null}
         renderBody={(modal) => {
+          const newGoalChapterLabelId = 'new-goal-chapter-label';
           return (
             <div>
               <Typography variant='h6' id='modal-title'>
@@ -39,14 +40,14 @@ export class CreateNewGoalModalContainer_ extends React.Component<any, any> {
                 Pick which chapter to target
               </Typography>
               <FormControl className='o-field o-field--dropdown'>
-                <InputLabel htmlFor='new-goal-chapter'>Chapter</InputLabel>
+                <InputLabel id={newGoalChapterLabelId}>Chapter</InputLabel>
                 <Select
+                  id='new-goal-chapter'
+                  labelId={newGoalChapterLabelId}
+                  label='Chapter'
+                  name='chapter'
                   value={this.state.chapter}
                   onChange={this.handleChange.bind(this)}
-                  inputProps={{
-                    name: 'chapter',
-                    id: 'new-goal-chapter',
-                  }}
                 >
                   <MenuItem value=''>
                     <em>None</em>

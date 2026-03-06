@@ -49,6 +49,7 @@ export class CloseWeightedVotingDialogButton extends React.Component<CloseWeight
   render() {
     const { results, books } = this.props;
     const { book } = this.state;
+    const closeWeightedBookLabelId = 'close-weighted-voting-book-label';
     const resultsWithPoints = withPoints(results || []);
     const booksWithPoints = new Set(resultsWithPoints.map(result => `${toBookId(result.book)}`));
     const bookList: any[] = Object.values(books).filter(book => booksWithPoints.has(`${book._id}`));
@@ -60,14 +61,14 @@ export class CloseWeightedVotingDialogButton extends React.Component<CloseWeight
           <div className='c-close-voting-dialog'>
             <DialogContentText>Pick which book to open the season with</DialogContentText>
             <FormControl className='o-field o-field--dropdown u-space--bot-large'>
-              <InputLabel htmlFor='new-season-book'>Book</InputLabel>
+              <InputLabel id={closeWeightedBookLabelId}>Book</InputLabel>
               <Select
+                id='new-season-book'
+                labelId={closeWeightedBookLabelId}
+                label='Book'
+                name='book'
                 value={book}
                 onChange={this.handleChange.bind(this)}
-                inputProps={{
-                  name: 'book',
-                  id: 'new-season-book',
-                }}
               >
                 {bookList.map((book) => <MenuItem
                   key={book._id}

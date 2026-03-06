@@ -26,17 +26,14 @@ class ReorderableList extends React.Component<any, any> {
   moveListItem(dragIndex, hoverIndex) {
     const { items } = this.state;
     const dragItem = items[dragIndex];
+    const nextItems = update(items, {
+      $splice: [[dragIndex, 1], [hoverIndex, 0, dragItem]],
+    });
 
-    this.setState(
-      update(this.state, {
-        items: {
-          $splice: [[dragIndex, 1], [hoverIndex, 0, dragItem]],
-        },
-      }),
-    );
+    this.setState({ items: nextItems });
 
     if (this.props.onUpdate) {
-      this.props.onUpdate(this.state.items);
+      this.props.onUpdate(nextItems);
     }
   }
 

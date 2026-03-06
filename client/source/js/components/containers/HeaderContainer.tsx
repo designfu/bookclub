@@ -40,6 +40,7 @@ class HeaderContainer_ extends React.Component<any, any> {
   render() {
     const { anchorEl, switchDialogOpen, switchUserId } = this.state;
     const { users } = this.props;
+    const switchUserLabelId = 'switch-user-id-label';
     const { myId } = users;
     const me: User = myId ? users.users[myId] : null;
     const switchableUsers = Object
@@ -90,14 +91,14 @@ class HeaderContainer_ extends React.Component<any, any> {
             <DialogTitle id='switch-user-dialog-title'>Switch Logged In User</DialogTitle>
             <DialogContent>
               <FormControl className='o-field o-field--dropdown'>
-                <InputLabel htmlFor='switch-user-id'>User</InputLabel>
+                <InputLabel id={switchUserLabelId}>User</InputLabel>
                 <Select
+                  id='switch-user-id'
+                  labelId={switchUserLabelId}
+                  label='User'
+                  name='switchUserId'
                   value={switchUserId}
                   onChange={this.handleSwitchUserChange}
-                  inputProps={{
-                    name: 'switchUserId',
-                    id: 'switch-user-id',
-                  }}
                 >
                   {adminUsers.length > 0 ? <ListSubheader>Admins</ListSubheader> : null}
                   {adminUsers.map((user: User) => (

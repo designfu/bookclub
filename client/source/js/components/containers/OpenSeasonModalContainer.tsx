@@ -30,6 +30,7 @@ export class OpenSeasonModalContainer_ extends React.Component<any, any> {
         onClose={this.onClose.bind(this)}
         renderTrigger={(modal) => this.props.isAdmin ? <Button onClick={modal.openModal}>Open New Season</Button> : null}
         renderBody={(modal) => {
+          const newSeasonBookLabelId = 'new-season-book-label';
           return (
             <div>
               <Typography variant='h6' id='modal-title'>
@@ -39,14 +40,14 @@ export class OpenSeasonModalContainer_ extends React.Component<any, any> {
                 Pick which book to open the season with
               </Typography>
               <FormControl className='o-field o-field--dropdown'>
-                <InputLabel htmlFor='new-season-book'>Book</InputLabel>
+                <InputLabel id={newSeasonBookLabelId}>Book</InputLabel>
                 <Select
+                  id='new-season-book'
+                  labelId={newSeasonBookLabelId}
+                  label='Book'
+                  name='book'
                   value={this.state.book}
                   onChange={this.handleChange.bind(this)}
-                  inputProps={{
-                    name: 'book',
-                    id: 'new-season-book',
-                  }}
                 >
                   <MenuItem value=''>
                     <em>None</em>

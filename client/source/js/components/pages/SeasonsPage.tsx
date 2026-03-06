@@ -94,19 +94,21 @@ class SeasonsPage_ extends React.Component<any, any> {
         }
         return timeOf(b.dates.finished) - timeOf(a.dates.finished);
       });
+    const sortLabelId = 'previous-seasons-sort-label';
 
     return (
       <div className='l-current-page'>
         <div className='c-seasons-page'>
           <FormControl className='o-field o-field--dropdown'>
-            <InputLabel htmlFor='previous-seasons-sort'>Sort Previous Seasons</InputLabel>
+            <InputLabel id={sortLabelId}>Sort Previous Seasons</InputLabel>
             <Select
+              id='previous-seasons-sort'
+              labelId={sortLabelId}
+              label='Sort Previous Seasons'
+              name='sortMode'
+              size='small'
               value={this.state.sortMode}
               onChange={this.handleSortModeChange.bind(this)}
-              inputProps={{
-                name: 'sortMode',
-                id: 'previous-seasons-sort',
-              }}
             >
               <MenuItem value='finishedDate'>Finish Date (Most Recent)</MenuItem>
               <MenuItem value='bookRating'>Book Rating (Highest)</MenuItem>

@@ -34,6 +34,7 @@ class CurrentPage_ extends React.Component<any, any> {
     } = this.props;
 
     const isVotingOpen = votingSession.status === VotingSessionStatus.OPEN;
+    const votingSystemLabelId = 'new-season-voting-system-label';
     const ratingNotice = (
       <PreviousBookRatingNotice
         previousSeason={this.props.previousSeason}
@@ -60,14 +61,14 @@ class CurrentPage_ extends React.Component<any, any> {
                   <div>
                     <DialogContentText>This will start a brand new season, and start a voting session for a new book.</DialogContentText>
                     <FormControl className='o-field o-field--dropdown'>
-                      <InputLabel htmlFor='new-season-voting-system'>Voting System</InputLabel>
+                      <InputLabel id={votingSystemLabelId}>Voting System</InputLabel>
                       <Select
+                        id='new-season-voting-system'
+                        labelId={votingSystemLabelId}
+                        label='Voting System'
+                        name='votingSystem'
                         value={this.state.votingSystem}
                         onChange={this.handleVotingSystemChange.bind(this)}
-                        inputProps={{
-                          name: 'votingSystem',
-                          id: 'new-season-voting-system',
-                        }}
                       >
                         <MenuItem value='ADVANCED_ACCEPTANCE'>Advanced Acceptance</MenuItem>
                         <MenuItem value='ACCEPTANCE_WITH_RANKED_TIEBREAKER'>Acceptance With Ranked Tiebreaker</MenuItem>

@@ -34,6 +34,7 @@ export class CloseAcceptanceVotingDialogButton extends React.Component<CloseAcce
   render() {
     const { results, books } = this.props;
     const { book } = this.state;
+    const closeAcceptanceBookLabelId = 'close-acceptance-book-label';
     const bookList: any[] = Object.values(books);
 
     return (
@@ -43,14 +44,14 @@ export class CloseAcceptanceVotingDialogButton extends React.Component<CloseAcce
           <div className='c-close-voting-dialog c-close-voting-dialog--acceptance'>
             <DialogContentText>Pick which book to open the season with</DialogContentText>
             <FormControl className='o-field o-field--dropdown u-space--bot-large'>
-              <InputLabel htmlFor='new-season-book'>Book</InputLabel>
+              <InputLabel id={closeAcceptanceBookLabelId}>Book</InputLabel>
               <Select
+                id='new-season-book'
+                labelId={closeAcceptanceBookLabelId}
+                label='Book'
+                name='book'
                 value={book}
                 onChange={this.handleChange.bind(this)}
-                inputProps={{
-                  name: 'book',
-                  id: 'new-season-book',
-                }}
               >
                 {bookList.filter(book => book.status === BookStatus.SUGGESTED).map((book) => <MenuItem
                   key={book._id}

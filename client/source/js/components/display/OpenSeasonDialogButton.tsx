@@ -22,6 +22,7 @@ export class OpenSeasonDialogButton extends React.Component<OpenSeasonDialogButt
 
   render() {
     const books: any[] = Object.values(this.props.books);
+    const openSeasonBookLabelId = 'open-season-book-label';
 
     return (
       <ConfirmDialogButton
@@ -30,14 +31,14 @@ export class OpenSeasonDialogButton extends React.Component<OpenSeasonDialogButt
           <div>
             <DialogContentText>Pick which book to open the season with</DialogContentText>
             <FormControl className='o-field o-field--dropdown'>
-              <InputLabel htmlFor='new-season-book'>Book</InputLabel>
+              <InputLabel id={openSeasonBookLabelId}>Book</InputLabel>
               <Select
+                id='new-season-book'
+                labelId={openSeasonBookLabelId}
+                label='Book'
+                name='book'
                 value={this.state.book}
                 onChange={this.handleChange.bind(this)}
-                inputProps={{
-                  name: 'book',
-                  id: 'new-season-book',
-                }}
               >
                 <MenuItem value=''>
                   <em>None</em>

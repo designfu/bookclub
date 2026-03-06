@@ -33,6 +33,7 @@ import {
   isAdminUser,
   sortUsersByRoleAndRecentSeason,
 } from 'components/pages/users-page-utils';
+import { toMuiButtonColor } from 'components/display/button-colors';
 
 class UsersPage_ extends React.Component<any, any> {
   state = {
@@ -149,7 +150,7 @@ class UsersPage_ extends React.Component<any, any> {
                       Transfer
                     </Button>
                     <Button
-                      color='secondary'
+                      color={toMuiButtonColor('danger')}
                       onClick={() => this.openDeleteDialog(user._id)}
                     >
                       Delete
@@ -179,6 +180,7 @@ class UsersPage_ extends React.Component<any, any> {
     const sourceUser = this.props.users[transferSourceUserId];
     const targetCandidates = getTransferTargetCandidates(this.props.users || {}, transferSourceUserId);
     const selectedCount = transferItems.filter((item) => item.checked).length;
+    const transferTargetUserLabelId = 'transfer-target-user-label';
 
     return (
       <Dialog
@@ -195,14 +197,14 @@ class UsersPage_ extends React.Component<any, any> {
           <div className='c-users-transfer-dialog__meta'>
             <div><strong>From:</strong> {sourceUser ? `${sourceUser.name} (${sourceUser._id})` : '--'}</div>
             <FormControl className='o-field o-field--dropdown c-users-transfer-dialog__target'>
-              <InputLabel htmlFor='transfer-target-user'>To User</InputLabel>
+              <InputLabel id={transferTargetUserLabelId}>To User</InputLabel>
               <Select
+                id='transfer-target-user'
+                labelId={transferTargetUserLabelId}
+                label='To User'
+                name='transferTargetUserId'
                 value={transferTargetUserId}
                 onChange={this.handleTransferTargetChange.bind(this)}
-                inputProps={{
-                  id: 'transfer-target-user',
-                  name: 'transferTargetUserId',
-                }}
               >
                 {targetCandidates.map((user) => (
                   <MenuItem key={user._id} value={user._id}>
@@ -322,7 +324,7 @@ class UsersPage_ extends React.Component<any, any> {
         </DialogContent>
         <DialogActions>
           <Button color='primary' onClick={this.closeDeleteDialog.bind(this)} disabled={deleteApplying}>Cancel</Button>
-          <Button color='secondary' onClick={this.applyDelete.bind(this)} disabled={deleteApplying}>
+          <Button color={toMuiButtonColor('danger')} onClick={this.applyDelete.bind(this)} disabled={deleteApplying}>
             {deleteApplying ? 'Deleting...' : 'Delete User'}
           </Button>
         </DialogActions>

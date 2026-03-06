@@ -35,7 +35,7 @@ export class DeleteSeasonMenuItem extends React.Component<DeleteSeasonMenuItemPr
             <DialogContentText>Are you sure you want to delete this season and all votes in its voting session? This action cannot be undone.</DialogContentText>
           }
           confirmText='Delete Season'
-          confirmColor='secondary'
+          confirmColor='danger'
           onConfirm={this.handleConfirmDelete}
           onCancel={this.handleCloseDialog}
         />

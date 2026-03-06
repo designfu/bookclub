@@ -12,6 +12,7 @@ import classnames from 'classnames';
 import { Book, BookStatus } from 'types';
 import { roundToNearest } from '@shared/utils/math';
 import { ConfirmDialog } from 'components/display/ConfirmDialog';
+import { toMuiButtonColor } from 'components/display/button-colors';
 import { ensureGoodreadsUrlIsShort, ensureGoodreadsUrlIsValid } from 'utils/goodreads';
 import { acceptanceVoteResultsString, normalize, pointString } from 'utils/strings';
 
@@ -185,7 +186,7 @@ export class BookCard extends React.Component<BookListItemProps, any> {
             {actions.propose ? <Button size='small' onClick={this.handlePropose}>Suggest</Button> : null}
             {actions.retract ? <Button size='small' onClick={this.handleRetract}>Move to backlog</Button> : null}
             <Box sx={{ flexGrow: 1 }} />
-            {actions.delete ? <Button size='small' onClick={this.handleDeleteClick} color='secondary' className='c-book-card__action-delete'>Delete</Button> : null}
+            {actions.delete ? <Button size='small' onClick={this.handleDeleteClick} color={toMuiButtonColor('danger')} className='c-book-card__action-delete'>Delete</Button> : null}
           </CardActions>
         ) : null}
         <ConfirmDialog
@@ -197,7 +198,7 @@ export class BookCard extends React.Component<BookListItemProps, any> {
             </DialogContentText>
           }
           confirmText='Delete'
-          confirmColor='secondary'
+          confirmColor='danger'
           onConfirm={this.handleDeleteConfirm}
           onCancel={this.handleDeleteCancel}
         />

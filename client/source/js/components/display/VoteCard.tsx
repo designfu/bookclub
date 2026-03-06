@@ -1,10 +1,10 @@
 import * as React from 'react';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
-import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { Book } from 'types';
 import { VotePitchTooltip } from 'components/display/VotePitchTooltip';
+import { VotingSelect } from 'components/display/VotingSelect';
 
 export interface VoteCardProps {
   book: Book;
@@ -28,23 +28,22 @@ export class VoteCard extends React.Component<VoteCardProps, any> {
         />
         <div className='c-vote-card__padded'>
           <div className='c-vote-card__details'>
-            <span className='c-vote-card__title'>{book.title}</span> <span className='c-vote-card__dash'>-</span> <span className='c-vote-card__author'>{book.author || '??'}</span>
+            <span className='c-vote-card__title'>{book.title}</span>
+            <span className='c-vote-card__author'>{book.author || '??'}</span>
           </div>
           <div className='c-vote-card__points'>
-            <Select
+            <VotingSelect
               className='c-vote-card__point-dropdown'
+              size='small'
+              name='points'
               value={points}
               onChange={this.onDropdownChange}
-              inputProps={{
-                name: 'points',
-                id: 'book-points',
-              }}
             >
               <MenuItem value={3}>3 pts</MenuItem>
               <MenuItem value={2}>2 pts</MenuItem>
               <MenuItem value={1}>1 pt</MenuItem>
               <MenuItem value={0}>0 pts</MenuItem>
-            </Select>
+            </VotingSelect>
           </div>
         </div>
       </Card>
