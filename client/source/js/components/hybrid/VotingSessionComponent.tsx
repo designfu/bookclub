@@ -20,9 +20,7 @@ class VotingSessionContainer_ extends React.Component<any, any> {
     }[system] || VotingSessionWeightedContainer;
 
     return (
-      <React.Fragment>
-        <VotingSession />
-      </React.Fragment>
+      <VotingSession />
     );
   }
 }
@@ -33,12 +31,7 @@ const mapStateToProps = (state: any) => {
   }
 };
 
-const mapDispatchToProps = (dispatch: any) => {
-  return {
-  }
-};
-
 export const VotingSessionContainer = withRouter(connect(
   mapStateToProps,
-  mapDispatchToProps,
+  null,
 )(VotingSessionContainer_));

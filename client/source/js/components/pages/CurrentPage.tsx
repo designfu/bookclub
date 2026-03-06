@@ -9,12 +9,13 @@ import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
-import Typography from '@material-ui/core/Typography';
 import { VotingSessionStatus } from 'types';
 import { SeasonActions } from 'actions/SeasonActions';
 import { VotingSessionActions } from 'actions/VotingSessionActions';
+import { BookActions } from 'actions/BookActions';
 import { ConfirmDialogButton } from 'components/display/ConfirmDialogButton';
 import { VotingSessionContainer } from 'components/hybrid/VotingSessionComponent';
+import { PreviousBookRatingNotice } from 'components/hybrid/PreviousBookRatingNotice';
 import { SeasonInfoAcceptance } from 'components/display/SeasonInfoAcceptance';
 import { SeasonInfoWeighted } from 'components/display/SeasonInfoWeighted';
 import { SeasonInfoAdvancedAcceptance } from '@client/components/display/SeasonInfoAdvancedAcceptance';
@@ -34,6 +35,14 @@ class CurrentPage_ extends React.Component<any, any> {
     } = this.props;
 
     const isVotingOpen = votingSession.status === VotingSessionStatus.OPEN;
+    const ratingNotice = (
+      <PreviousBookRatingNotice
+        previousSeason={this.props.previousSeason}
+        books={this.props.books}
+        myId={this.props.myId}
+        onRateBook={({ book, value }) => this.props.rateBook({ book, value, user: this.props.myId })}
+      />
+    );
 
     const SeasonInfo = {
       ['ACCEPTANCE_WITH_RANKED_TIEBREAKER']: SeasonInfoAcceptance,
@@ -77,24 +86,21 @@ class CurrentPage_ extends React.Component<any, any> {
             : null}
           </div>
         : null}
-        {!currentSeason ?
-          <div className='c-current-page__empty-state'>
-            <Typography variant='body1' component='p'>
-              Welcome! Please wait for an admin to start the next season.
-            </Typography>
+        {currentSeason ?
+          <div>
+            <SeasonInfo
+              books={this.props.books}
+              title={currentSeason ? 'Current Season' : 'Previous Season'}
+              season={currentSeason}
+              votingSession={votingSession}
+              onSeasonClose={this.props.closeCurrentSeason.bind(this)}
+              allowClosing={isLoggedIn && isAdmin && currentSeason && !isVotingOpen}
+              startVotingOpen={true}
+            />
+            {ratingNotice}
           </div>
         : null}
-        {currentSeason ?
-          <SeasonInfo
-            books={this.props.books}
-            title={currentSeason ? 'Current Season' : 'Previous Season'}
-            season={currentSeason}
-            votingSession={votingSession}
-            onSeasonClose={this.props.closeCurrentSeason.bind(this)}
-            allowClosing={isLoggedIn && isAdmin && currentSeason && !isVotingOpen}
-            startVotingOpen={true}
-          />
-        : null}
+        {!currentSeason ? ratingNotice : null}
         {isLoggedIn && currentSeason && isVotingOpen ?
           <VotingSessionContainer />
         : null}
@@ -121,7 +127,9 @@ const mapStateToProps = (state: any) => {
   return {
     isLoggedIn: state.users.isLoggedIn,
     isAdmin: state.users.isAdmin,
+    myId: state.users.myId,
     currentSeason: state.seasons.seasons[state.seasons.currentId],
+    previousSeason: state.seasons.previousId ? state.seasons.seasons[state.seasons.previousId] : null,
     votingSession: state.votingSession.currentId ? state.votingSession.sessions[state.votingSession.currentId]
       : state.votingSession.latestId ? state.votingSession.sessions[state.votingSession.latestId]
         : {},
@@ -141,6 +149,13 @@ const mapDispatchToProps = (dispatch: any) => {
 
     openNewSeason(votingSystem) {
       dispatch(SeasonActions.openSeason(votingSystem));
+    },
+
+    rateBook({ book, value, user }) {
+      return dispatch(BookActions.rateBook(book, {
+        value,
+        user,
+      }));
     },
   }
 };

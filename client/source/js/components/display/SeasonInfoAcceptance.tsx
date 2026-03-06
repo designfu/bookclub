@@ -13,13 +13,11 @@ import { ConfirmDialog } from 'components/display/ConfirmDialog';
 import { VoteResultCardAcceptance } from 'components/display/VoteResultCardAcceptance';
 import { toJSON } from 'utils/objects';
 import TextField from '@material-ui/core/TextField/TextField';
-import FormControl from '@material-ui/core/FormControl';
-import FormHelperText from '@material-ui/core/FormHelperText';
 import { DeleteSeasonMenuItem } from 'components/containers/DeleteSeasonMenuItem';
+import { RateBookDialogContent } from 'components/display/RateBookDialogContent';
 import {
   ensureSeasonInfoProps,
   getUserRating,
-  RatingDescriptions,
   renderSeasonInfoDate,
 } from 'components/display/season-info-common';
 
@@ -240,34 +238,16 @@ export class SeasonInfoAcceptance extends React.Component<SeasonInfoAcceptancePr
             open={this.state.rateBookDialogOpen}
             title='Rate Book'
             content={
-              <form onSubmit={this.handleRateBookConfirm} noValidate>
-                <FormControl error={!this.state.isRatingValid}>
-
-                  <TextField
-                    id='season-rate-book'
-                    label='Your Rating'
-                    className='o-field o-field--text'
-                    value={this.state.userBookRating > -1 ? this.state.userBookRating : ''}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      this.setState({ userBookRating: value, isRatingValid: value >= 1 && value <= 5 })}
-                    }
-                    margin='normal'
-                    type='number'
-                    inputProps={{
-                      min: 1.0,
-                      max: 5.0,
-                      step: 0.1,
-                    }}
-                  />
-
-                  <FormHelperText>{this.state.isRatingValid ? '' : 'Rating must be between 1 and 5'}</FormHelperText>
-
-                  {RatingDescriptions.map((description, i) =>
-                    <DialogContentText className='c-season-info__rating-description' key={i}>{description}</DialogContentText>
-                  )}
-                </FormControl>
-              </form>
+              <RateBookDialogContent
+                id='season-rate-book'
+                value={this.state.userBookRating > -1 ? this.state.userBookRating : ''}
+                isValid={this.state.isRatingValid}
+                onSubmit={this.handleRateBookConfirm}
+                onValueChange={(value) => this.setState({
+                  userBookRating: value,
+                  isRatingValid: value >= 1 && value <= 5,
+                })}
+              />
             }
             confirmText='Rate Book'
             onRef={(ref) => (this.rateBookDialog = ref)}
