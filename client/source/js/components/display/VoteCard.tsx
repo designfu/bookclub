@@ -11,6 +11,7 @@ export interface VoteCardProps {
   i: number;
   points: number;
   onVote?: Function;
+  isResetAdded?: boolean;
 }
 
 export class VoteCard extends React.Component<VoteCardProps, any> {
@@ -19,7 +20,7 @@ export class VoteCard extends React.Component<VoteCardProps, any> {
     const image = (book && book.links && book.links.image) ? book.links.image : '/icons/icon-book-256.png';
 
     const card = (
-      <Card className='c-vote-card'>
+      <Card className={`c-vote-card${this.props.isResetAdded ? ' c-vote-card--reset-added' : ''}`}>
         <CardMedia
           className={`c-vote-card__image-media${image === '/icons/icon-book-256.png' ? ' no-src':''}`}
           image={image}

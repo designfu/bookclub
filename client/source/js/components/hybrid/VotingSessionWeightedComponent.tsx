@@ -26,7 +26,11 @@ import {
   hydrateVotingSession,
   selectVotingSessionContainerState,
 } from 'utils/voting-session-container';
-import { applyVoteOrderDraft, saveVoteOrderDraft } from 'utils/vote-order-draft';
+import {
+  hydrateVoteOrderDraft,
+  saveVoteOrderDraft,
+} from 'utils/vote-order-draft';
+import { computeResetAddedBookIds, toBookId } from 'utils/vote-reset-highlight';
 
 const pointsFor = (i) => Math.max(Config.MAX_VOTES - i, 0);
 
@@ -36,9 +40,11 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
   constructor(props) {
     super(props);
 
+    const { books, resetAddedBookIds } = this.booksAndResetIdsFromProps(props);
     this.state = {
-      books: this.booksFromProps(props),
+      books,
       enabled: true,
+      resetAddedBookIds,
     };
   }
 
@@ -109,6 +115,7 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
                 i={i}
                 points={pointsFor(i)}
                 book={book}
+                isResetAdded={this.state.resetAddedBookIds.indexOf(toBookId(book)) > -1}
                 onVote={this.onVote.bind(this)}
               />
             )}
@@ -128,8 +135,10 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
 
   componentDidUpdate(prevProps) {
     if (prevProps !== this.props) {
+      const { books, resetAddedBookIds } = this.booksAndResetIdsFromProps(this.props);
       this.setState({
-        books: this.booksFromProps(this.props),
+        books,
+        resetAddedBookIds,
       });
     }
   }
@@ -149,32 +158,44 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
 
   async resetFromLastSeason() {
     const latestVotingSession = await this.props.fetchLatestWithUserVotes();
+    const previousSession = latestVotingSession || this.props.latestVotingSession;
     const books = buildWeightedResetBooks({
       books: this.state.books,
-      latestVotingSession: latestVotingSession || this.props.latestVotingSession,
+      latestVotingSession: previousSession,
       myId: this.props.myId,
     });
-    this.persistVoteOrderDraft(books);
+    const resetAddedBookIds = this.resetAddedIdsForBooks(books, previousSession);
+    this.persistVoteOrderDraft(books, resetAddedBookIds);
     this.setState({
       books,
       enabled: true,
+      resetAddedBookIds,
     });
   }
 
-  booksFromProps(props) {
-    return applyVoteOrderDraft(
+  booksAndResetIdsFromProps(props) {
+    return hydrateVoteOrderDraft(
       props.votingSession && props.votingSession._id,
       props.myId,
       extractWeightedBookList(props),
     );
   }
 
-  persistVoteOrderDraft(books) {
+  persistVoteOrderDraft(books, resetAddedBookIds = this.state.resetAddedBookIds) {
     saveVoteOrderDraft(
       this.props.votingSession && this.props.votingSession._id,
       this.props.myId,
       books,
+      resetAddedBookIds,
     );
+  }
+
+  resetAddedIdsForBooks(books = [], previousSession = null) {
+    return computeResetAddedBookIds({
+      localBooks: this.state.books,
+      nextBooks: books,
+      previousSession,
+    });
   }
 }
 
@@ -193,7 +214,9 @@ const mapDispatchToProps = (dispatch: any) => {
       dispatch(ReduxActions.onNext(VotingSessionActionTypes.GOT_VOTES_CAST, () => {
         this.setState({
           enabled: false,
-        })
+          resetAddedBookIds: [],
+        });
+        this.persistVoteOrderDraft(this.state.books, []);
       }));
       dispatch(VotingSessionActions.castVotes(votes));
     },

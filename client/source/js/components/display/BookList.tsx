@@ -121,12 +121,7 @@ export class BookList extends React.Component<any, any> {
       const suggestedBooks = books.filter(({ book }) => book.status === BookStatus.SUGGESTED);
       const yourSuggestedPlaceholders = yourBookPlaceholders.filter(({ book }) => book.status === BookStatus.SUGGESTED);
       const suggestedBooksWithPlaceholders = [...suggestedBooks, ...yourSuggestedPlaceholders]
-        .sort((a, b) => {
-          const aIsNew = this.isNewBook(a.book);
-          const bIsNew = this.isNewBook(b.book);
-          return Number(bIsNew) - Number(aIsNew)
-            || titleCompare(a, b);
-        });
+        .sort((a, b) => titleCompare(a, b));
       const nonSuggestedBooks = [
         ...books.filter(({ book }) => book.status !== BookStatus.SUGGESTED),
         ...yourBookPlaceholders.filter(({ book }) => book.status !== BookStatus.SUGGESTED),

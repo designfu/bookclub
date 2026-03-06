@@ -48,20 +48,6 @@ function userRatingOf(book, myId): number {
   return myRating ? myRating.value : -1;
 }
 
-function hasUserVotedInVotingSession(votingSession, myId): boolean {
-  if (!votingSession || !myId) {
-    return false;
-  }
-  const votes = Array.isArray(votingSession.votes) ? votingSession.votes : [];
-  return votes.some((vote) => {
-    if (!vote) {
-      return false;
-    }
-    const voteUser = vote.user && vote.user._id ? vote.user._id : vote.user;
-    return voteUser === myId;
-  });
-}
-
 function resolvedSeasonBook(season, books = {}) {
   if (!season || !season.book) {
     return null;
@@ -93,8 +79,7 @@ class SeasonsPage_ extends React.Component<any, any> {
         if (this.state.sortMode !== 'personalBookRating') {
           return true;
         }
-        const votingSession = this.props.votingSessions[season.votingSession] || {};
-        return userRatingOf(book, myId) >= 0 || hasUserVotedInVotingSession(votingSession, myId);
+        return userRatingOf(book, myId) >= 0;
       })
       .sort((a, b) => {
         const aBook = resolvedSeasonBook(a, this.props.books);

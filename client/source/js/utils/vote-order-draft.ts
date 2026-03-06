@@ -1,6 +1,12 @@
 import { BookStatus } from 'types';
 
-const draftCache: { [key: string]: { userId: string; bookIds: string[] } } = {};
+type VoteOrderDraft = {
+  userId: string;
+  bookIds: string[];
+  resetAddedBookIds: string[];
+};
+
+const draftCache: { [key: string]: VoteOrderDraft } = {};
 
 function draftKey(votingSessionId, myId) {
   if (!votingSessionId || !myId) return null;
@@ -13,35 +19,62 @@ function normalizeBookIds(books = []) {
     .filter((id) => !!id);
 }
 
-function loadDraft(votingSessionId, myId): string[] {
+function normalizeIds(ids = []) {
+  return ids
+    .map((id) => id && id.toString ? id.toString() : id)
+    .filter((id) => !!id);
+}
+
+function emptyDraft(myId): VoteOrderDraft {
+  return {
+    userId: myId,
+    bookIds: [],
+    resetAddedBookIds: [],
+  };
+}
+
+function loadDraftPayload(votingSessionId, myId): VoteOrderDraft {
   const key = draftKey(votingSessionId, myId);
-  if (!key) return [];
+  if (!key) return emptyDraft(myId);
 
   if (draftCache[key]) {
-    return draftCache[key].userId === myId ? draftCache[key].bookIds : [];
+    return draftCache[key].userId === myId ? draftCache[key] : emptyDraft(myId);
   }
 
   try {
     const raw = window && window.sessionStorage ? window.sessionStorage.getItem(key) : null;
     const parsed = raw ? JSON.parse(raw) : [];
     if (parsed && parsed.userId === myId && Array.isArray(parsed.bookIds)) {
-      draftCache[key] = parsed;
-      return parsed.bookIds;
+      const payload = {
+        userId: parsed.userId,
+        bookIds: normalizeIds(parsed.bookIds),
+        resetAddedBookIds: normalizeIds(parsed.resetAddedBookIds || []),
+      };
+      draftCache[key] = payload;
+      return payload;
     }
   } catch (e) {
   }
 
-  return [];
+  return emptyDraft(myId);
 }
 
-export function saveVoteOrderDraft(votingSessionId, myId, books = []) {
+function loadDraft(votingSessionId, myId): string[] {
+  return loadDraftPayload(votingSessionId, myId).bookIds;
+}
+
+export function saveVoteOrderDraft(votingSessionId, myId, books = [], resetAddedBookIds?) {
   const key = draftKey(votingSessionId, myId);
   if (!key) return;
 
   const ids = normalizeBookIds(books);
+  const existing = loadDraftPayload(votingSessionId, myId);
   const payload = {
     userId: myId,
     bookIds: ids,
+    resetAddedBookIds: typeof resetAddedBookIds === 'undefined'
+      ? existing.resetAddedBookIds || []
+      : normalizeIds(resetAddedBookIds),
   };
   draftCache[key] = payload;
 
@@ -53,9 +86,32 @@ export function saveVoteOrderDraft(votingSessionId, myId, books = []) {
   }
 }
 
-export function applyVoteOrderDraft(votingSessionId, myId, books = []) {
+export function getVoteOrderDraftResetAddedBookIds(votingSessionId, myId) {
+  return loadDraftPayload(votingSessionId, myId).resetAddedBookIds || [];
+}
+
+export function hydrateVoteOrderDraft(votingSessionId, myId, books = []) {
+  const { books: draftBooks, addedFromLocalSessionMissIds } = applyVoteOrderDraftWithMeta(
+    votingSessionId,
+    myId,
+    books,
+  );
+  const persisted = getVoteOrderDraftResetAddedBookIds(votingSessionId, myId);
+  const resetAddedBookIds = Array.from(new Set([...(persisted || []), ...(addedFromLocalSessionMissIds || [])]));
+  return {
+    books: draftBooks,
+    resetAddedBookIds,
+  };
+}
+
+export function applyVoteOrderDraftWithMeta(votingSessionId, myId, books = []) {
   const ids = loadDraft(votingSessionId, myId);
-  if (!ids.length || !books.length) return books;
+  if (!ids.length || !books.length) {
+    return {
+      books,
+      addedFromLocalSessionMissIds: [],
+    };
+  }
 
   const seen = {};
   const booksById = books.reduce((map, book) => {
@@ -83,6 +139,14 @@ export function applyVoteOrderDraft(votingSessionId, myId, books = []) {
 
   const newSuggested = remaining.filter((book: any) => book && book.status === BookStatus.SUGGESTED);
   const otherRemaining = remaining.filter((book: any) => !book || book.status !== BookStatus.SUGGESTED);
+  const addedFromLocalSessionMissIds = normalizeBookIds(newSuggested);
 
-  return [...newSuggested, ...ordered, ...otherRemaining];
+  return {
+    books: [...newSuggested, ...ordered, ...otherRemaining],
+    addedFromLocalSessionMissIds,
+  };
+}
+
+export function applyVoteOrderDraft(votingSessionId, myId, books = []) {
+  return applyVoteOrderDraftWithMeta(votingSessionId, myId, books).books;
 }
