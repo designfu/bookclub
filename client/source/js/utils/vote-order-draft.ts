@@ -137,12 +137,12 @@ export function applyVoteOrderDraftWithMeta(votingSessionId, myId, books = []) {
     return !seen[id];
   });
 
-  const newSuggested = remaining.filter((book: any) => book && book.status === BookStatus.SUGGESTED);
-  const otherRemaining = remaining.filter((book: any) => !book || book.status !== BookStatus.SUGGESTED);
-  const addedFromLocalSessionMissIds = normalizeBookIds(newSuggested);
+  const addedFromLocalSessionMissIds = normalizeBookIds(
+    remaining.filter((book: any) => book && book.status === BookStatus.SUGGESTED)
+  );
 
   return {
-    books: [...newSuggested, ...ordered, ...otherRemaining],
+    books: [...ordered, ...remaining],
     addedFromLocalSessionMissIds,
   };
 }

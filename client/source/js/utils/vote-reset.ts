@@ -56,13 +56,6 @@ export function buildResetOrderFromPrevious({
   }
 
   const previousVotes = Array.isArray(previousVotingSession.votes) ? previousVotingSession.votes : [];
-  const previousBooksVotedOn = Array.isArray(previousVotingSession.booksVotedOn) ? previousVotingSession.booksVotedOn : [];
-  const previousBookSet = new Set<string>(
-    (previousBooksVotedOn.length > 0
-      ? previousBooksVotedOn.map((book) => getRefId(book))
-      : previousVotes.map((vote) => getRefId(vote.book)))
-      .filter((id) => !!id)
-  );
 
   const rawUserVotes = previousVotes.filter((vote) => getRefId(vote.user) === myId);
   const hasPreferred = rawUserVotes.some((vote) =>
@@ -96,14 +89,13 @@ export function buildResetOrderFromPrevious({
     return map;
   }, {});
 
-  const newBooks = currentBooks.filter((book) => !previousBookSet.has(book._id));
   const orderedReturningBooks = orderedPreviousBookIds
     .map((bookId) => currentById[bookId])
-    .filter((book) => !!book && !newBooks.find((newBook) => newBook._id === book._id));
-  const orderedIds = new Set([...newBooks, ...orderedReturningBooks].map((book) => book._id));
+    .filter((book) => !!book);
+  const orderedIds = new Set(orderedReturningBooks.map((book) => book._id));
   const remainingBooks = currentBooks.filter((book) => !orderedIds.has(book._id));
 
-  return [...newBooks, ...orderedReturningBooks, ...remainingBooks];
+  return [...orderedReturningBooks, ...remainingBooks];
 }
 
 export function buildResetOrderSectionsFromPrevious({
@@ -122,13 +114,6 @@ export function buildResetOrderSectionsFromPrevious({
   }
 
   const previousVotes = Array.isArray(previousVotingSession.votes) ? previousVotingSession.votes : [];
-  const previousBooksVotedOn = Array.isArray(previousVotingSession.booksVotedOn) ? previousVotingSession.booksVotedOn : [];
-  const previousBookSet = new Set<string>(
-    (previousBooksVotedOn.length > 0
-      ? previousBooksVotedOn.map((book) => getRefId(book))
-      : previousVotes.map((vote) => getRefId(vote.book)))
-      .filter((id) => !!id)
-  );
 
   const rawUserVotes = previousVotes.filter((vote) => getRefId(vote.user) === myId);
   const hasPreferred = rawUserVotes.some((vote) =>
@@ -162,15 +147,14 @@ export function buildResetOrderSectionsFromPrevious({
     return map;
   }, {});
 
-  const newBooks = currentBooks.filter((book) => !previousBookSet.has(book._id));
   const orderedReturningBooks = orderedPreviousBookIds
     .map((bookId) => currentById[bookId])
-    .filter((book) => !!book && !newBooks.find((newBook) => newBook._id === book._id));
-  const topIds = new Set([...newBooks, ...orderedReturningBooks].map((book) => book._id));
+    .filter((book) => !!book);
+  const topIds = new Set(orderedReturningBooks.map((book) => book._id));
   const bottomBooks = currentBooks.filter((book) => !topIds.has(book._id));
 
   return {
-    topBooks: [...newBooks, ...orderedReturningBooks],
+    topBooks: orderedReturningBooks,
     bottomBooks,
   };
 }

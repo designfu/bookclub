@@ -1,4 +1,4 @@
-import { getRefId } from 'utils/vote-reset';
+import { dateToNumber, getRefId } from 'utils/vote-reset';
 
 export function toBookId(book): string | null {
   const id = getRefId(book && book._id ? book._id : book);
@@ -29,6 +29,7 @@ export function computeResetAddedBookIds({
   previousSession = null,
   shouldIgnoreBook = (_book) => false,
 }) {
+  const previousSessionFinishedAt = dateToNumber(previousSession && (previousSession as any).dates && (previousSession as any).dates.finished);
   const localBookIds = localBooks.reduce((set, book) => {
     if (shouldIgnoreBook(book)) {
       return set;
@@ -42,6 +43,16 @@ export function computeResetAddedBookIds({
   const previousBookIds = previousSessionBookIdSet(previousSession);
   return nextBooks
     .filter((book) => !!book && !shouldIgnoreBook(book))
+    .filter((book) => {
+      const id = toBookId(book);
+      if (!id) {
+        return false;
+      }
+      const proposedAt = dateToNumber((book as any).dates && (book as any).dates.proposed);
+      return !localBookIds[id]
+        || !previousBookIds[id]
+        || (previousSessionFinishedAt > 0 && proposedAt > previousSessionFinishedAt);
+    })
     .map((book) => toBookId(book))
-    .filter((id) => !!id && (!localBookIds[id] || !previousBookIds[id]));
+    .filter((id) => !!id);
 }
