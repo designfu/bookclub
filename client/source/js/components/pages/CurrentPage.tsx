@@ -9,6 +9,7 @@ import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
+import Typography from '@material-ui/core/Typography';
 import { VotingSessionStatus } from 'types';
 import { SeasonActions } from 'actions/SeasonActions';
 import { VotingSessionActions } from 'actions/VotingSessionActions';
@@ -74,6 +75,13 @@ class CurrentPage_ extends React.Component<any, any> {
                 Open New Season
               </ConfirmDialogButton>
             : null}
+          </div>
+        : null}
+        {!currentSeason ?
+          <div className='c-current-page__empty-state'>
+            <Typography variant='body1' component='p'>
+              Welcome! Please wait for an admin to start the next season.
+            </Typography>
           </div>
         : null}
         {currentSeason ?

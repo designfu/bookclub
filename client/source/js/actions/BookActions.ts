@@ -1,5 +1,6 @@
 import BookClient from 'clients/BookClient';
 import { Book } from '@shared/types';
+import Config from 'config';
 
 export const PREFIX = `@Book`;
 export const BookActionTypes = {
@@ -99,9 +100,20 @@ export const BookActions = {
   }),
   deleteBook: (book) => (dispatch) => {
     dispatch(BookActions.requestDeleteBook_(book));
-    BookClient.delete(book._id)
-      .then(() => {
+    return fetch(`${Config.API_HOST}/api/books/${book._id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then(async (response) => {
+      if(response.status === 204) {
         dispatch(BookActions.receiveDeleteBook_(book));
-      });
+        return;
+      }
+
+      const message = await response.text();
+      throw new Error(message || 'Could not delete this book.');
+    });
   },
 };

@@ -39,14 +39,14 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
     ...votingSession
   };
   const toId = (value) => value && value.toString ? value.toString() : value;
-  const winnerId = results[0] ? toId(results[0].book) : null;
+  const chosenBookId = toId((seasonBook as any) && ((seasonBook as any)._id || seasonBook));
+  const topResultBookId = results[0] ? toId(results[0].book) : null;
   const resultsByBookId = results.reduce((acc, result) => ({
     ...acc,
     [toId(result.book)]: result,
   }), {});
 
   const rankedList = results
-    .slice(1)
     .map(result => {
       const bookId = toId(result.book);
       const book = books[bookId];
@@ -61,10 +61,12 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
     .filter(_ => !!_ && _.status !== BookStatus.BACKLOG && _._id);
 
   if(rankedList.length > 0) {
-    return rankedList;
+    return chosenBookId && chosenBookId === topResultBookId
+      ? rankedList.filter(_ => toId(_._id) !== chosenBookId)
+      : rankedList;
   }
 
-  return (booksVotedOn && booksVotedOn.length > 0 ? booksVotedOn : Object.keys(books))
+  const fallbackList = (booksVotedOn && booksVotedOn.length > 0 ? booksVotedOn : Object.keys(books))
     .map(toId)
     .filter(bookId => books[bookId])
     .map(bookId => {
@@ -75,7 +77,11 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
       book.tiedCount = result ? result.tiedCount : 1;
       return book;
     })
-    .filter(_ => toId(_._id) !== winnerId && (booksVotedOn.length > 0 || _.status !== BookStatus.BACKLOG) && _._id);
+    .filter(_ => (booksVotedOn.length > 0 || _.status !== BookStatus.BACKLOG) && _._id);
+
+  return chosenBookId && chosenBookId === topResultBookId
+    ? fallbackList.filter(_ => toId(_._id) !== chosenBookId)
+    : fallbackList;
 }
 
 export interface SeasonInfoAdvancedAcceptanceProps {

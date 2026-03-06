@@ -26,6 +26,7 @@ import {
   hydrateVotingSession,
   selectVotingSessionContainerState,
 } from 'utils/voting-session-container';
+import { applyVoteOrderDraft, saveVoteOrderDraft } from 'utils/vote-order-draft';
 
 const pointsFor = (i) => Math.max(Config.MAX_VOTES - i, 0);
 
@@ -36,7 +37,7 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
     super(props);
 
     this.state = {
-      books: extractWeightedBookList(props),
+      books: this.booksFromProps(props),
       enabled: true,
     };
   }
@@ -117,8 +118,10 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
   }
 
   onListUpdate(list) {
+    const books = mapReorderableListToWeightedBooks(list, this.props.books);
+    this.persistVoteOrderDraft(books);
     this.setState({
-      books: mapReorderableListToWeightedBooks(list, this.props.books),
+      books,
       enabled: true,
     });
   }
@@ -126,28 +129,52 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
   componentDidUpdate(prevProps) {
     if (prevProps !== this.props) {
       this.setState({
-        books: extractWeightedBookList(this.props),
+        books: this.booksFromProps(this.props),
       });
     }
   }
 
+  componentWillUnmount() {
+    this.persistVoteOrderDraft(this.state.books);
+  }
+
   onVote(book, points) {
+    const books = moveWeightedBookToPoints(this.state.books, book, points, Config.MAX_VOTES);
+    this.persistVoteOrderDraft(books);
     this.setState({
-      books: moveWeightedBookToPoints(this.state.books, book, points, Config.MAX_VOTES),
+      books,
       enabled: true,
     });
   }
 
   async resetFromLastSeason() {
     const latestVotingSession = await this.props.fetchLatestWithUserVotes();
+    const books = buildWeightedResetBooks({
+      books: this.state.books,
+      latestVotingSession: latestVotingSession || this.props.latestVotingSession,
+      myId: this.props.myId,
+    });
+    this.persistVoteOrderDraft(books);
     this.setState({
-      books: buildWeightedResetBooks({
-        books: this.state.books,
-        latestVotingSession: latestVotingSession || this.props.latestVotingSession,
-        myId: this.props.myId,
-      }),
+      books,
       enabled: true,
     });
+  }
+
+  booksFromProps(props) {
+    return applyVoteOrderDraft(
+      props.votingSession && props.votingSession._id,
+      props.myId,
+      extractWeightedBookList(props),
+    );
+  }
+
+  persistVoteOrderDraft(books) {
+    saveVoteOrderDraft(
+      this.props.votingSession && this.props.votingSession._id,
+      this.props.myId,
+      books,
+    );
   }
 }
 

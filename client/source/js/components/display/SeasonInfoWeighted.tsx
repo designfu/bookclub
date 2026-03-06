@@ -38,7 +38,9 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
     booksVotedOn: [],
     ...votingSession
   };
-  const winner = results[0];
+  const toId = (value) => value && value.toString ? value.toString() : value;
+  const chosenBookId = toId((seasonBook as any) && ((seasonBook as any)._id || seasonBook));
+  const topResultBookId = results[0] ? toId(results[0].book) : null;
   const list = (booksVotedOn && booksVotedOn.length > 0 ? booksVotedOn : Object.keys(books))
     .filter(bookId => books[bookId])
     .map(bookId => {
@@ -47,9 +49,11 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
       book.points = result ? result.points : 0;
       return book;
     })
-    .filter(_ => _._id !== winner.book && (booksVotedOn.length > 0 || _.status !== BookStatus.BACKLOG) && _._id)
+    .filter(_ => (booksVotedOn.length > 0 || _.status !== BookStatus.BACKLOG) && _._id)
     .sort((a, b) => b.points - a.points);
-  return list;
+  return chosenBookId && chosenBookId === topResultBookId
+    ? list.filter(_ => toId(_._id) !== chosenBookId)
+    : list;
 }
 
 export interface SeasonInfoWeightedProps {

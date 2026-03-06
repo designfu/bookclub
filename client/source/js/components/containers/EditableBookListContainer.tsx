@@ -4,6 +4,8 @@ import { syncHistoryWithStore } from 'react-router-redux';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { withRouter } from 'react-router';
+import Snackbar from '@material-ui/core/Snackbar';
+import SnackbarContent from '@material-ui/core/SnackbarContent';
 import { BookList } from 'components/display/BookList';
 import { EditBookDialog } from 'components/display/EditBookDialog';
 import { BookActions, BookActionTypes } from 'actions/BookActions';
@@ -16,6 +18,7 @@ class EditableBookListContainer_ extends React.Component<any, any> {
     this.state = {
       isModalOpen: this.props.isOpen || false,
       book: null,
+      deleteError: '',
     };
 
     this.openModal = this.props.openModal || this.openModal.bind(this);
@@ -47,6 +50,18 @@ class EditableBookListContainer_ extends React.Component<any, any> {
           open={this.state.isModalOpen}
           book={this.state.book}
         />
+
+        <Snackbar
+          open={!!this.state.deleteError}
+          autoHideDuration={5000}
+          onClose={this.handleDeleteErrorClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <SnackbarContent
+            message={this.state.deleteError}
+            style={{ backgroundColor: '#d32f2f' }}
+          />
+        </Snackbar>
       </div>
     );
   }
@@ -60,8 +75,19 @@ class EditableBookListContainer_ extends React.Component<any, any> {
   }
 
   onDeleteClick(book) {
-    this.props.deleteBook(book);
+    this.setState({ deleteError: '' });
+    this.props.deleteBook(book)
+      .catch((err) => {
+        const message = err && err.message
+          ? err.message
+          : 'Could not delete this book. Only backlog or suggested books can be deleted.';
+        this.setState({ deleteError: message });
+      });
   }
+
+  handleDeleteErrorClose = () => {
+    this.setState({ deleteError: '' });
+  };
 
   onProposeClick(book) {
     this.props.proposeBook(book);
@@ -111,7 +137,7 @@ const mapDispatchToProps = (dispatch: any) => {
       dispatch(BookActions.updateBook(bookPostData));
     },
     deleteBook(book) {
-      dispatch(BookActions.deleteBook(book));
+      return dispatch(BookActions.deleteBook(book));
     },
     proposeBook(book) {
       const bookPostData = {

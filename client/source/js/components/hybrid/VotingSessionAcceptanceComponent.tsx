@@ -27,6 +27,7 @@ import {
   hydrateVotingSession,
   selectVotingSessionContainerState,
 } from 'utils/voting-session-container';
+import { applyVoteOrderDraft, saveVoteOrderDraft } from 'utils/vote-order-draft';
 
 class VotingSessionAcceptanceContainer_ extends React.Component<any, any> {
   closeVotingDialog: CloseAcceptanceVotingDialogButton;
@@ -35,7 +36,7 @@ class VotingSessionAcceptanceContainer_ extends React.Component<any, any> {
     super(props);
 
     this.state = {
-      books: extractAcceptanceBookList(props),
+      books: this.booksFromProps(props),
       enabled: true,
     };
   }
@@ -121,6 +122,7 @@ class VotingSessionAcceptanceContainer_ extends React.Component<any, any> {
 
   onListUpdate(list) {
     const books = mapReorderableListToAcceptanceBooks(list, this.props.books);
+    this.persistVoteOrderDraft(books);
     this.setState({
       books,
       enabled: true,
@@ -130,28 +132,52 @@ class VotingSessionAcceptanceContainer_ extends React.Component<any, any> {
   componentDidUpdate(prevProps) {
     if (prevProps !== this.props) {
       this.setState({
-        books: extractAcceptanceBookList(this.props),
+        books: this.booksFromProps(this.props),
       });
     }
   }
 
+  componentWillUnmount() {
+    this.persistVoteOrderDraft(this.state.books);
+  }
+
   onVote(book, rank) {
+    const books = moveAcceptanceBookToRank(this.state.books, book, rank);
+    this.persistVoteOrderDraft(books);
     this.setState({
-      books: moveAcceptanceBookToRank(this.state.books, book, rank),
+      books,
       enabled: true,
     });
   }
 
   async resetFromLastSeason() {
     const latestVotingSession = await this.props.fetchLatestWithUserVotes();
+    const books = buildAcceptanceResetBooks({
+      books: this.state.books,
+      latestVotingSession: latestVotingSession || this.props.latestVotingSession,
+      myId: this.props.myId,
+    });
+    this.persistVoteOrderDraft(books);
     this.setState({
-      books: buildAcceptanceResetBooks({
-        books: this.state.books,
-        latestVotingSession: latestVotingSession || this.props.latestVotingSession,
-        myId: this.props.myId,
-      }),
+      books,
       enabled: true,
     });
+  }
+
+  booksFromProps(props) {
+    return applyVoteOrderDraft(
+      props.votingSession && props.votingSession._id,
+      props.myId,
+      extractAcceptanceBookList(props),
+    );
+  }
+
+  persistVoteOrderDraft(books) {
+    saveVoteOrderDraft(
+      this.props.votingSession && this.props.votingSession._id,
+      this.props.myId,
+      books,
+    );
   }
 }
 
