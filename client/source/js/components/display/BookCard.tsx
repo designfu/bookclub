@@ -1,15 +1,17 @@
 import * as React from 'react';
+import Box from '@material-ui/core/Box';
+import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
 import CardMedia from '@material-ui/core/CardMedia';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import IconButton from '@material-ui/core/IconButton';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import Typography from '@material-ui/core/Typography';
 import classnames from 'classnames';
 import { Book, BookStatus } from 'types';
 import { roundToNearest } from '@shared/utils/math';
+import { ConfirmDialog } from 'components/display/ConfirmDialog';
 import { ensureGoodreadsUrlIsShort, ensureGoodreadsUrlIsValid } from 'utils/goodreads';
 import { acceptanceVoteResultsString, normalize, pointString } from 'utils/strings';
 
@@ -40,9 +42,9 @@ function renderStatus(status, points = null, votes = null) {
     'has-points': points,
   });
   if (votes) {
-    return <span className={className}>{acceptanceVoteResultsString(votes)}</span>;
+    return <Typography variant='caption' component='span' className={className}>{acceptanceVoteResultsString(votes)}</Typography>;
   } else {
-    return <span className={className}>{points ? pointString(points) : status}</span>;
+    return <Typography variant='caption' component='span' className={className}>{points ? pointString(points) : status}</Typography>;
   }
 }
 
@@ -78,6 +80,8 @@ export interface BookListItemProps {
   myId?: string;
   isNew?: boolean;
   isYourBook?: boolean;
+  hideBadges?: boolean;
+  showAdminActions?: boolean;
   hidePitch?: boolean;
   onEdit?: Function;
   onDelete?: Function;
@@ -90,24 +94,12 @@ export interface BookListItemProps {
 }
 
 export class BookCard extends React.Component<BookListItemProps, any> {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      anchorEl: null,
-    };
-
-    this.handleMenuClose = this.handleMenuClose.bind(this);
-    this.handleMenuOpen = this.handleMenuOpen.bind(this);
-    this.handleEdit = this.handleEdit.bind(this);
-    this.handleDelete = this.handleDelete.bind(this);
-    this.handlePropose = this.handlePropose.bind(this);
-    this.handleRetract = this.handleRetract.bind(this);
-  }
+  state = {
+    deleteDialogOpen: false,
+  };
 
   render() {
     const { myId, isAdmin, borderless, statusBreak } = this.props;
-    const { anchorEl } = this.state;
     const book = ensureProps(this.props.book);
     const className = classnames('c-book-card', {
       'c-book-card--borderless': borderless,
@@ -116,32 +108,35 @@ export class BookCard extends React.Component<BookListItemProps, any> {
 
     const canEdit = myId === book.suggestedBy || isAdmin;
 
+    const allowDelete = !!isAdmin || !this.props.showAdminActions;
     const actions = {
       edit: canEdit && this.props.onEdit,
-      delete: canEdit && this.props.onDelete,
+      delete: allowDelete && canEdit && this.props.onDelete,
       propose: canEdit && this.props.onPropose && book.status === BookStatus.BACKLOG,
       retract: canEdit && this.props.onRetract && book.status === BookStatus.SUGGESTED,
     };
 
-    const showActionDropdown = actions.edit || actions.delete || actions.propose || actions.retract;
     const showStatusBadge = !!book.status && book.status !== BookStatus.BACKLOG && !this.props.points && !this.props.rankings;
     const showYourBookBadge = !!this.props.isYourBook;
     const showNewBadge = !!this.props.isNew;
-    const showBadges = showStatusBadge || showYourBookBadge || showNewBadge;
+    const showBadges = !this.props.hideBadges && (showStatusBadge || showYourBookBadge || showNewBadge);
     const showPitch = !!book.pitch && !this.props.hidePitch;
+    const hasActions = !!(actions.edit || actions.propose || actions.retract || actions.delete);
 
     return (
       <Card className={className}>
-        <div className='c-book-card__top'>
-          {showBadges ? (
+        {showBadges ? (
+          <div className='c-book-card__badges-row'>
             <span className='c-book-card__badges'>
               {showStatusBadge ? <span className={`c-book-card__badge c-book-card__badge--${normalize(book.status)}`}>{statusBadgeLabel(book.status)}</span> : null}
               {showYourBookBadge ? <span className='c-book-card__badge c-book-card__badge--your-book'>Your Book</span> : null}
               {showNewBadge ? <span className='c-book-card__badge c-book-card__badge--new'>New</span> : null}
             </span>
-          ) : null}
+          </div>
+        ) : null}
+        <div className='c-book-card__top'>
           <CardMedia
-            className={`c-book-card__image-media${!book.links.image ? ' no-src':''}`}
+            className='c-book-card__image-media'
             image={book.links.image ? book.links.image : '/icons/icon-book-256.png'}
             title={`${book.title} - ${book.author}`}
           />
@@ -149,94 +144,95 @@ export class BookCard extends React.Component<BookListItemProps, any> {
             <CardHeader
               title={book.title}
               subheader={book.author}
-              action={
-                showActionDropdown ? <IconButton
-                  aria-owns={anchorEl ? 'simple-menu' : null}
-                  aria-haspopup='true'
-                  onClick={this.handleMenuOpen}
-                >
-                  <MoreVertIcon />
-                </IconButton> : null
-              }
             />
 
-            {showActionDropdown ?
-              <Menu
-                id='book-card-menu'
-                anchorEl={anchorEl}
-                open={!!anchorEl}
-                onClose={this.handleMenuClose}
-              >
-                {actions.edit ? <MenuItem onClick={this.handleEdit}>Edit</MenuItem> : null}
-                {actions.delete ? <MenuItem onClick={this.handleDelete}>Delete</MenuItem> : null}
-                {actions.propose ? <MenuItem onClick={this.handlePropose}>Suggest</MenuItem> : null}
-                {actions.retract ? <MenuItem onClick={this.handleRetract}>Move to backlog</MenuItem> : null}
-              </Menu>
-            : null}
-
-            <CardContent>
+            <CardContent className='c-book-card__metadata'>
               {renderStatus(book.status, this.props.points, this.props.rankings)}
+              {book.genre ?
+                <Typography variant='body2' component='p' className='c-book-card__detail c-book-card__detail--genre'>
+                  <Typography variant='subtitle2' component='span'>Genre:</Typography>{' '}
+                  <Typography variant='body2' component='span'>{book.genre}</Typography>
+                </Typography>
+              : null}
               {book.status === BookStatus.FINISHED ?
-                <span className='c-book-card__detail c-book-card__detail--rating'>
-                  <label>Rating: </label>
-                  <span>
+                <Typography variant='body2' component='p' className='c-book-card__detail c-book-card__detail--rating'>
+                  <Typography variant='subtitle2' component='span'>Rating:</Typography>{' '}
+                  <Typography variant='body2' component='span'>
                     {book.hasOwnProperty('averageRating') && book.averageRating > -1
                       ? `${formatRating(book.averageRating)} average from ${book.ratings.length} ratings ${yourRating(book.ratings, myId)}`
                       : 'No ratings yet'
                     }
-                  </span>
-                </span>
+                  </Typography>
+                </Typography>
               : null}
-              {book.genre ?
-                <span className='c-book-card__detail c-book-card__detail--genre'>
-                  <label>Genre: </label>
-                  <span>{book.genre}</span>
-                </span>
-              : null}
-              <span className='c-book-card__detail c-book-card__detail--goodreads'>
-                <label>Goodreads: </label>
-                <a href={book.links.goodreads ? ensureGoodreadsUrlIsValid(book.links.goodreads) : '#'} target='_blank'>{ensureGoodreadsUrlIsShort(book.links.goodreads)}</a>
-              </span>
+              <Typography variant='body2' component='p' className='c-book-card__detail c-book-card__detail--goodreads'>
+                <Typography variant='subtitle2' component='span'>Goodreads:</Typography>{' '}
+                <Typography variant='body2' component='span'>
+                  <a href={book.links.goodreads ? ensureGoodreadsUrlIsValid(book.links.goodreads) : '#'} target='_blank' rel='noreferrer'>{ensureGoodreadsUrlIsShort(book.links.goodreads)}</a>
+                </Typography>
+              </Typography>
             </CardContent>
           </div>
         </div>
         {showPitch ? (
           <CardContent className='c-book-card__secondary'>
-            <span className='c-book-card__detail c-book-card__detail--pitch'>
-              <label>Pitch: </label>
-              <span>{book.pitch}</span>
-            </span>
+            <Typography variant='body2' component='div' className='c-book-card__detail c-book-card__detail--pitch'>{book.pitch}</Typography>
           </CardContent>
         ) : null}
+        {hasActions ? (
+          <CardActions className='c-book-card__actions'>
+            {actions.edit ? <Button size='small' onClick={this.handleEdit}>Edit</Button> : null}
+            {actions.propose ? <Button size='small' onClick={this.handlePropose}>Suggest</Button> : null}
+            {actions.retract ? <Button size='small' onClick={this.handleRetract}>Move to backlog</Button> : null}
+            <Box sx={{ flexGrow: 1 }} />
+            {actions.delete ? <Button size='small' onClick={this.handleDeleteClick} color='secondary' className='c-book-card__action-delete'>Delete</Button> : null}
+          </CardActions>
+        ) : null}
+        <ConfirmDialog
+          open={this.state.deleteDialogOpen}
+          title='Delete this book?'
+          content={
+            <DialogContentText>
+              This will remove the book from the list.
+            </DialogContentText>
+          }
+          confirmText='Delete'
+          confirmColor='secondary'
+          onConfirm={this.handleDeleteConfirm}
+          onCancel={this.handleDeleteCancel}
+        />
       </Card>
     );
   }
 
-  handleMenuOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  };
-
-  handleMenuClose() {
-    this.setState({ anchorEl: null });
-  };
-
-  handleEdit() {
-    this.handleMenuClose();
+  handleEdit = () => {
     this.props.onEdit(this.props.book);
-  }
+  };
 
-  handleDelete() {
-    this.handleMenuClose();
+  handleDeleteClick = () => {
+    this.setState({
+      deleteDialogOpen: true,
+    });
+  };
+
+  handleDeleteCancel = () => {
+    this.setState({
+      deleteDialogOpen: false,
+    });
+  };
+
+  handleDeleteConfirm = () => {
+    this.setState({
+      deleteDialogOpen: false,
+    });
     this.props.onDelete(this.props.book);
-  }
+  };
 
-  handlePropose() {
-    this.handleMenuClose();
+  handlePropose = () => {
     this.props.onPropose(this.props.book);
-  }
+  };
 
-  handleRetract() {
-    this.handleMenuClose();
+  handleRetract = () => {
     this.props.onRetract(this.props.book);
-  }
+  };
 }

@@ -17,9 +17,9 @@ export function getUserRating(book, myId?): number {
 }
 
 export function renderSeasonInfoDate(label, timestamp) {
-  return <Typography component='p' className='c-season-info__date'>
-    <label>{label}: </label>
-    <span>{toStandardString(timestamp)}</span>
+  return <Typography component='p' variant='body2' className='c-season-info__date'>
+    <Typography component='span' variant='subtitle2'>{label}: </Typography>
+    <Typography component='span' variant='body2'>{toStandardString(timestamp)}</Typography>
   </Typography>;
 }
 

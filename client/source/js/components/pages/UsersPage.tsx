@@ -12,6 +12,13 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import Checkbox from '@material-ui/core/Checkbox';
+import Paper from '@material-ui/core/Paper';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
 import Config from 'config';
 import SeasonClient from 'clients/SeasonClient';
 import VotingSessionClient from 'clients/VotingSessionClient';
@@ -110,57 +117,50 @@ class UsersPage_ extends React.Component<any, any> {
         </div>
         {this.state.loading ? <Typography variant='body1'>Loading...</Typography> : null}
         {this.state.error ? <Typography variant='body1'>{this.state.error}</Typography> : null}
-        <table className='c-users-page-table'>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>User ID</th>
-              <th>Role</th>
-              <th>Suggested Books</th>
-              <th>Seasons Voted</th>
-              <th>Most Recent Season Voted</th>
-              <th>Debug</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map(({ user, booksSuggestedCount, seasonsVotedCount, lastSeasonTitle, lastSeasonDateRange }) => (
-              <tr key={user._id}>
-                <td>{user.name || '--'}</td>
-                <td>{user._id || '--'}</td>
-                <td>{isAdminUser(user) ? 'ADMIN' : 'MEMBER'}</td>
-                <td>{booksSuggestedCount}</td>
-                <td>{seasonsVotedCount}</td>
-                <td>
-                  <div>{lastSeasonTitle}</div>
-                  <div>{lastSeasonDateRange}</div>
-                </td>
-                <td className='c-users-page-table__debug'>
-                  <details>
-                    <summary>Show</summary>
-                    oauthId={user.googleId || '(none)'}; oauthToken={user.oauthToken || '(none)'}; avatar={user.avatar || '(none)'}; roles={(user.roles || []).join(', ') || '(none)'}; created={
-                      user.dates && user.dates.created ? new Date(user.dates.created).toISOString() : '(unknown)'
-                    }
-                  </details>
-                </td>
-                <td>
-                  <Button
-                    color='primary'
-                    onClick={() => this.openTransferDialog(user._id)}
-                  >
-                    Transfer
-                  </Button>
-                  <Button
-                    color='secondary'
-                    onClick={() => this.openDeleteDialog(user._id)}
-                  >
-                    Delete
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TableContainer component={Paper} className='c-users-page-table'>
+          <Table size='small'>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>User ID</TableCell>
+                <TableCell>Role</TableCell>
+                <TableCell>Suggested Books</TableCell>
+                <TableCell>Seasons Voted</TableCell>
+                <TableCell>Most Recent Season Voted</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {users.map(({ user, booksSuggestedCount, seasonsVotedCount, lastSeasonTitle, lastSeasonDateRange }) => (
+                <TableRow key={user._id}>
+                  <TableCell>{user.name || '--'}</TableCell>
+                  <TableCell>{user._id || '--'}</TableCell>
+                  <TableCell>{isAdminUser(user) ? 'ADMIN' : 'MEMBER'}</TableCell>
+                  <TableCell>{booksSuggestedCount}</TableCell>
+                  <TableCell>{seasonsVotedCount}</TableCell>
+                  <TableCell>
+                    <div>{lastSeasonTitle}</div>
+                    <div>{lastSeasonDateRange}</div>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      color='primary'
+                      onClick={() => this.openTransferDialog(user._id)}
+                    >
+                      Transfer
+                    </Button>
+                    <Button
+                      color='secondary'
+                      onClick={() => this.openDeleteDialog(user._id)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
         {this.renderTransferDialog()}
         {this.renderDeleteDialog()}
       </div>
@@ -216,39 +216,41 @@ class UsersPage_ extends React.Component<any, any> {
           <div className='c-users-transfer-dialog__summary'>
             <span>Selected line items: {selectedCount} / {transferItems.length}</span>
           </div>
-          <table className='c-users-transfer-table'>
-            <thead>
-              <tr>
-                <th>Use</th>
-                <th>Type</th>
-                <th>Description</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transferItems.map((item, i) => (
-                <tr key={item.id}>
-                  <td>
-                    <Checkbox
-                      checked={!!item.checked}
-                      onChange={() => this.toggleTransferItem(i)}
-                      color='primary'
-                    />
-                  </td>
-                  <td>{item.type}</td>
-                  <td>{item.description}</td>
-                  <td className={item.conflict ? 'is-conflict' : 'is-ok'}>
-                    {item.conflict ? `Conflict: ${item.conflictReason}` : 'OK'}
-                  </td>
-                </tr>
-              ))}
-              {transferItems.length < 1 ? (
-                <tr>
-                  <td colSpan={4}>Choose a target user to load transferable items.</td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
+          <TableContainer component={Paper} className='c-users-transfer-table'>
+            <Table size='small'>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Use</TableCell>
+                  <TableCell>Type</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Conflicts</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {transferItems.map((item, i) => (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={!!item.checked}
+                        onChange={() => this.toggleTransferItem(i)}
+                        color='primary'
+                      />
+                    </TableCell>
+                    <TableCell>{item.type}</TableCell>
+                    <TableCell>{item.description}</TableCell>
+                    <TableCell className={item.conflict ? 'is-conflict' : 'is-ok'}>
+                      {item.conflict ? `Conflict: ${item.conflictReason}` : 'OK'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {transferItems.length < 1 ? (
+                  <TableRow>
+                    <TableCell colSpan={4}>Choose a target user to load transferable items.</TableCell>
+                  </TableRow>
+                ) : null}
+              </TableBody>
+            </Table>
+          </TableContainer>
           {transferError ? <Typography variant='body1' className='c-users-transfer-dialog__error'>{transferError}</Typography> : null}
           {transferSummary ? <Typography variant='body1' className='c-users-transfer-dialog__summary-text'>{transferSummary}</Typography> : null}
         </DialogContent>

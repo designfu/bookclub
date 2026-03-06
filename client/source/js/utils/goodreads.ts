@@ -9,5 +9,19 @@ export function ensureGoodreadsUrlIsValid(url) {
 }
 
 export function ensureGoodreadsUrlIsShort(url) {
-  return url.replace(/https:\/\/www\./, '');
+  if(!url) {
+    return '';
+  }
+
+  const normalized = url
+    .replace(/^https?:\/\/(www\.)?/i, '')
+    .replace(/[?#].*$/, '')
+    .replace(/\/$/, '');
+
+  const parts = normalized.split('/');
+  if(parts.length <= 2) {
+    return normalized;
+  }
+
+  return `${parts[0]}/${parts[1]}...`;
 }

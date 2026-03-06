@@ -91,6 +91,7 @@ export class BookList extends React.Component<any, any> {
       <BookCard
         isAdmin={this.props.isAdmin}
         myId={this.props.myId}
+        showAdminActions={this.props.showAdminActions}
         key={id}
         book={book}
         isNew={this.isNewBook(book)}

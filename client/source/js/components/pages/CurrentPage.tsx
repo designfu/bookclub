@@ -9,6 +9,7 @@ import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
+import withWidth, { isWidthDown } from '@material-ui/core/withWidth';
 import { VotingSessionStatus } from 'types';
 import { SeasonActions } from 'actions/SeasonActions';
 import { VotingSessionActions } from 'actions/VotingSessionActions';
@@ -32,7 +33,9 @@ class CurrentPage_ extends React.Component<any, any> {
       currentSeason,
       isLoggedIn,
       isAdmin,
+      width,
     } = this.props;
+    const isSmallScreen = isWidthDown('sm', width);
 
     const isVotingOpen = votingSession.status === VotingSessionStatus.OPEN;
     const ratingNotice = (
@@ -88,6 +91,7 @@ class CurrentPage_ extends React.Component<any, any> {
         : null}
         {currentSeason ?
           <div>
+            {ratingNotice}
             <SeasonInfo
               books={this.props.books}
               title={currentSeason ? 'Current Season' : 'Previous Season'}
@@ -96,8 +100,9 @@ class CurrentPage_ extends React.Component<any, any> {
               onSeasonClose={this.props.closeCurrentSeason.bind(this)}
               allowClosing={isLoggedIn && isAdmin && currentSeason && !isVotingOpen}
               startVotingOpen={true}
+              hideBookBadges={true}
+              isSmallScreen={isSmallScreen}
             />
-            {ratingNotice}
           </div>
         : null}
         {!currentSeason ? ratingNotice : null}
@@ -160,7 +165,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const CurrentPage = withRouter(connect(
+export const CurrentPage = withWidth()(withRouter(connect(
   mapStateToProps,
   mapDispatchToProps,
-)(CurrentPage_));
+)(CurrentPage_)));

@@ -55,7 +55,7 @@ class ReorderableList extends React.Component<any, any> {
     return (
       <DndProvider backend={HTML5Backend}>
         <div>
-          <List>
+          <List style={{ maxWidth: 400 }}>
             {items.map((item, i) => (
               <ReorderableListItem
                 key={item.key}

@@ -167,6 +167,8 @@ class SeasonsPage_ extends React.Component<any, any> {
                     startVotingOpen={false}
                     myId={myId}
                     hideBookPitch={true}
+                    hideBookBadges={true}
+                    isSmallScreen={isSmallScreen}
                   />
                 </div>
               </div>

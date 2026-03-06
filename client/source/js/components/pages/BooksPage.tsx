@@ -80,6 +80,7 @@ class BooksPage_ extends React.Component<any, any> {
             separateStatuses={true}
             newSince={newSince}
             yourBookPlaceholders={filteredMyBookList}
+            showAdminActions={true}
           />
         </div>
         <div className='l-books-page__column'>
@@ -87,7 +88,7 @@ class BooksPage_ extends React.Component<any, any> {
             <Typography variant='h4'>Your Books</Typography>
             {isLoggedIn ? <AddBookModalContainer /> : null }
           </div>
-          <EditableBookListContainer books={myBooks} collapseFinished={true} />
+          <EditableBookListContainer books={myBooks} collapseFinished={true} showAdminActions={false} />
         </div>
       </div>
     );

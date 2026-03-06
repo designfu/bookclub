@@ -24,14 +24,19 @@
 
   &__title-row
     display flex
-    align-items center
-    gap 10px
+    align-items flex-start
     flex 1 1 auto
     margin-right 10px
+    width 100%
+
+  &__title-row--stacked
+    flex-direction column
+    align-items flex-start
 
   &__system
     display inline-flex
     align-items center
+    align-self flex-start
     justify-content center
     -webkit-user-select none
     user-select none
@@ -40,15 +45,24 @@
     border 1px solid #ddd
     border-radius 10px
     padding 2px 8px
-    margin-left auto
     text-align center
 
-@media (hover: none) and (pointer: coarse)
-  .c-season-info
-    &__voting-results
-      overflow-x auto
-      overflow-y hidden
-      -webkit-overflow-scrolling touch
+  &__system:not(&__system--stacked)
+    margin-left auto
 
-      .c-vote-card--result
-        min-width 560px
+  &__system--stacked
+    display block
+    margin-bottom 12px
+    order 2
+    text-align left
+
+  &__voting-results-wrap
+    width 100%
+
+  &__voting-results-wrap--scroll
+    overflow-x auto
+    overflow-y hidden
+    -webkit-overflow-scrolling touch
+
+.c-season-info__voting-results-wrap .c-vote-card--result
+  min-width 560px
