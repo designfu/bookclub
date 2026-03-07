@@ -7,6 +7,7 @@ import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import DialogContentText from '@mui/material/DialogContentText';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import classnames from 'classnames';
 import { Book, BookStatus } from 'types';
@@ -127,21 +128,21 @@ export class BookCard extends React.Component<BookListItemProps, any> {
     return (
       <Card className={className}>
         {showBadges ? (
-          <div className='c-book-card__badges-row'>
-            <span className='c-book-card__badges'>
+          <Box className='c-book-card__badges-row'>
+            <Stack component='span' className='c-book-card__badges' direction='row'>
               {showStatusBadge ? <span className={`c-book-card__badge c-book-card__badge--${normalize(book.status)}`}>{statusBadgeLabel(book.status)}</span> : null}
               {showYourBookBadge ? <span className='c-book-card__badge c-book-card__badge--your-book'>Your Book</span> : null}
               {showNewBadge ? <span className='c-book-card__badge c-book-card__badge--new'>New</span> : null}
-            </span>
-          </div>
+            </Stack>
+          </Box>
         ) : null}
-        <div className='c-book-card__top'>
+        <Box className='c-book-card__top'>
           <CardMedia
             className='c-book-card__image-media'
             image={book.links.image ? book.links.image : '/icons/icon-book-256.png'}
             title={`${book.title} - ${book.author}`}
           />
-          <div className='c-book-card__details'>
+          <Box className='c-book-card__details'>
             <CardHeader
               title={book.title}
               subheader={book.author}
@@ -173,8 +174,8 @@ export class BookCard extends React.Component<BookListItemProps, any> {
                 </Typography>
               </Typography>
             </CardContent>
-          </div>
-        </div>
+          </Box>
+        </Box>
         {showPitch ? (
           <CardContent className='c-book-card__secondary'>
             <Typography variant='body2' component='div' className='c-book-card__detail c-book-card__detail--pitch'>{book.pitch}</Typography>

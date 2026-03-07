@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
+import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -31,7 +32,6 @@ class BooksPage_ extends React.Component<any, any> {
 
   render() {
     const { books, myId, isLoggedIn, previousSeason } = this.props;
-    const layoutClassName = this.props.isSmallScreen ? 'l-books-page l-books-page--single-column' : 'l-books-page';
     const query = (this.state.query || '').trim().toLowerCase();
     const myBooks = {};
     const notMyBooks = {};
@@ -59,8 +59,8 @@ class BooksPage_ extends React.Component<any, any> {
     }
 
     return (
-      <div className={layoutClassName}>
-        <div className='l-books-page__column'>
+      <Grid container spacing={5} className='l-books-page'>
+        <Grid size={{ xs: 12, md: 6 }} className='l-books-page__column'>
           <div className='l-books-page__header'>
             <Typography variant='h4'>All Books</Typography>
             <TextField
@@ -79,15 +79,15 @@ class BooksPage_ extends React.Component<any, any> {
             yourBookPlaceholders={filteredMyBookList}
             showAdminActions={true}
           />
-        </div>
-        <div className='l-books-page__column'>
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }} className='l-books-page__column'>
           <div className='o-action-title'>
             <Typography variant='h4'>Your Books</Typography>
             {isLoggedIn ? <AddBookModalContainer /> : null }
           </div>
           <EditableBookListContainer books={myBooks} collapseFinished={true} showAdminActions={false} />
-        </div>
-      </div>
+        </Grid>
+      </Grid>
     );
   }
 

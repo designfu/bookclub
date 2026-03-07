@@ -54,6 +54,8 @@
         "@emotion/styled": "^11.14.1",
         "@mui/icons-material": "^7.3.9",
         "@mui/material": "^7.3.9",
+        "rdndmb-html5-to-touch": "^9.0.0",
+        "react-dnd-multi-backend": "^9.0.0",
         "react-router-dom": "^7.13.1"
     }
 }

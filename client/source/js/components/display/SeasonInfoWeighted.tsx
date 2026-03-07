@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Collapse from '@mui/material/Collapse';
 import Paper from '@mui/material/Paper';
 import { BookStatus, Season, VotingSession, VotingSessionStatus } from 'types';
 import { BookCard } from 'components/display/BookCard';
@@ -109,7 +110,7 @@ export class SeasonInfoWeighted extends SeasonInfoBase {
             allowClosing,
             allowDeleting,
           })}
-          {showVotingResults && isVotingSessionClosed ?
+          <Collapse in={showVotingResults && isVotingSessionClosed} timeout='auto' unmountOnExit>
             <div className={this.votingResultsWrapClassName()}>
               <div className='c-season-info__voting-results'>
                 {voteResultsList(this.props.books, votingSession, season.book).map((book, i) =>
@@ -120,7 +121,7 @@ export class SeasonInfoWeighted extends SeasonInfoBase {
                 )}
               </div>
             </div>
-            : null}
+          </Collapse>
         </Paper>
       </div>
     );

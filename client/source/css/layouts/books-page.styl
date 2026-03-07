@@ -1,9 +1,5 @@
 .l-books-page
-  display flex
-  align-items flex-start
-  flex-direction row
   padding 10px 40px
-  gap 40px
 
   &__header
     display flex
@@ -15,12 +11,9 @@
     width 220px
 
   &__column
-    flex 1 1 0
     min-width 0
 
-  &--single-column
-    flex-direction column
-    gap 20px
+  @media (max-width: 900px)
     padding 10px 16px
 
     .l-books-page__column

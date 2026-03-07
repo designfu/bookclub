@@ -1,10 +1,13 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 import DialogContentText from '@mui/material/DialogContentText';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import Paper from '@mui/material/Paper';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { VotingSessionStatus } from 'types';
@@ -51,9 +54,9 @@ class CurrentPage_ extends React.Component<any, any> {
     }[votingSession.system] || SeasonInfoWeighted;
 
     return (
-      <div className='l-current-page'>
+      <Container className='l-current-page' maxWidth={false} disableGutters>
         {isLoggedIn && isAdmin ?
-          <div>
+          <Box>
             {!currentSeason ?
               <ConfirmDialogButton
                 title='Open new season?'
@@ -84,10 +87,10 @@ class CurrentPage_ extends React.Component<any, any> {
                 Open New Season
               </ConfirmDialogButton>
             : null}
-          </div>
+          </Box>
         : null}
         {currentSeason ?
-          <div>
+          <Paper className='c-current-page__season-card'>
             {ratingNotice}
             <SeasonInfo
               books={this.props.books}
@@ -100,13 +103,13 @@ class CurrentPage_ extends React.Component<any, any> {
               hideBookBadges={true}
               isSmallScreen={isSmallScreen}
             />
-          </div>
+          </Paper>
         : null}
         {!currentSeason ? ratingNotice : null}
         {isLoggedIn && currentSeason && isVotingOpen ?
           <VotingSessionContainer />
         : null}
-      </div>
+      </Container>
     );
   }
 

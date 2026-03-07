@@ -5,6 +5,7 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
@@ -60,7 +61,7 @@ class HeaderContainer_ extends React.Component<any, any> {
       .sort((a: User, b: User) => (a.name || '').localeCompare(b.name || ''));
 
     return (
-      <AppBar position='sticky' color='default' elevation={0} className='c-header'>
+      <AppBar position='sticky' color='default' elevation={1} component={Paper} className='c-header'>
         <Toolbar disableGutters className='c-header__toolbar'>
           <HeaderNavTabs isAdmin={users.isAdmin} />
           <Box className='c-header__right'>

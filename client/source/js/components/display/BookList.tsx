@@ -1,6 +1,15 @@
 import * as React from 'react';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import { styled } from '@mui/material/styles';
 import { BookCard } from 'components/display/BookCard';
 import { BookStatus } from 'types';
+
+const Item = styled(Paper)({
+  width: '100%',
+  backgroundColor: 'transparent',
+  boxShadow: 'none',
+});
 
 const STATUS_VALS = {
   READING: 3,
@@ -88,19 +97,20 @@ export class BookList extends React.Component<any, any> {
 
   renderBooks(books) {
     return books.map(({ book, id, isPlaceholder }) => (
-      <BookCard
-        isAdmin={this.props.isAdmin}
-        myId={this.props.myId}
-        showAdminActions={this.props.showAdminActions}
-        key={id}
-        book={book}
-        isNew={this.isNewBook(book)}
-        isYourBook={!!isPlaceholder}
-        onEdit={this.props.onItemEdit}
-        onDelete={this.props.onItemDelete}
-        onPropose={this.props.onItemPropose}
-        onRetract={this.props.onItemRetract}
-      />
+      <Item key={id} className='c-book-list__item'>
+        <BookCard
+          isAdmin={this.props.isAdmin}
+          myId={this.props.myId}
+          showAdminActions={this.props.showAdminActions}
+          book={book}
+          isNew={this.isNewBook(book)}
+          isYourBook={!!isPlaceholder}
+          onEdit={this.props.onItemEdit}
+          onDelete={this.props.onItemDelete}
+          onPropose={this.props.onItemPropose}
+          onRetract={this.props.onItemRetract}
+        />
+      </Item>
     ));
   }
 
@@ -144,15 +154,15 @@ export class BookList extends React.Component<any, any> {
 
       return (
         <div className='c-book-list'>
-          <ul className='c-book-list__items'>
+          <Stack className='c-book-list__items' spacing={2}>
             {this.renderBooks(suggestedBooksWithPlaceholders)}
-          </ul>
+          </Stack>
           {nonSuggestedStatuses.map((status) => (
             <details key={status} className='c-book-list__group'>
               <summary>{formatStatusLabel(status)} ({byStatus[status].length})</summary>
-              <ul className='c-book-list__items'>
+              <Stack className='c-book-list__items' spacing={2}>
                 {this.renderBooks(byStatus[status])}
-              </ul>
+              </Stack>
             </details>
           ))}
         </div>
@@ -173,31 +183,31 @@ export class BookList extends React.Component<any, any> {
 
       return (
         <div className='c-book-list'>
-          <ul className='c-book-list__items'>
+          <Stack className='c-book-list__items' spacing={2}>
             {this.renderBooks(alwaysVisibleBooks)}
-          </ul>
+          </Stack>
           {backlogBooks.length > 0 ? (
             <details className='c-book-list__group' open>
               <summary>Backlog ({backlogBooks.length})</summary>
-              <ul className='c-book-list__items'>
+              <Stack className='c-book-list__items' spacing={2}>
                 {this.renderBooks(backlogBooks)}
-              </ul>
+              </Stack>
             </details>
           ) : null}
           {suggestedBooks.length > 0 ? (
             <details className='c-book-list__group'>
               <summary>Suggested ({suggestedBooks.length})</summary>
-              <ul className='c-book-list__items'>
+              <Stack className='c-book-list__items' spacing={2}>
                 {this.renderBooks(suggestedBooks)}
-              </ul>
+              </Stack>
             </details>
           ) : null}
           {finishedBooks.length > 0 ? (
             <details className='c-book-list__group'>
               <summary>Finished ({finishedBooks.length})</summary>
-              <ul className='c-book-list__items'>
+              <Stack className='c-book-list__items' spacing={2}>
                 {this.renderBooks(sortedFinishedBooks)}
-              </ul>
+              </Stack>
             </details>
           ) : null}
         </div>
@@ -205,9 +215,9 @@ export class BookList extends React.Component<any, any> {
     }
 
     return (
-      <ul>
+      <Stack className='c-book-list__items' spacing={2}>
         {this.renderBooks(books)}
-      </ul>
+      </Stack>
     );
   }
 }

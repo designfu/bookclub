@@ -1,5 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -18,6 +20,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Stack from '@mui/material/Stack';
 import Config from 'config';
 import SeasonClient from 'clients/SeasonClient';
 import VotingSessionClient from 'clients/VotingSessionClient';
@@ -95,10 +98,10 @@ class UsersPage_ extends React.Component<any, any> {
   render() {
     if (!this.props.isAdmin) {
       return (
-        <div className='l-users-page'>
+        <Container className='l-users-page' maxWidth={false} disableGutters>
           <Typography variant='h4'>Users</Typography>
           <Typography variant='body1'>Admin access required.</Typography>
-        </div>
+        </Container>
       );
     }
 
@@ -111,10 +114,10 @@ class UsersPage_ extends React.Component<any, any> {
       ),
     );
     return (
-      <div className='l-users-page'>
-        <div className='o-action-title'>
+      <Container className='l-users-page' maxWidth={false} disableGutters>
+        <Box className='o-action-title'>
           <Typography variant='h4'>Users</Typography>
-        </div>
+        </Box>
         {this.state.loading ? <Typography variant='body1'>Loading...</Typography> : null}
         {this.state.error ? <Typography variant='body1'>{this.state.error}</Typography> : null}
         <TableContainer component={Paper} className='c-users-page-table'>
@@ -141,8 +144,10 @@ class UsersPage_ extends React.Component<any, any> {
                   <TableCell>{booksRatedCount}</TableCell>
                   <TableCell>{seasonsVotedCount}</TableCell>
                   <TableCell>
-                    <div>{lastSeasonTitle}</div>
-                    <div>{lastSeasonDateRange}</div>
+                    <Stack spacing={0.25}>
+                      <Typography variant='body2'>{lastSeasonTitle}</Typography>
+                      <Typography variant='body2'>{lastSeasonDateRange}</Typography>
+                    </Stack>
                   </TableCell>
                   <TableCell>
                     <Button
@@ -165,7 +170,7 @@ class UsersPage_ extends React.Component<any, any> {
         </TableContainer>
         {this.renderTransferDialog()}
         {this.renderDeleteDialog()}
-      </div>
+      </Container>
     );
   }
 
@@ -196,8 +201,8 @@ class UsersPage_ extends React.Component<any, any> {
           Transfer Records
         </DialogTitle>
         <DialogContent>
-          <div className='c-users-transfer-dialog__meta'>
-            <div><strong>From:</strong> {sourceUser ? `${sourceUser.name} (${sourceUser._id})` : '--'}</div>
+          <Stack className='c-users-transfer-dialog__meta' direction='row'>
+            <Typography variant='body2'><strong>From:</strong> {sourceUser ? `${sourceUser.name} (${sourceUser._id})` : '--'}</Typography>
             <FormControl className='o-field o-field--dropdown c-users-transfer-dialog__target'>
               <InputLabel id={transferTargetUserLabelId}>To User</InputLabel>
               <Select
@@ -215,10 +220,10 @@ class UsersPage_ extends React.Component<any, any> {
                 ))}
               </Select>
             </FormControl>
-          </div>
-          <div className='c-users-transfer-dialog__summary'>
-            <span>Selected line items: {selectedCount} / {transferItems.length}</span>
-          </div>
+          </Stack>
+          <Box className='c-users-transfer-dialog__summary'>
+            <Typography variant='body2'>Selected line items: {selectedCount} / {transferItems.length}</Typography>
+          </Box>
           <TableContainer component={Paper} className='c-users-transfer-table'>
             <Table size='small'>
               <TableHead>
@@ -303,7 +308,7 @@ class UsersPage_ extends React.Component<any, any> {
           <Typography variant='body1'>
             The following records will be cleaned up first.
           </Typography>
-          <div className='c-users-delete-dialog__section'>
+          <Box className='c-users-delete-dialog__section'>
             <Typography variant='h6'>Suggested Books ({books.length})</Typography>
             {books.length > 0 ? (
               <Typography variant='body1'>
@@ -312,8 +317,8 @@ class UsersPage_ extends React.Component<any, any> {
             ) : (
               <Typography variant='body1'>None</Typography>
             )}
-          </div>
-          <div className='c-users-delete-dialog__section'>
+          </Box>
+          <Box className='c-users-delete-dialog__section'>
             <Typography variant='h6'>Book Ratings To Remove ({ratingItems.length})</Typography>
             {ratingItems.length > 0 ? (
               <Typography variant='body1'>
@@ -322,8 +327,8 @@ class UsersPage_ extends React.Component<any, any> {
             ) : (
               <Typography variant='body1'>None</Typography>
             )}
-          </div>
-          <div className='c-users-delete-dialog__section'>
+          </Box>
+          <Box className='c-users-delete-dialog__section'>
             <Typography variant='h6'>Votes To Remove ({voteTotal})</Typography>
             {voteItems.length > 0 ? (
               <Typography variant='body1'>
@@ -332,7 +337,7 @@ class UsersPage_ extends React.Component<any, any> {
             ) : (
               <Typography variant='body1'>None</Typography>
             )}
-          </div>
+          </Box>
           {deleteError ? <Typography variant='body1' className='c-users-transfer-dialog__error'>{deleteError}</Typography> : null}
         </DialogContent>
         <DialogActions>

@@ -290,9 +290,8 @@ export class SeasonInfoBase extends React.Component<SeasonInfoBaseProps, SeasonI
     systemBadgeTooltip?: string;
   }) {
     return (
-      <div className='c-season-info__header o-action-title'>
-        <Typography
-          component='div'
+      <Box className='c-season-info__header o-action-title'>
+        <Box
           className={`c-season-info__title-row${this.props.isSmallScreen ? ' c-season-info__title-row--stacked' : ''}`}
         >
           <Typography variant='h5' component='h3' className='c-season-info__title'>
@@ -308,8 +307,8 @@ export class SeasonInfoBase extends React.Component<SeasonInfoBaseProps, SeasonI
               </Typography>
             </Tooltip>
           ) : null}
-        </Typography>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
@@ -335,12 +334,12 @@ export class SeasonInfoBase extends React.Component<SeasonInfoBaseProps, SeasonI
     }
 
     return (
-      <div className='c-season-info__admin-info'>
-        <div className='o-json-dump'>
+      <Box className='c-season-info__admin-info'>
+        <Box className='o-json-dump'>
           <Typography component='span'>Season JSON</Typography>
           <pre>{toJSON(season)}</pre>
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 }

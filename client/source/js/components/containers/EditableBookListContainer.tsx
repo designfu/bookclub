@@ -25,7 +25,7 @@ class EditableBookListContainer_ extends React.Component<any, any> {
     const { isAdmin, myId } = this.props;
 
     return (
-      <div>
+      <div className='c-editable-book-list-container'>
         <BookList
           isAdmin={isAdmin}
           myId={myId}

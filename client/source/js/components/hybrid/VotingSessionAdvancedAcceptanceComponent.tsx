@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import { VotingSessionStatus } from 'types';
-import { ReorderableList } from 'lib/reorderable-lists';
+import { ReorderableVotingList } from 'lib/reorderable-lists';
 import { VotingSessionActions, VotingSessionActionTypes } from 'actions/VotingSessionActions';
 import { ReduxActions } from 'actions/ReduxActions';
 import { VoteCardRank } from 'components/display/VoteCardRank';
@@ -102,7 +102,7 @@ class VotingSessionAdvancedAcceptanceContainer_ extends React.Component<any, any
           : null}
         </div>
         {isOpen ?
-          <ReorderableList
+          <ReorderableVotingList
             onUpdate={this.onListUpdate.bind(this)}
           >
             {books.filter(book => !!book).map((book, i) =>
@@ -119,7 +119,7 @@ class VotingSessionAdvancedAcceptanceContainer_ extends React.Component<any, any
                 onVote={this.onVote.bind(this)}
               />
             )}
-          </ReorderableList> : null}
+          </ReorderableVotingList> : null}
       </div>
     );
   }

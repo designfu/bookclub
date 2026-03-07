@@ -1,9 +1,13 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
+import Paper from '@mui/material/Paper';
 import Select from '@mui/material/Select';
+import Stack from '@mui/material/Stack';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { timeOf, toStandardString } from '@client/utils/dates';
@@ -97,25 +101,28 @@ class SeasonsPage_ extends React.Component<any, any> {
     const sortLabelId = 'previous-seasons-sort-label';
 
     return (
-      <div className='l-current-page'>
-        <div className='c-seasons-page'>
-          <FormControl className='o-field o-field--dropdown'>
-            <InputLabel id={sortLabelId}>Sort Previous Seasons</InputLabel>
-            <Select
-              id='previous-seasons-sort'
-              labelId={sortLabelId}
-              label='Sort Previous Seasons'
-              name='sortMode'
-              size='small'
-              value={this.state.sortMode}
-              onChange={this.handleSortModeChange.bind(this)}
-            >
-              <MenuItem value='finishedDate'>Finish Date (Most Recent)</MenuItem>
-              <MenuItem value='bookRating'>Book Rating (Highest)</MenuItem>
-              <MenuItem value='personalBookRating'>Your Book Rating (Highest)</MenuItem>
-            </Select>
-          </FormControl>
-          {seasonList.map((season, i) => {
+      <Container className='l-current-page' maxWidth={false} disableGutters>
+        <Box className='c-seasons-page'>
+          <Box sx={{ mb: 2 }}>
+            <FormControl className='o-field o-field--dropdown'>
+              <InputLabel id={sortLabelId}>Sort Previous Seasons</InputLabel>
+              <Select
+                id='previous-seasons-sort'
+                labelId={sortLabelId}
+                label='Sort Previous Seasons'
+                name='sortMode'
+                size='small'
+                value={this.state.sortMode}
+                onChange={this.handleSortModeChange.bind(this)}
+              >
+                <MenuItem value='finishedDate'>Finish Date (Most Recent)</MenuItem>
+                <MenuItem value='bookRating'>Book Rating (Highest)</MenuItem>
+                <MenuItem value='personalBookRating'>Your Book Rating (Highest)</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+          <Stack spacing={2}>
+            {seasonList.map((season, i) => {
           const seasonBook = resolvedSeasonBook(season, this.props.books);
 
           const title = seasonBook && seasonBook.title
@@ -146,9 +153,9 @@ class SeasonsPage_ extends React.Component<any, any> {
             : i + 1;
 
           return (
-              <div className={`c-seasons-page__row${isSmallScreen ? ' c-seasons-page__row--stacked' : ''}`} key={i}>
-                <div className='c-seasons-page__rank'>#{rankNumber}</div>
-                <div className='c-seasons-page__card'>
+              <Box className={`c-seasons-page__row${isSmallScreen ? ' c-seasons-page__row--stacked' : ''}`} key={i}>
+                <Box className='c-seasons-page__rank'>#{rankNumber}</Box>
+                <Paper className='c-seasons-page__card'>
                   <SeasonInfo
                     books={books}
                     title={title}
@@ -168,12 +175,13 @@ class SeasonsPage_ extends React.Component<any, any> {
                     hideBookBadges={true}
                     isSmallScreen={isSmallScreen}
                   />
-                </div>
-              </div>
+                </Paper>
+              </Box>
             );
-          })}
-        </div>
-      </div>
+            })}
+          </Stack>
+        </Box>
+      </Container>
     );
   }
 

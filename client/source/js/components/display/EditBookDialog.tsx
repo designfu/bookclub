@@ -1,6 +1,7 @@
 import * as React from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -106,8 +107,8 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
           </div>
         </DialogTitle>
         <DialogContent className='c-edit-book-dialog__content'>
-          <div className='c-edit-book-dialog__layout u-space--bot-large'>
-            <div className='c-edit-book-dialog__column'>
+          <Grid container spacing={1.5} className='c-edit-book-dialog__layout u-space--bot-large'>
+            <Grid size={{ xs: 12, md: 7 }} className='c-edit-book-dialog__column'>
               <TextField
                 id='title'
                 label='Title *'
@@ -151,8 +152,8 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
                 margin='normal'
                 error={!!this.state.pitch.error}
               />
-            </div>
-            <div className='c-edit-book-dialog__column'>
+            </Grid>
+            <Grid size={{ xs: 12, md: 5 }} className='c-edit-book-dialog__column'>
               <TextField
                 id='goodreads'
                 label='Goodreads Link **'
@@ -177,8 +178,8 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
               <div className='c-edit-book-dialog__cover-image-container'>
                 <img className='c-edit-book-dialog__cover-image' src={this.state.image.value || defaultImageSrc} />
               </div>
-            </div>
-          </div>
+            </Grid>
+          </Grid>
           <DialogContentText>
             * Required
           </DialogContentText>
