@@ -6,10 +6,9 @@
         "noImplicitAny": false,
         "target": "es6",
         "baseUrl": "./source/js",
-        "module": "commonjs",
-        "moduleResolution": "node",
+        "module": "esnext",
+        "moduleResolution": "bundler",
         "esModuleInterop": true,
-        "skipLibCheck": true,
         "jsx": "react",
         "paths": {
             "@shared/*": ["../../../shared/@shared/*"],

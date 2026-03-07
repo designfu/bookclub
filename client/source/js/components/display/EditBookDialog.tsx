@@ -96,6 +96,8 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
         aria-labelledby='edit-book-dialog-title'
         open={this.props.open}
         onClose={this.handleCancel.bind(this)}
+        fullWidth
+        maxWidth='md'
       >
         <DialogTitle id='edit-book-dialog-title'>
           {this.props.book ? `Edit book (${this.props.book._id})` : 'Add a book'}
@@ -104,36 +106,13 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
           </div>
         </DialogTitle>
         <DialogContent className='c-edit-book-dialog__content'>
-          <div className='u-flex u-flex--row u-space--bot-large'>
-            <div className='u-flex--col'>
-              <TextField
-                id='goodreads'
-                label='Goodreads Link **'
-                className='o-field o-field--text'
-                value={this.state.goodreads.value}
-                onChange={this.handleChange('goodreads')}
-                margin='normal'
-                type='url'
-                error={!!this.state.goodreads.error}
-              />
-              <TextField
-                id='image'
-                label='Cover Image URL'
-                className='o-field o-field--text'
-                value={this.state.image.value}
-                onChange={this.handleChange('image')}
-                margin='normal'
-                error={!!this.state.image.error}
-              />
-              <div className='c-edit-book-dialog__cover-image-container'>
-                <img className='c-edit-book-dialog__cover-image' src={this.state.image.value || defaultImageSrc} />
-              </div>
-            </div>
-            <div className='u-flex--col'>
+          <div className='c-edit-book-dialog__layout u-space--bot-large'>
+            <div className='c-edit-book-dialog__column'>
               <TextField
                 id='title'
                 label='Title *'
                 className='o-field o-field--text'
+                fullWidth
                 value={this.state.title.value}
                 onChange={this.handleChange('title')}
                 margin='normal'
@@ -143,6 +122,7 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
                 id='author'
                 label='Author *'
                 className='o-field o-field--text'
+                fullWidth
                 value={this.state.author.value}
                 onChange={this.handleChange('author')}
                 margin='normal'
@@ -152,6 +132,7 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
                 id='genre'
                 label='Genre'
                 className='o-field o-field--text'
+                fullWidth
                 value={this.state.genre.value}
                 onChange={this.handleChange('genre')}
                 margin='normal'
@@ -162,13 +143,40 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
                 label='Pitch'
                 placeholder="Describe your book and why it's interesting"
                 multiline
-                rows='3'
+                rows='6'
                 className='o-field o-field--text'
+                fullWidth
                 value={this.state.pitch.value}
                 onChange={this.handleChange('pitch')}
                 margin='normal'
                 error={!!this.state.pitch.error}
               />
+            </div>
+            <div className='c-edit-book-dialog__column'>
+              <TextField
+                id='goodreads'
+                label='Goodreads Link **'
+                className='o-field o-field--text'
+                fullWidth
+                value={this.state.goodreads.value}
+                onChange={this.handleChange('goodreads')}
+                margin='normal'
+                type='url'
+                error={!!this.state.goodreads.error}
+              />
+              <TextField
+                id='image'
+                label='Cover Image URL'
+                className='o-field o-field--text'
+                fullWidth
+                value={this.state.image.value}
+                onChange={this.handleChange('image')}
+                margin='normal'
+                error={!!this.state.image.error}
+              />
+              <div className='c-edit-book-dialog__cover-image-container'>
+                <img className='c-edit-book-dialog__cover-image' src={this.state.image.value || defaultImageSrc} />
+              </div>
             </div>
           </div>
           <DialogContentText>

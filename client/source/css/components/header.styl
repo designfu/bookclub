@@ -2,32 +2,36 @@
   position sticky
   top 0
   z-index 20
-  display flex
-  justify-content flex-start
-  align-items stretch
-  min-height 37px
-  margin-bottom 5px
+  margin-bottom 6px
   border-bottom 1px solid #f2f2f2
   background #fff
 
-  &__tabs-scroll
+  &__toolbar
+    display flex
+    justify-content flex-start
+    align-items stretch
+    min-height 37px
+    padding 0
+
+  &__nav-tabs
     flex 1 1 auto
     display flex
     align-items stretch
     min-width 0
+    height 100%
     overflow-x auto
     overflow-y hidden
     -webkit-overflow-scrolling touch
 
-  &__nav-tabs
-    padding 0
-    margin 0
-    list-style none
-    display inline-flex
-    align-items stretch
-    white-space nowrap
-    min-width max-content
-    height 100%
+  &__nav-item
+    min-height 37px
+    border-radius 0
+
+    &.Mui-selected
+      border-bottom 2px solid #66e
+
+  &__nav-spacer
+    flex 1 1 auto
 
   &__right
     display inline-flex
@@ -35,33 +39,11 @@
     flex 0 0 auto
     margin-left 12px
 
-  &__user
-    display inline-flex
-    align-items center
-    cursor pointer
-    padding-right 10px
-
-  &__avatar-fallback
-    width 28px
-    height 28px
-    border-radius 50%
-    background #607d8b
-    color #fff
-    font-size 13px
-    font-weight 600
-    display inline-flex
-    align-items center
-    justify-content center
+  &__user-name
     margin-right 6px
+    color #555
+    font-size 13px
+    cursor pointer
 
-  &__user .o-avatar
-    margin-right 4px
-
-  &__user--compact
-    padding-right 4px
-
-    .o-avatar
-      margin-right 0
-
-    .c-header__avatar-fallback
-      margin-right 0
+  &__user-button
+    margin-right 6px

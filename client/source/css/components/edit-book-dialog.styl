@@ -1,7 +1,30 @@
 .c-edit-book-dialog
 
   &__content
-    max-width 420px
+    max-width none
+
+  &__layout
+    display flex
+    flex-direction row
+    gap 12px
+    align-items flex-start
+
+  &__column
+    flex 1 1 0
+    min-width 0
+
+  &__layout > .c-edit-book-dialog__column:first-child
+    flex 0 1 60%
+
+  &__layout > .c-edit-book-dialog__column:last-child
+    flex 0 1 40%
+
+  .o-field--text
+    margin-left 0
+    margin-right 0
+
+    .MuiInputBase-root
+      width 100%
 
   &__cover-image
     max-width 150px
@@ -16,12 +39,25 @@
     border-radius 3px
     box-sizing border-box
     padding 3px
-    width 200px
+    width 100%
     min-height 158px
-    margin-left 5px
+    margin-left 0
 
   .o-spinner-anchor
     position absolute
     top 0
     right 0
     transform translate(-50%, -20%)
+
+  @media (max-width: 800px)
+    &__layout
+      flex-direction column
+      align-items stretch
+
+    &__layout > .c-edit-book-dialog__column:first-child,
+    &__layout > .c-edit-book-dialog__column:last-child
+      flex 1 1 auto
+      width 100%
+
+    &__cover-image-container
+      width 100%

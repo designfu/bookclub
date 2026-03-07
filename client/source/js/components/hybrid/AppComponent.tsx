@@ -21,6 +21,15 @@ const appTheme = createTheme({
   typography: {
     fontFamily: "Roboto, Helvetica, Arial, sans-serif",
   },
+  components: {
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          fontSize: '10pt',
+        },
+      },
+    },
+  },
 });
 
 class AppComponent_ extends React.Component<any, any> {

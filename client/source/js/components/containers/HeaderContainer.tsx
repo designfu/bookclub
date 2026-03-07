@@ -1,8 +1,13 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import Toolbar from '@mui/material/Toolbar';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
@@ -13,7 +18,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import ListSubheader from '@mui/material/ListSubheader';
-import { NavTab } from 'components/display/NavTab';
+import { Link, useLocation } from 'react-router-dom';
 import { User } from 'types';
 
 class HeaderContainer_ extends React.Component<any, any> {
@@ -55,69 +60,77 @@ class HeaderContainer_ extends React.Component<any, any> {
       .sort((a: User, b: User) => (a.name || '').localeCompare(b.name || ''));
 
     return (
-      <header className='c-header'>
-        <div className='c-header__tabs-scroll'>
-          <ul className='c-header__nav-tabs'>
-            <NavTab to='/'>Voting</NavTab>
-            <NavTab to='/books'>Books</NavTab>
-            <NavTab to='/seasons'>Previous Seasons</NavTab>
-            {users.isAdmin ? <NavTab to='/users'>Users</NavTab> : null}
-          </ul>
-        </div>
-        <div className='c-header__right'>
-          {me
-            ? (<div className={`c-header__user${this.props.isSmallScreen ? ' c-header__user--compact' : ''}`} onClick={this.handleMenuOpen}>
-                {me.avatar ? <img className='o-avatar' src={me.avatar} /> : null}
-                {!me.avatar ? <span className='c-header__avatar-fallback'>{this.fallbackInitialForUser(me)}</span> : null}
-                {!this.props.isSmallScreen ? <span className='c-header__user-name'>{me.name}</span> : null}
-              </div>
-              )
-            : <Button color='primary' href='/auth/google'>Sign in with Google</Button>
-          }
-          {me ? <Menu
-            id='login-menu'
-            anchorEl={anchorEl}
-            open={!!anchorEl}
-            onClose={this.handleMenuClose}
-          >
-            {switchableUsers.length > 0 ? <MenuItem onClick={this.handleOpenSwitchDialog}>Switch User...</MenuItem> : null}
-            <MenuItem onClick={this.handleSignout}>Sign Out</MenuItem>
-          </Menu> : null}
-          <Dialog
-            open={switchDialogOpen}
-            onClose={this.handleCloseSwitchDialog}
-            aria-labelledby='switch-user-dialog-title'
-          >
-            <DialogTitle id='switch-user-dialog-title'>Switch Logged In User</DialogTitle>
-            <DialogContent>
-              <FormControl className='o-field o-field--dropdown'>
-                <InputLabel id={switchUserLabelId}>User</InputLabel>
-                <Select
-                  id='switch-user-id'
-                  labelId={switchUserLabelId}
-                  label='User'
-                  name='switchUserId'
-                  value={switchUserId}
-                  onChange={this.handleSwitchUserChange}
-                >
-                  {adminUsers.length > 0 ? <ListSubheader>Admins</ListSubheader> : null}
-                  {adminUsers.map((user: User) => (
-                    <MenuItem key={user._id} value={user._id}>{this.formatUserLabel(user)}</MenuItem>
-                  ))}
-                  {memberUsers.length > 0 ? <ListSubheader>Members</ListSubheader> : null}
-                  {memberUsers.map((user: User) => (
-                    <MenuItem key={user._id} value={user._id}>{this.formatUserLabel(user)}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </DialogContent>
-            <DialogActions>
-              <Button color='primary' onClick={this.handleCloseSwitchDialog}>Cancel</Button>
-              <Button color='secondary' onClick={this.handleSwitchUserConfirm} disabled={!switchUserId}>Switch</Button>
-            </DialogActions>
-          </Dialog>
-        </div>
-      </header>
+      <AppBar position='sticky' color='default' elevation={0} className='c-header'>
+        <Toolbar disableGutters className='c-header__toolbar'>
+          <HeaderNavTabs isAdmin={users.isAdmin} />
+          <Box className='c-header__right'>
+            {me
+              ? (
+                <>
+                  {!this.props.isSmallScreen ? <Box className='c-header__user-name' onClick={this.handleMenuOpen}>{me.name}</Box> : null}
+                  <IconButton
+                    className='c-header__user-button'
+                    size='small'
+                    onClick={this.handleMenuOpen}
+                    aria-label='User menu'
+                  >
+                    <Avatar
+                      src={me.avatar || undefined}
+                      alt={me.name || 'User'}
+                      sx={{ width: 28, height: 28, fontSize: 13, fontWeight: 600 }}
+                    >
+                      {this.fallbackInitialForUser(me)}
+                    </Avatar>
+                  </IconButton>
+                </>
+                )
+              : <Button color='primary' href='/auth/google'>Sign in with Google</Button>
+            }
+            {me ? <Menu
+              id='login-menu'
+              anchorEl={anchorEl}
+              open={!!anchorEl}
+              onClose={this.handleMenuClose}
+            >
+              {switchableUsers.length > 0 ? <MenuItem onClick={this.handleOpenSwitchDialog}>Switch User...</MenuItem> : null}
+              <MenuItem onClick={this.handleSignout}>Sign Out</MenuItem>
+            </Menu> : null}
+            <Dialog
+              open={switchDialogOpen}
+              onClose={this.handleCloseSwitchDialog}
+              aria-labelledby='switch-user-dialog-title'
+            >
+              <DialogTitle id='switch-user-dialog-title'>Switch Logged In User</DialogTitle>
+              <DialogContent>
+                <FormControl fullWidth margin='normal'>
+                  <InputLabel id={switchUserLabelId}>User</InputLabel>
+                  <Select
+                    id='switch-user-id'
+                    labelId={switchUserLabelId}
+                    label='User'
+                    name='switchUserId'
+                    value={switchUserId}
+                    onChange={this.handleSwitchUserChange}
+                  >
+                    {adminUsers.length > 0 ? <ListSubheader>Admins</ListSubheader> : null}
+                    {adminUsers.map((user: User) => (
+                      <MenuItem key={user._id} value={user._id}>{this.formatUserLabel(user)}</MenuItem>
+                    ))}
+                    {memberUsers.length > 0 ? <ListSubheader>Members</ListSubheader> : null}
+                    {memberUsers.map((user: User) => (
+                      <MenuItem key={user._id} value={user._id}>{this.formatUserLabel(user)}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </DialogContent>
+              <DialogActions>
+                <Button color='primary' onClick={this.handleCloseSwitchDialog}>Cancel</Button>
+                <Button color='secondary' onClick={this.handleSwitchUserConfirm} disabled={!switchUserId}>Switch</Button>
+              </DialogActions>
+            </Dialog>
+          </Box>
+        </Toolbar>
+      </AppBar>
     );
   }
 
@@ -140,10 +153,11 @@ class HeaderContainer_ extends React.Component<any, any> {
   }
 
   handleOpenSwitchDialog() {
+    const currentUserId = this.props.users && this.props.users.myId ? this.props.users.myId : '';
     this.handleMenuClose();
     this.setState({
       switchDialogOpen: true,
-      switchUserId: '',
+      switchUserId: currentUserId,
     });
   }
 
@@ -184,6 +198,28 @@ const HeaderContainerResponsive = (props) => {
       {...props}
       isSmallScreen={isSmallScreen}
     />
+  );
+};
+
+const HeaderNavTabs = ({ isAdmin }) => {
+  const location = useLocation();
+  const pathname = location.pathname || '/';
+  const selectedPath = pathname.startsWith('/books')
+    ? '/books'
+    : pathname.startsWith('/seasons')
+      ? '/seasons'
+      : pathname.startsWith('/users')
+        ? '/users'
+        : '/';
+
+  return (
+    <Box className='c-header__nav-tabs'>
+      <MenuItem className='c-header__nav-item' component={Link} to='/' selected={selectedPath === '/'}>Voting</MenuItem>
+      <MenuItem className='c-header__nav-item' component={Link} to='/books' selected={selectedPath === '/books'}>Books</MenuItem>
+      <MenuItem className='c-header__nav-item' component={Link} to='/seasons' selected={selectedPath === '/seasons'}>Previous Seasons</MenuItem>
+      <Box className='c-header__nav-spacer' />
+      {isAdmin ? <MenuItem className='c-header__nav-item' component={Link} to='/users' selected={selectedPath === '/users'}>Users</MenuItem> : null}
+    </Box>
   );
 };
 

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
 import { LightTooltip } from 'components/display/LightTooltip';
 
 export interface VotePitchTooltipProps {
@@ -9,8 +8,7 @@ export interface VotePitchTooltipProps {
 }
 
 export function VotePitchTooltip({ title, children }: VotePitchTooltipProps) {
-  const theme = useTheme();
-  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTouchDevice = useMediaQuery('(hover: none), (pointer: coarse)');
   const [isDragging, setIsDragging] = React.useState(false);
 
   React.useEffect(() => {
@@ -25,7 +23,7 @@ export function VotePitchTooltip({ title, children }: VotePitchTooltipProps) {
     };
   }, []);
 
-  const disableTooltip = isSmall || isDragging;
+  const disableTooltip = isTouchDevice || isDragging;
 
   return (
     <LightTooltip
@@ -41,4 +39,3 @@ export function VotePitchTooltip({ title, children }: VotePitchTooltipProps) {
     </LightTooltip>
   );
 }
-
