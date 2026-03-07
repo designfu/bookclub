@@ -83,10 +83,10 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
             </Button>
           : null}
           {isOpen ?
-            <Tooltip title='Resets your list to your most recent voted-season order.'>
+            <Tooltip title='Reset to votes for this season, or votes from your most recent season.'>
               <Button
                 className='o-action'
-                onClick={this.resetFromLastSeason.bind(this)}
+                onClick={this.resetFromVotes.bind(this)}
               >
                 Reset
               </Button>
@@ -139,7 +139,7 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
     const hasCurrentVote = hasUserVoted(votingSession.votes, this.props.myId);
     const hasDraft = hasVoteOrderDraft(this.props.votingSession && this.props.votingSession._id, this.props.myId);
     if (!hasCurrentVote && !hasDraft) {
-      await this.resetFromLastSeason();
+      await this.resetFromVotes();
     }
   }
 
@@ -170,7 +170,19 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
     });
   }
 
-  async resetFromLastSeason() {
+  async resetFromVotes() {
+    const votingSession = hydrateVotingSession(this.props.votingSession, this.props.books, this.props.users);
+    if (hasUserVoted(votingSession.votes, this.props.myId)) {
+      const books = extractWeightedBookList(this.props);
+      this.persistVoteOrderDraft(books, []);
+      this.setState({
+        books,
+        enabled: true,
+        resetAddedBookIds: [],
+      });
+      return;
+    }
+
     const latestVotingSession = await this.props.fetchLatestWithUserVotes();
     const previousSession = latestVotingSession || this.props.latestVotingSession;
     const resetBooks = buildWeightedResetBooks({
