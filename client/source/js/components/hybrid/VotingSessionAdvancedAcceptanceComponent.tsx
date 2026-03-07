@@ -105,22 +105,26 @@ class VotingSessionAdvancedAcceptanceContainer_ extends React.Component<any, any
           <ReorderableVotingList
             onUpdate={this.onListUpdate.bind(this)}
           >
-            {books.filter(book => !!book).map((book, i) =>
-              book.isDivider ?
-                <VoteCardDivider key={book._id} />
-              :
-              <VoteCardRank
-                key={book._id}
-                i={i}
-                rank={rankValueForAcceptance(i, books)}
-                maxRank={books.length - 1}
-                book={book}
-                isResetAdded={this.state.resetAddedBookIds.indexOf(toBookId(book)) > -1}
-                onVote={this.onVote.bind(this)}
-              />
-            )}
+            {this.renderVoteRows(books)}
           </ReorderableVotingList> : null}
       </div>
+    );
+  }
+
+  renderVoteRows(books = []) {
+    return books.filter(book => !!book).map((book, i) =>
+      book.isDivider ?
+        <VoteCardDivider key={book._id} />
+      :
+      <VoteCardRank
+        key={book._id}
+        i={i}
+        rank={rankValueForAcceptance(i, books)}
+        maxRank={books.length - 1}
+        book={book}
+        isResetAdded={this.state.resetAddedBookIds.indexOf(toBookId(book)) > -1}
+        onVote={this.onVote.bind(this)}
+      />
     );
   }
 

@@ -154,11 +154,26 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
         });
         return;
       }
-      if (this.signatureOf(nextItems) === this.signatureOf(currentItems)) {
+      const signaturesMatch = this.signatureOf(nextItems) === this.signatureOf(currentItems);
+      if (signaturesMatch) {
+        this.setState({
+          items: nextItems,
+        });
         return;
       }
+      const enableTransitions = !!this.props.enableTransitions;
+      const previousTopsById = enableTransitions
+        ? this.captureItemTopsById(currentItems)
+        : {};
+      const affectedIds = enableTransitions
+        ? new Set(nextItems.map((item, idx) => this.toItemKey(item, idx)))
+        : null;
       this.setState({
         items: nextItems,
+      }, () => {
+        if (enableTransitions) {
+          this.applyReorderTransition(previousTopsById, affectedIds);
+        }
       });
     }
   }

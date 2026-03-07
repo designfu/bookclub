@@ -106,18 +106,22 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
           <ReorderableVotingList
             onUpdate={this.onListUpdate.bind(this)}
           >
-            {books.map((book, i) =>
-              <VoteCard
-                key={book._id}
-                i={i}
-                points={pointsFor(i)}
-                book={book}
-                isResetAdded={this.state.resetAddedBookIds.indexOf(toBookId(book)) > -1}
-                onVote={this.onVote.bind(this)}
-              />
-            )}
+            {this.renderVoteRows(books)}
           </ReorderableVotingList> : null}
       </div>
+    );
+  }
+
+  renderVoteRows(books = []) {
+    return books.map((book, i) =>
+      <VoteCard
+        key={book._id}
+        i={i}
+        points={pointsFor(i)}
+        book={book}
+        isResetAdded={this.state.resetAddedBookIds.indexOf(toBookId(book)) > -1}
+        onVote={this.onVote.bind(this)}
+      />
     );
   }
 
