@@ -93,10 +93,18 @@ export function withUserStats(user, booksById = {}, seasonsById = {}, votingSess
     .map((id) => booksById[id])
     .filter((book) => getRefId(book.suggestedBy) === user._id)
     .length;
+  const booksRatedCount = Object.keys(booksById || {})
+    .map((id) => booksById[id])
+    .filter((book) => {
+      const ratings = Array.isArray(book && book.ratings) ? book.ratings : [];
+      return ratings.some((rating) => getRefId(rating && rating.user) === user._id);
+    })
+    .length;
 
   return {
     user,
     booksSuggestedCount,
+    booksRatedCount,
     seasonsVotedCount: votedSeasons.length,
     lastSeasonTimestamp: latestSeason ? toTimestamp(latestSeason) : 0,
     lastSeasonTitle,
@@ -140,6 +148,7 @@ export function buildTransferItemsWithData(
   votingSessionsById = {},
 ) {
   const items = [];
+  const ratingItems = [];
   const seasonVoteItems = [];
   const allBooks = Object.keys(booksById || {}).map((id) => booksById[id]);
   const sourceBooks = allBooks.filter((book) => getRefId(book.suggestedBy) === sourceUserId);
@@ -152,6 +161,24 @@ export function buildTransferItemsWithData(
       conflict: false,
       conflictReason: '',
       description: `${book.title || '--'} by ${book.author || '--'} (${book._id})`,
+      bookId: book._id,
+    });
+  });
+
+  allBooks.forEach((book) => {
+    const ratings = Array.isArray(book && book.ratings) ? book.ratings : [];
+    const sourceRating = ratings.find((rating) => getRefId(rating && rating.user) === sourceUserId);
+    if (!sourceRating) {
+      return;
+    }
+    const conflict = ratings.some((rating) => getRefId(rating && rating.user) === targetUserId);
+    ratingItems.push({
+      id: `book-rating:${book._id}`,
+      type: 'BOOK_RATING',
+      checked: !conflict,
+      conflict,
+      conflictReason: conflict ? 'Target user already has a rating for this book.' : '',
+      description: `${book.title || '--'} (${book._id})`,
       bookId: book._id,
     });
   });
@@ -190,18 +217,36 @@ export function buildTransferItemsWithData(
   });
 
   seasonVoteItems.sort((a, b) => b.sortTimestamp - a.sortTimestamp);
-  seasonVoteItems.forEach((item) => {
-    const { sortTimestamp, ...rest } = item;
-    items.push(rest);
-  });
-
-  return items;
+  return [
+    ...items,
+    ...ratingItems,
+    ...seasonVoteItems.map((item) => {
+      const { sortTimestamp, ...rest } = item;
+      return rest;
+    }),
+  ];
 }
 
 export function buildDeletePreview(userId, booksById = {}, seasonsById = {}, votingSessionsById = {}) {
   const books = Object.keys(booksById || {})
     .map((id) => booksById[id])
     .filter((book) => getRefId(book.suggestedBy) === userId);
+  const ratingItems = Object.keys(booksById || {})
+    .map((id) => booksById[id])
+    .map((book) => {
+      const ratings = Array.isArray(book && book.ratings) ? book.ratings : [];
+      const myRating = ratings.find((rating) => getRefId(rating && rating.user) === userId);
+      if (!myRating) {
+        return null;
+      }
+      return {
+        bookId: book._id,
+        title: book.title || '--',
+        value: myRating.value,
+      };
+    })
+    .filter((item) => !!item)
+    .sort((a, b) => (a.title || '').localeCompare(b.title || ''));
 
   const seasonsBySessionId = getSeasonsBySessionId(seasonsById);
   const voteItems = Object.keys(votingSessionsById || {})
@@ -224,6 +269,7 @@ export function buildDeletePreview(userId, booksById = {}, seasonsById = {}, vot
 
   return {
     books,
+    ratingItems,
     voteItems,
   };
 }

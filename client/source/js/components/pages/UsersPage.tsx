@@ -125,18 +125,20 @@ class UsersPage_ extends React.Component<any, any> {
                 <TableCell>User ID</TableCell>
                 <TableCell>Role</TableCell>
                 <TableCell>Suggested Books</TableCell>
+                <TableCell>Books Rated</TableCell>
                 <TableCell>Seasons Voted</TableCell>
                 <TableCell>Most Recent Season Voted</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map(({ user, booksSuggestedCount, seasonsVotedCount, lastSeasonTitle, lastSeasonDateRange }) => (
+              {users.map(({ user, booksSuggestedCount, booksRatedCount, seasonsVotedCount, lastSeasonTitle, lastSeasonDateRange }) => (
                 <TableRow key={user._id}>
                   <TableCell>{user.name || '--'}</TableCell>
                   <TableCell>{user._id || '--'}</TableCell>
                   <TableCell>{isAdminUser(user) ? 'ADMIN' : 'MEMBER'}</TableCell>
                   <TableCell>{booksSuggestedCount}</TableCell>
+                  <TableCell>{booksRatedCount}</TableCell>
                   <TableCell>{seasonsVotedCount}</TableCell>
                   <TableCell>
                     <div>{lastSeasonTitle}</div>
@@ -256,7 +258,7 @@ class UsersPage_ extends React.Component<any, any> {
           {transferSummary ? <Typography variant='body1' className='c-users-transfer-dialog__summary-text'>{transferSummary}</Typography> : null}
         </DialogContent>
         <DialogActions>
-          <Button color='primary' onClick={this.closeTransferDialog.bind(this)} disabled={transferApplying}>Cancel</Button>
+          <Button color='primary' onClick={this.closeTransferDialog.bind(this)} disabled={transferApplying}>Close</Button>
           <Button
             color='secondary'
             onClick={this.applyTransfer.bind(this)}
@@ -279,6 +281,7 @@ class UsersPage_ extends React.Component<any, any> {
     } = this.state;
     const user = this.props.users[deleteUserId];
     const books = deletePreview && Array.isArray(deletePreview.books) ? deletePreview.books : [];
+    const ratingItems = deletePreview && Array.isArray(deletePreview.ratingItems) ? deletePreview.ratingItems : [];
     const voteItems = deletePreview && Array.isArray(deletePreview.voteItems) ? deletePreview.voteItems : [];
     const voteTotal = voteItems.reduce((sum, item) => sum + (item.count || 0), 0);
 
@@ -305,6 +308,16 @@ class UsersPage_ extends React.Component<any, any> {
             {books.length > 0 ? (
               <Typography variant='body1'>
                 {books.map((book) => `${book.title || '--'} by ${book.author || '--'} (${book._id})`).join(', ')}
+              </Typography>
+            ) : (
+              <Typography variant='body1'>None</Typography>
+            )}
+          </div>
+          <div className='c-users-delete-dialog__section'>
+            <Typography variant='h6'>Book Ratings To Remove ({ratingItems.length})</Typography>
+            {ratingItems.length > 0 ? (
+              <Typography variant='body1'>
+                {ratingItems.map((item) => `${item.title || '--'} (${item.bookId}) rating ${item.value}`).join(', ')}
               </Typography>
             ) : (
               <Typography variant='body1'>None</Typography>
@@ -402,9 +415,33 @@ class UsersPage_ extends React.Component<any, any> {
 
     try {
       const selectedBooks = selected.filter((item) => item.type === 'BOOK');
+      const selectedBookRatings = selected.filter((item) => item.type === 'BOOK_RATING');
       for (const item of selectedBooks) {
         await BookClient.update(item.bookId, {
           suggestedBy: targetUserId,
+        });
+      }
+      for (const item of selectedBookRatings) {
+        const sourceBook = this.props.books[item.bookId];
+        if (!sourceBook) {
+          continue;
+        }
+        const ratings = Array.isArray(sourceBook.ratings) ? sourceBook.ratings : [];
+        const sourceRating = ratings.find((rating) => getRefId(rating.user) === sourceUserId);
+        if (!sourceRating) {
+          continue;
+        }
+        const nextRatings = ratings
+          .filter((rating) => {
+            const ratingUserId = getRefId(rating.user);
+            return ratingUserId !== sourceUserId && ratingUserId !== targetUserId;
+          })
+          .concat({
+            ...sourceRating,
+            user: targetUserId,
+          });
+        await BookClient.update(item.bookId, {
+          ratings: nextRatings,
         });
       }
 
@@ -466,7 +503,7 @@ class UsersPage_ extends React.Component<any, any> {
         votingSessions: votingSessions || {},
         transferApplying: false,
         transferItems: nextTransferItems,
-        transferSummary: `Transferred ${selectedBooks.length} books and ${selected.filter((item) => item.type === 'SEASON_VOTES').length} season vote record(s).`,
+        transferSummary: `Transferred ${selectedBooks.length} books, ${selectedBookRatings.length} book rating(s), and ${selected.filter((item) => item.type === 'SEASON_VOTES').length} season vote record(s).`,
       });
     } catch (err) {
       this.setState({
@@ -531,6 +568,19 @@ class UsersPage_ extends React.Component<any, any> {
 
       for (const book of preview.books) {
         await BookClient.delete(book._id);
+      }
+
+      const deletedBookIds = new Set((preview.books || []).map((book) => book && book._id).filter((id) => !!id));
+      const remainingBooks = Object.keys(this.props.books || {})
+        .map((id) => this.props.books[id])
+        .filter((book) => !!book && !deletedBookIds.has(book._id));
+
+      for (const book of remainingBooks) {
+        const ratings = Array.isArray(book.ratings) ? book.ratings : [];
+        const remainingRatings = ratings.filter((rating) => getRefId(rating.user) !== deleteUserId);
+        if (remainingRatings.length !== ratings.length) {
+          await BookClient.update(book._id, { ratings: remainingRatings });
+        }
       }
 
       const response = await fetch(`${Config.API_HOST}/api/users/${deleteUserId}`, {
