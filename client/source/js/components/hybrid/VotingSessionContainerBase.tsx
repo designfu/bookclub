@@ -17,12 +17,13 @@ import {
 } from 'utils/vote-order-draft';
 import { computeNewlySuggestedBookIds, orderBooksByNewlySuggested } from 'utils/vote-reset-highlight';
 
+const REORDER_COMPLETE_EVENT = 'vote-pitch-tooltip-reorder-complete';
+
 type VotingSessionContainerBaseState = {
   books: any[];
   enabled: boolean;
   newlySuggestedBookIds: any[];
   hasCompletedInitialBootstrap: boolean;
-  suppressPitchTooltips: boolean;
 };
 
 const votingSessionRootSx = {
@@ -64,12 +65,11 @@ export abstract class VotingSessionContainerBase<
       enabled: true,
       newlySuggestedBookIds,
       hasCompletedInitialBootstrap: false,
-      suppressPitchTooltips: false,
     } as S;
   }
 
   render() {
-    const { books, enabled, hasCompletedInitialBootstrap, suppressPitchTooltips } = this.state;
+    const { books, enabled, hasCompletedInitialBootstrap } = this.state;
     const { users, isAdmin } = this.props as any;
     const booksMap = (this.props as any).books;
     const isOpen = (this.props as any).votingSession.status === VotingSessionStatus.OPEN;
@@ -114,17 +114,12 @@ export abstract class VotingSessionContainerBase<
           {isAdmin ? this.renderCloseVotingButton(votingSession) : null}
         </Box>
         {isOpen && hasCompletedInitialBootstrap ?
-          <Box
-            onMouseMove={this.handleListPointerMove}
-            onTouchStart={this.handleListPointerMove}
+          <ReorderableVotingList
+            onReorderComplete={this.onReorderComplete}
+            onUpdate={this.onListUpdate}
           >
-            <ReorderableVotingList
-              onUpdate={this.onListUpdate}
-              onDragEnd={this.handleListDragEnd}
-            >
-              {this.renderVoteRows(books, suppressPitchTooltips)}
-            </ReorderableVotingList>
-          </Box> : null}
+            {this.renderVoteRows(books)}
+          </ReorderableVotingList> : null}
       </Box>
     );
   }
@@ -165,22 +160,11 @@ export abstract class VotingSessionContainerBase<
     } as Pick<S, 'books' | 'enabled'>);
   };
 
-  handleListDragEnd = () => {
-    this.setState({
-      suppressPitchTooltips: true,
-    } as Pick<S, 'suppressPitchTooltips'>);
+  onReorderComplete = () => {
+    window.dispatchEvent(new Event(REORDER_COMPLETE_EVENT));
   };
 
-  handleListPointerMove = () => {
-    if (!this.state.suppressPitchTooltips) {
-      return;
-    }
-    this.setState({
-      suppressPitchTooltips: false,
-    } as Pick<S, 'suppressPitchTooltips'>);
-  };
-
-  async resetFromVotes() {
+  resetFromVotes = async () => {
     const props: any = this.props;
     const votingSession = hydrateVotingSession(props.votingSession, props.books, props.users);
     if (hasUserVoted(votingSession.votes, props.myId)) {
@@ -205,7 +189,7 @@ export abstract class VotingSessionContainerBase<
       enabled: true,
       newlySuggestedBookIds,
     } as Pick<S, 'books' | 'enabled' | 'newlySuggestedBookIds'>);
-  }
+  };
 
   booksAndResetIdsFromProps(props: P) {
     return hydrateVoteOrderDraft(
@@ -241,6 +225,6 @@ export abstract class VotingSessionContainerBase<
   abstract extractBookList(props: P): any[];
   abstract mapReorderableListToBooks(list: any[]): any[];
   abstract buildResetBooks(previousSession: any): any[];
-  abstract renderVoteRows(books?: any[], disablePitchTooltip?: boolean): React.ReactNode;
+  abstract renderVoteRows(books?: any[]): React.ReactNode;
   abstract renderCloseVotingButton(votingSession: any): React.ReactNode;
 }

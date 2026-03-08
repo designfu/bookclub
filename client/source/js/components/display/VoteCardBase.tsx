@@ -59,8 +59,8 @@ function voteCardBaseMediaSx(resolvedImage: string) {
 }
 
 export interface VoteCardBaseProps {
-  title: string;
-  author?: string;
+  bookTitle: string;
+  bookAuthor?: string;
   image?: string;
   trailingContent?: React.ReactNode;
   elevation?: number;
@@ -69,8 +69,8 @@ export interface VoteCardBaseProps {
 }
 
 export const VoteCardBase = React.forwardRef<HTMLDivElement, VoteCardBaseProps>(function VoteCardBase({
-  title,
-  author,
+  bookTitle,
+  bookAuthor,
   image,
   trailingContent,
   elevation,
@@ -97,16 +97,16 @@ export const VoteCardBase = React.forwardRef<HTMLDivElement, VoteCardBaseProps>(
     >
       <CardMedia
         image={resolvedImage}
-        title={`${title} - ${author || '??'}`}
+        title={`${bookTitle} - ${bookAuthor || '??'}`}
         sx={voteCardBaseMediaSx(resolvedImage)}
       />
       <Box sx={voteCardBaseBodySx}>
         <Box sx={voteCardBaseDetailsSx}>
           <Typography variant='body2' sx={voteCardBaseTitleSx}>
-            {title}
+            {bookTitle}
           </Typography>
           <Typography variant='caption' sx={voteCardBaseAuthorSx}>
-            {author || '??'}
+            {bookAuthor || '??'}
           </Typography>
         </Box>
         {trailingContent ? (

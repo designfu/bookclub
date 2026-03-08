@@ -19,6 +19,8 @@ export interface ReorderableListProps {
   onDragEnd?: (didDropOnTarget: boolean) => void;
   /** Called with reordered items; timing is controlled by `onUpdateMode`. */
   onUpdate?: (items: React.ReactElement[]) => void;
+  /** Called after a reorder has fully settled, immediately or after transition. */
+  onReorderComplete?: (items: React.ReactElement[]) => void;
   /** Enables FLIP transform animation for reordering. */
   enableTransitions?: boolean;
   /** Transition duration for reorder transforms, in ms. */
@@ -68,6 +70,9 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
   clearTransitionTimer: number | null;
   itemsBeforeDrag: React.ReactElement[] | null;
   draggedItemId: string | number | null;
+  pendingReorderCompleteItems: React.ReactElement[] | null;
+  didReorderDuringDrag: boolean;
+  transitionRunId: number;
 
   constructor(props: ReorderableListProps) {
     super(props);
@@ -82,6 +87,9 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
     this.clearTransitionTimer = null;
     this.itemsBeforeDrag = null;
     this.draggedItemId = null;
+    this.pendingReorderCompleteItems = null;
+    this.didReorderDuringDrag = false;
+    this.transitionRunId = 0;
 
     this.handleItemClick = this.handleItemClick.bind(this);
     this.moveListItem = this.moveListItem.bind(this);
@@ -124,11 +132,17 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
       });
       return { items: nextItems };
     }, () => {
+      this.didReorderDuringDrag = this.state.isDragging || this.didReorderDuringDrag;
+      this.pendingReorderCompleteItems = this.toItemList(this.state.items);
       if (this.props.onUpdate && onUpdateMode === 'during-drag') {
         this.props.onUpdate(this.toItemList(this.state.items));
       }
       if (enableTransitions) {
-        this.applyReorderTransition(previousTopsById, affectedIds);
+        this.applyReorderTransition(previousTopsById, affectedIds, undefined, !this.state.isDragging);
+        return;
+      }
+      if (!this.state.isDragging) {
+        this.notifyReorderComplete();
       }
     });
   }
@@ -177,7 +191,9 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
       }, () => {
         if (enableTransitions) {
           this.applyReorderTransition(previousTopsById, affectedIds);
+          return;
         }
+        this.notifyReorderComplete();
       });
     }
   }
@@ -185,6 +201,8 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
   handleDragStart(itemId: string | number) {
     this.itemsBeforeDrag = this.toItemList(this.state.items);
     this.draggedItemId = itemId;
+    this.pendingReorderCompleteItems = null;
+    this.didReorderDuringDrag = false;
     if (this.props.onDragStart) {
       this.props.onDragStart(itemId);
     }
@@ -227,8 +245,13 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
       if (this.props.onUpdate && restoredItems) {
         this.props.onUpdate(restoredItems);
       }
+      if (!restoredItems && this.didReorderDuringDrag) {
+        this.notifyReorderComplete(this.pendingReorderCompleteItems || this.toItemList(this.state.items));
+      }
       this.itemsBeforeDrag = null;
       this.draggedItemId = null;
+      this.pendingReorderCompleteItems = null;
+      this.didReorderDuringDrag = false;
       if (this.props.onDragEnd) {
         this.props.onDragEnd(didDropOnTarget);
       }
@@ -239,7 +262,9 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
         items: restoredItems,
       }, () => {
         if (enableTransitions) {
-          this.applyReorderTransition(previousTopsById, affectedIds);
+          this.applyReorderTransition(previousTopsById, affectedIds, restoredItems);
+        } else {
+          this.notifyReorderComplete(restoredItems);
         }
         finalize();
       });
@@ -304,6 +329,8 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
   applyReorderTransition(
     previousTopsById: Record<string | number, number> = {},
     affectedIds: Set<string | number> | null = null,
+    itemsOnComplete: React.ReactElement[] = this.toItemList(this.state.items),
+    shouldNotifyOnComplete: boolean = true,
   ) {
     const nextItems = this.toItemList(this.state.items);
     const nextTopsById = this.captureItemTopsById(nextItems);
@@ -326,6 +353,9 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
     });
 
     if (Object.keys(transformsById).length < 1) {
+      if (shouldNotifyOnComplete) {
+        this.notifyReorderComplete(itemsOnComplete);
+      }
       return;
     }
 
@@ -333,27 +363,45 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
       window.clearTimeout(this.clearTransitionTimer);
       this.clearTransitionTimer = null;
     }
+    this.transitionRunId += 1;
+    const transitionRunId = this.transitionRunId;
 
     this.setState({
       transformsById,
       animateReorder: false,
     }, () => {
       window.requestAnimationFrame(() => {
+        if (transitionRunId !== this.transitionRunId) {
+          return;
+        }
         this.setState({
           transformsById: {},
           animateReorder: true,
         });
         this.clearTransitionTimer = window.setTimeout(() => {
+          if (transitionRunId !== this.transitionRunId) {
+            return;
+          }
           this.setState({
             animateReorder: false,
           });
           this.clearTransitionTimer = null;
+          if (shouldNotifyOnComplete) {
+            this.notifyReorderComplete(itemsOnComplete);
+          }
         }, this.props.transitionDurationMs || REORDER_TRANSITION_MS);
       });
     });
   }
 
+  notifyReorderComplete(items: React.ReactElement[] = this.toItemList(this.state.items)) {
+    if (this.props.onReorderComplete) {
+      this.props.onReorderComplete(items);
+    }
+  }
+
   resetReorderTransition() {
+    this.transitionRunId += 1;
     if (this.clearTransitionTimer) {
       window.clearTimeout(this.clearTransitionTimer);
       this.clearTransitionTimer = null;

@@ -201,11 +201,10 @@ class HeaderContainer_ extends React.Component<any, any> {
   }
 
   handleOpenSwitchDialog() {
-    const currentUserId = this.props.users && this.props.users.myId ? this.props.users.myId : '';
     this.handleMenuClose();
     this.setState({
       switchDialogOpen: true,
-      switchUserId: currentUserId,
+      switchUserId: '',
     });
   }
 

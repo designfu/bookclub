@@ -107,7 +107,8 @@ function MetadataRow({ label, children }: { label: string; children: React.React
 
 const cardSx = {
   minWidth: 240,
-  maxWidth: 600,
+  width: '100%',
+  maxWidth: 800,
   position: 'relative',
   m: 0,
   display: 'block',

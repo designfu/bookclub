@@ -32,7 +32,7 @@ class BooksPage_ extends React.Component<any, any> {
   };
 
   render() {
-    const { books, myId, isLoggedIn, previousSeason } = this.props;
+    const { books, myId, isLoggedIn, previousSeason, isSmallScreen } = this.props;
     const query = (this.state.query || '').trim().toLowerCase();
     const myBooks = {};
     const notMyBooks = {};
@@ -64,11 +64,21 @@ class BooksPage_ extends React.Component<any, any> {
         container
         spacing={5}
         sx={{
+          flexDirection: isSmallScreen ? 'column' : 'row',
+          justifyContent: isSmallScreen ? 'flex-start' : 'center',
           px: { xs: 2, md: 5 },
           py: 1.25,
         }}
       >
-        <Grid size={{ xs: 12, md: 6 }} sx={{ minWidth: 0, width: { xs: '100%', md: 'auto' } }}>
+        <Grid
+          size={{ xs: 12, md: 6 }}
+          sx={{
+            minWidth: 0,
+            width: '100%',
+            maxWidth: isSmallScreen ? '100%' : 800,
+            mx: isSmallScreen ? 0 : 'auto',
+          }}
+        >
           <Box
             sx={{
               display: 'flex',
@@ -96,7 +106,15 @@ class BooksPage_ extends React.Component<any, any> {
             showAdminActions={true}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }} sx={{ minWidth: 0, width: { xs: '100%', md: 'auto' } }}>
+        <Grid
+          size={{ xs: 12, md: 6 }}
+          sx={{
+            minWidth: 0,
+            width: '100%',
+            maxWidth: isSmallScreen ? '100%' : 800,
+            mx: isSmallScreen ? 0 : 'auto',
+          }}
+        >
           <Box
             sx={{
               display: 'flex',

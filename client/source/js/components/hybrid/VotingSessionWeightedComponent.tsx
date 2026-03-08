@@ -21,7 +21,7 @@ const pointsFor = (i) => Math.max(Config.MAX_VOTES - i, 0);
 
 class VotingSessionWeightedContainer_ extends VotingSessionContainerBase<any, any> {
 
-  renderVoteRows(books = [], disablePitchTooltip = false) {
+  renderVoteRows(books = []) {
     return books.map((book, i) =>
       <VoteCard
         key={book._id}
@@ -29,7 +29,6 @@ class VotingSessionWeightedContainer_ extends VotingSessionContainerBase<any, an
         points={pointsFor(i)}
         book={book}
         isNewlySuggested={this.state.newlySuggestedBookIds.indexOf(toBookId(book)) > -1}
-        disablePitchTooltip={disablePitchTooltip}
         onVote={this.onVote.bind(this)}
       />
     );

@@ -20,7 +20,7 @@ import { VotingSessionContainerBase } from 'components/hybrid/VotingSessionConta
 
 class VotingSessionAcceptanceContainer_ extends VotingSessionContainerBase<any, any> {
 
-  renderVoteRows(books = [], disablePitchTooltip = false) {
+  renderVoteRows(books = []) {
     return books.filter(book => !!book).map((book, i) =>
       book.isDivider ?
         <VoteCardDivider key={book._id} />
@@ -32,7 +32,6 @@ class VotingSessionAcceptanceContainer_ extends VotingSessionContainerBase<any, 
         maxRank={books.length - 1}
         book={book}
         isNewlySuggested={this.state.newlySuggestedBookIds.indexOf(toBookId(book)) > -1}
-        disablePitchTooltip={disablePitchTooltip}
         onVote={this.onVote.bind(this)}
       />
     );
