@@ -22,8 +22,8 @@ export interface ReorderableListItemProps {
   id: string | number;
   index: number;
   moveListItem: (dragIndex: number, hoverIndex: number) => void;
-  onDragStart?: (id: string | number) => void;
-  onDragEnd?: (didDropOnTarget: boolean) => void;
+  handleDragStart: (id: string | number) => void;
+  handleDragEnd: (didDropOnTarget: boolean) => void;
   offsetY?: number;
   animateReorder?: boolean;
   transitionDurationMs?: number;
@@ -52,8 +52,6 @@ const ReorderableListItem = (props: ReorderableListItemProps) => {
     id,
     index,
     moveListItem,
-    onDragStart,
-    onDragEnd,
     offsetY = 0,
     animateReorder = false,
     transitionDurationMs = theme.transitions.duration.shortest,
@@ -71,20 +69,16 @@ const ReorderableListItem = (props: ReorderableListItemProps) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: LIST_ITEM_TYPE,
     item: () => {
-      if (onDragStart) {
-        onDragStart(id);
-      }
+      props.handleDragStart(id);
       return { id, index };
     },
     end: (_item, monitor) => {
-      if (onDragEnd) {
-        onDragEnd(monitor.didDrop());
-      }
+      props.handleDragEnd(monitor.didDrop());
     },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-  }), [id, index, onDragStart, onDragEnd]);
+  }), [id, index, props]);
 
   const [, drop] = useDrop<DragItem, void, unknown>(() => ({
     accept: LIST_ITEM_TYPE,

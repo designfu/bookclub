@@ -17,6 +17,7 @@ import {
 } from 'utils/vote-order-draft';
 import { computeNewlySuggestedBookIds, orderBooksByNewlySuggested } from 'utils/vote-reset-highlight';
 
+const REORDER_STARTED_EVENT = 'vote-pitch-tooltip-reorder-started';
 const REORDER_COMPLETE_EVENT = 'vote-pitch-tooltip-reorder-complete';
 
 type VotingSessionContainerBaseState = {
@@ -115,6 +116,7 @@ export abstract class VotingSessionContainerBase<
         </Box>
         {isOpen && hasCompletedInitialBootstrap ?
           <ReorderableVotingList
+            onReorderStarted={this.onReorderStarted}
             onReorderComplete={this.onReorderComplete}
             onUpdate={this.onListUpdate}
           >
@@ -158,6 +160,10 @@ export abstract class VotingSessionContainerBase<
       books,
       enabled: true,
     } as Pick<S, 'books' | 'enabled'>);
+  };
+
+  onReorderStarted = () => {
+    window.dispatchEvent(new Event(REORDER_STARTED_EVENT));
   };
 
   onReorderComplete = () => {

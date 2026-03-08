@@ -1,8 +1,8 @@
 import * as React from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useDragLayer } from 'react-dnd';
 import { LightTooltip } from 'components/display/LightTooltip';
 
+const REORDER_STARTED_EVENT = 'vote-pitch-tooltip-reorder-started';
 const REORDER_COMPLETE_EVENT = 'vote-pitch-tooltip-reorder-complete';
 
 export interface VotePitchTooltipProps {
@@ -13,18 +13,19 @@ export interface VotePitchTooltipProps {
 
 export function VotePitchTooltip({ title, children, disabled = false }: VotePitchTooltipProps) {
   const isTouchDevice = useMediaQuery('(hover: none), (pointer: coarse)');
-  const { isDragging } = useDragLayer((monitor) => ({
-    isDragging: monitor.isDragging(),
-  }));
   const [open, setOpen] = React.useState(false);
-  const [suppressHoverOpen, setSuppressHoverOpen] = React.useState(false);
-  const wasDraggingRef = React.useRef(false);
+  const [blockOpen, setBlockOpen] = React.useState(false);
+  const [reorderInProgress, setReorderInProgress] = React.useState(false);
 
+  // During drag sessions, mouse and focus events are not fired. This leaves tooltips
+  // out of sync as the mouse might not be over the voting card anymore.
+  // To keep tooltips in sync, we close them during reorder operations, and wait
+  // for a mouse moved event to re-arm them afterwards. This also fixes prop updates.
   const suppressHoverUntilMouseMove = React.useCallback(() => {
-    setSuppressHoverOpen(true);
+    setBlockOpen(true);
 
     const handleMouseMove = () => {
-      setSuppressHoverOpen(false);
+      setBlockOpen(false);
       window.removeEventListener('mousemove', handleMouseMove);
     };
 
@@ -34,15 +35,15 @@ export function VotePitchTooltip({ title, children, disabled = false }: VotePitc
     };
   }, []);
 
-  const disableTooltip = disabled || isTouchDevice || isDragging;
+  const disableTooltip = disabled || isTouchDevice || reorderInProgress;
   const isOpen = !disableTooltip && open;
 
   const handleOpen = React.useCallback(() => {
-    if (suppressHoverOpen) {
+    if (blockOpen) {
       return;
     }
     setOpen(true);
-  }, [suppressHoverOpen]);
+  }, [blockOpen]);
 
   React.useEffect(() => {
     if (disableTooltip) {
@@ -51,30 +52,20 @@ export function VotePitchTooltip({ title, children, disabled = false }: VotePitc
   }, [disableTooltip]);
 
   React.useEffect(() => {
-    if (isDragging) {
-      wasDraggingRef.current = true;
-      setSuppressHoverOpen(true);
-      return;
-    }
-
-    if (!wasDraggingRef.current) {
-      return;
-    }
-    wasDraggingRef.current = false;
-
-    // Safari can emit stray mouseenter/mouseleave after drag or when elements have moved.
-    // Keep hover-tooltips disabled until the pointer actually moves again via mousemove.
-    return suppressHoverUntilMouseMove();
-  }, [isDragging, suppressHoverUntilMouseMove]);
-
-  React.useEffect(() => {
+    const handleReorderStarted = () => {
+      setOpen(false);
+      setReorderInProgress(true);
+    };
     const handleReorderComplete = () => {
       setOpen(false);
+      setReorderInProgress(false);
       suppressHoverUntilMouseMove();
     };
 
+    window.addEventListener(REORDER_STARTED_EVENT, handleReorderStarted);
     window.addEventListener(REORDER_COMPLETE_EVENT, handleReorderComplete);
     return () => {
+      window.removeEventListener(REORDER_STARTED_EVENT, handleReorderStarted);
       window.removeEventListener(REORDER_COMPLETE_EVENT, handleReorderComplete);
     };
   }, [suppressHoverUntilMouseMove]);
@@ -87,9 +78,6 @@ export function VotePitchTooltip({ title, children, disabled = false }: VotePitc
       open={isOpen}
       onOpen={handleOpen}
       onClose={() => setOpen(false)}
-      disableHoverListener={disableTooltip}
-      disableFocusListener={disableTooltip}
-      disableTouchListener={disableTooltip}
     >
       {children}
     </LightTooltip>

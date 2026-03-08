@@ -31,9 +31,23 @@ function ReorderableVotingList({
   ...props
 }: ReorderableVotingListProps) {
   const mergedListSx = [{ maxWidth: 400 }, listSx].filter(Boolean) as SxProps<Theme>;
+  const handleReorderStarted = React.useCallback((items) => {
+    if (props.onReorderStarted) {
+      props.onReorderStarted(items);
+    }
+  }, [props]);
+
+  const handleReorderComplete = React.useCallback((items) => {
+    if (props.onReorderComplete) {
+      props.onReorderComplete(items);
+    }
+  }, [props]);
+
   return (
     <ReorderableList
       {...props}
+      onReorderStarted={handleReorderStarted}
+      onReorderComplete={handleReorderComplete}
       enableTransitions
       transitionDurationMs={180}
       transitionEasing='ease-out'

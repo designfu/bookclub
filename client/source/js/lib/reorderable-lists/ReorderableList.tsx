@@ -14,11 +14,10 @@ type OnUpdateMode = 'during-drag' | 'on-drop';
 
 export interface ReorderableListProps {
   children: React.ReactNode;
-  onItemClick?: (itemKey: string | number) => void;
-  onDragStart?: (itemKey: string | number) => void;
-  onDragEnd?: (didDropOnTarget: boolean) => void;
   /** Called with reordered items; timing is controlled by `onUpdateMode`. */
   onUpdate?: (items: React.ReactElement[]) => void;
+  /** Called before the first reorder-related operation updates local state. */
+  onReorderStarted?: (items: React.ReactElement[]) => void;
   /** Called after a reorder has fully settled, immediately or after transition. */
   onReorderComplete?: (items: React.ReactElement[]) => void;
   /** Enables FLIP transform animation for reordering. */
@@ -73,6 +72,9 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
   pendingReorderCompleteItems: React.ReactElement[] | null;
   didReorderDuringDrag: boolean;
   transitionRunId: number;
+  nextReorderOperationId: number;
+  reorderOperationsInProgress: Set<number>;
+  dragOperationId: number | null;
 
   constructor(props: ReorderableListProps) {
     super(props);
@@ -90,18 +92,14 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
     this.pendingReorderCompleteItems = null;
     this.didReorderDuringDrag = false;
     this.transitionRunId = 0;
+    this.nextReorderOperationId = 1;
+    this.reorderOperationsInProgress = new Set();
+    this.dragOperationId = null;
 
-    this.handleItemClick = this.handleItemClick.bind(this);
     this.moveListItem = this.moveListItem.bind(this);
     this.handleDragStart = this.handleDragStart.bind(this);
     this.handleDragEnd = this.handleDragEnd.bind(this);
     this.handleItemRef = this.handleItemRef.bind(this);
-  }
-
-  handleItemClick(itemKey: string | number) {
-    if (this.props.onItemClick) {
-      this.props.onItemClick(itemKey);
-    }
   }
 
   moveListItem(dragIndex: number, hoverIndex: number) {
@@ -123,6 +121,9 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
           .map((item, idx) => this.toItemKey(item, idx)),
       )
       : null;
+    const reorderOperationId = this.state.isDragging
+      ? null
+      : this.beginReorderOperation(previousItems);
 
     this.setState((prevState) => {
       const items = this.toItemList(prevState.items);
@@ -138,11 +139,17 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
         this.props.onUpdate(this.toItemList(this.state.items));
       }
       if (enableTransitions) {
-        this.applyReorderTransition(previousTopsById, affectedIds, undefined, !this.state.isDragging);
+        this.applyReorderTransition(
+          previousTopsById,
+          affectedIds,
+          undefined,
+          !this.state.isDragging,
+          reorderOperationId,
+        );
         return;
       }
-      if (!this.state.isDragging) {
-        this.notifyReorderComplete();
+      if (!this.state.isDragging && reorderOperationId !== null) {
+        this.completeReorderOperation(reorderOperationId);
       }
     });
   }
@@ -186,14 +193,15 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
       const affectedIds = enableTransitions
         ? new Set(nextItems.map((item, idx) => this.toItemKey(item, idx)))
         : null;
+      const reorderOperationId = this.beginReorderOperation(currentItems);
       this.setState({
         items: nextItems,
       }, () => {
         if (enableTransitions) {
-          this.applyReorderTransition(previousTopsById, affectedIds);
+          this.applyReorderTransition(previousTopsById, affectedIds, undefined, true, reorderOperationId);
           return;
         }
-        this.notifyReorderComplete();
+        this.completeReorderOperation(reorderOperationId);
       });
     }
   }
@@ -203,9 +211,7 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
     this.draggedItemId = itemId;
     this.pendingReorderCompleteItems = null;
     this.didReorderDuringDrag = false;
-    if (this.props.onDragStart) {
-      this.props.onDragStart(itemId);
-    }
+    this.dragOperationId = this.beginReorderOperation(this.toItemList(this.state.items));
     if (!this.state.isDragging) {
       this.setState({
         isDragging: true,
@@ -214,11 +220,13 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
   }
 
   handleDragEnd(didDropOnTarget: boolean) {
+    const dragOperationId = this.dragOperationId;
     if (!this.state.isDragging) {
       this.itemsBeforeDrag = null;
       this.draggedItemId = null;
-      if (this.props.onDragEnd) {
-        this.props.onDragEnd(didDropOnTarget);
+      if (dragOperationId !== null) {
+        this.completeReorderOperation(dragOperationId);
+        this.dragOperationId = null;
       }
       return;
     }
@@ -245,16 +253,17 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
       if (this.props.onUpdate && restoredItems) {
         this.props.onUpdate(restoredItems);
       }
-      if (!restoredItems && this.didReorderDuringDrag) {
-        this.notifyReorderComplete(this.pendingReorderCompleteItems || this.toItemList(this.state.items));
+      if (dragOperationId !== null) {
+        this.completeReorderOperation(
+          dragOperationId,
+          restoredItems || this.pendingReorderCompleteItems || this.toItemList(this.state.items),
+        );
       }
       this.itemsBeforeDrag = null;
       this.draggedItemId = null;
       this.pendingReorderCompleteItems = null;
       this.didReorderDuringDrag = false;
-      if (this.props.onDragEnd) {
-        this.props.onDragEnd(didDropOnTarget);
-      }
+      this.dragOperationId = null;
     };
     if (restoredItems) {
       this.setState({
@@ -262,9 +271,11 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
         items: restoredItems,
       }, () => {
         if (enableTransitions) {
-          this.applyReorderTransition(previousTopsById, affectedIds, restoredItems);
+          this.applyReorderTransition(previousTopsById, affectedIds, restoredItems, true, dragOperationId);
         } else {
-          this.notifyReorderComplete(restoredItems);
+          if (dragOperationId !== null) {
+            this.completeReorderOperation(dragOperationId, restoredItems);
+          }
         }
         finalize();
       });
@@ -305,6 +316,29 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
     return items.map((item, idx) => this.toItemKey(item, idx)).join('|');
   }
 
+  beginReorderOperation(items: React.ReactElement[] = this.toItemList(this.state.items)) {
+    const operationId = this.nextReorderOperationId++;
+    const shouldNotifyStarted = this.reorderOperationsInProgress.size < 1;
+    this.reorderOperationsInProgress.add(operationId);
+    if (shouldNotifyStarted && this.props.onReorderStarted) {
+      this.props.onReorderStarted(items);
+    }
+    return operationId;
+  }
+
+  completeReorderOperation(
+    operationId: number,
+    items: React.ReactElement[] = this.toItemList(this.state.items),
+  ) {
+    if (!this.reorderOperationsInProgress.has(operationId)) {
+      return;
+    }
+    this.reorderOperationsInProgress.delete(operationId);
+    if (this.reorderOperationsInProgress.size < 1 && this.props.onReorderComplete) {
+      this.props.onReorderComplete(items);
+    }
+  }
+
   handleItemRef(itemId: string | number, node: HTMLDivElement | null) {
     if (node) {
       this.itemNodesById[itemId] = node;
@@ -331,6 +365,7 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
     affectedIds: Set<string | number> | null = null,
     itemsOnComplete: React.ReactElement[] = this.toItemList(this.state.items),
     shouldNotifyOnComplete: boolean = true,
+    completionOperationId: number | null = null,
   ) {
     const nextItems = this.toItemList(this.state.items);
     const nextTopsById = this.captureItemTopsById(nextItems);
@@ -353,8 +388,8 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
     });
 
     if (Object.keys(transformsById).length < 1) {
-      if (shouldNotifyOnComplete) {
-        this.notifyReorderComplete(itemsOnComplete);
+      if (shouldNotifyOnComplete && completionOperationId !== null) {
+        this.completeReorderOperation(completionOperationId, itemsOnComplete);
       }
       return;
     }
@@ -386,18 +421,12 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
             animateReorder: false,
           });
           this.clearTransitionTimer = null;
-          if (shouldNotifyOnComplete) {
-            this.notifyReorderComplete(itemsOnComplete);
+          if (shouldNotifyOnComplete && completionOperationId !== null) {
+            this.completeReorderOperation(completionOperationId, itemsOnComplete);
           }
         }, this.props.transitionDurationMs || REORDER_TRANSITION_MS);
       });
     });
-  }
-
-  notifyReorderComplete(items: React.ReactElement[] = this.toItemList(this.state.items)) {
-    if (this.props.onReorderComplete) {
-      this.props.onReorderComplete(items);
-    }
   }
 
   resetReorderTransition() {
@@ -417,6 +446,8 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
       window.clearTimeout(this.clearTransitionTimer);
       this.clearTransitionTimer = null;
     }
+    this.reorderOperationsInProgress.clear();
+    this.dragOperationId = null;
   }
 
   render() {
@@ -448,12 +479,12 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
             return (
               <ItemComponent
                 key={itemKey}
-                handleItemClick={() => this.handleItemClick(itemKey)}
+                handleItemClick={() => {}}
                 index={i}
                 id={itemKey}
                 moveListItem={this.moveListItem}
-                onDragStart={this.handleDragStart}
-                onDragEnd={this.handleDragEnd}
+                handleDragStart={this.handleDragStart}
+                handleDragEnd={this.handleDragEnd}
                 offsetY={enableTransitions ? (transformsById[itemKey] || 0) : 0}
                 animateReorder={enableTransitions && animateReorder}
                 transitionDurationMs={transitionDurationMs}
