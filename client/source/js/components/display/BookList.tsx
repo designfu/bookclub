@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { styled } from '@mui/material/styles';
@@ -10,6 +11,23 @@ const Item = styled(Paper)({
   backgroundColor: 'transparent',
   boxShadow: 'none',
 });
+
+const bookListItemsSx = {
+  m: 0,
+  p: 0,
+  listStyle: 'none',
+};
+
+const bookListGroupSx = {
+  mt: 1.25,
+  '& > summary': {
+    cursor: 'pointer',
+    ml: 2.5,
+  },
+  '& > .book-list-group-items': {
+    pt: 1.25,
+  },
+};
 
 const STATUS_VALS = {
   READING: 3,
@@ -97,7 +115,7 @@ export class BookList extends React.Component<any, any> {
 
   renderBooks(books) {
     return books.map(({ book, id, isPlaceholder }) => (
-      <Item key={id} className='c-book-list__item'>
+      <Item key={id}>
         <BookCard
           isAdmin={this.props.isAdmin}
           myId={this.props.myId}
@@ -153,19 +171,19 @@ export class BookList extends React.Component<any, any> {
         .sort((a, b) => (STATUS_VALS[b] || -1) - (STATUS_VALS[a] || -1) || a.localeCompare(b));
 
       return (
-        <div className='c-book-list'>
-          <Stack className='c-book-list__items' spacing={2}>
+        <Box>
+          <Stack spacing={2} sx={bookListItemsSx}>
             {this.renderBooks(suggestedBooksWithPlaceholders)}
           </Stack>
           {nonSuggestedStatuses.map((status) => (
-            <details key={status} className='c-book-list__group'>
+            <Box component='details' key={status} sx={bookListGroupSx}>
               <summary>{formatStatusLabel(status)} ({byStatus[status].length})</summary>
-              <Stack className='c-book-list__items' spacing={2}>
+              <Stack spacing={2} sx={bookListItemsSx} className='book-list-group-items'>
                 {this.renderBooks(byStatus[status])}
               </Stack>
-            </details>
+            </Box>
           ))}
-        </div>
+        </Box>
       );
     }
 
@@ -182,40 +200,40 @@ export class BookList extends React.Component<any, any> {
         .sort((a, b) => sortBooksByDateForStatus(a, b, BookStatus.FINISHED));
 
       return (
-        <div className='c-book-list'>
-          <Stack className='c-book-list__items' spacing={2}>
+        <Box>
+          <Stack spacing={2} sx={bookListItemsSx}>
             {this.renderBooks(alwaysVisibleBooks)}
           </Stack>
           {backlogBooks.length > 0 ? (
-            <details className='c-book-list__group' open>
+            <Box component='details' open sx={bookListGroupSx}>
               <summary>Backlog ({backlogBooks.length})</summary>
-              <Stack className='c-book-list__items' spacing={2}>
+              <Stack spacing={2} sx={bookListItemsSx} className='book-list-group-items'>
                 {this.renderBooks(backlogBooks)}
               </Stack>
-            </details>
+            </Box>
           ) : null}
           {suggestedBooks.length > 0 ? (
-            <details className='c-book-list__group'>
+            <Box component='details' sx={bookListGroupSx}>
               <summary>Suggested ({suggestedBooks.length})</summary>
-              <Stack className='c-book-list__items' spacing={2}>
+              <Stack spacing={2} sx={bookListItemsSx} className='book-list-group-items'>
                 {this.renderBooks(suggestedBooks)}
               </Stack>
-            </details>
+            </Box>
           ) : null}
           {finishedBooks.length > 0 ? (
-            <details className='c-book-list__group'>
+            <Box component='details' sx={bookListGroupSx}>
               <summary>Finished ({finishedBooks.length})</summary>
-              <Stack className='c-book-list__items' spacing={2}>
+              <Stack spacing={2} sx={bookListItemsSx} className='book-list-group-items'>
                 {this.renderBooks(sortedFinishedBooks)}
               </Stack>
-            </details>
+            </Box>
           ) : null}
-        </div>
+        </Box>
       );
     }
 
     return (
-      <Stack className='c-book-list__items' spacing={2}>
+      <Stack spacing={2} sx={bookListItemsSx}>
         {this.renderBooks(books)}
       </Stack>
     );

@@ -4,9 +4,12 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import DialogContentText from '@mui/material/DialogContentText';
+import Box from '@mui/material/Box';
 import { Book, BookStatus } from 'types';
 import { ConfirmDialogButton } from 'components/display/ConfirmDialogButton';
+import { CloseVotingResultsList } from 'components/display/CloseVotingResultsList';
 import { acceptanceVoteResultsString } from 'utils/strings';
+import { dialogDropdownFormControlSx } from 'components/form-control-sx';
 
 function bookText(book) {
   return book ? `${book.title} - ${book.author}` : '?? - ??';
@@ -41,9 +44,9 @@ export class CloseAdvancedAcceptanceVotingDialogButton extends React.Component<C
       <ConfirmDialogButton
         title='Close Voting?'
         content={
-          <div className='c-close-voting-dialog c-close-voting-dialog--acceptance'>
+          <Box>
             <DialogContentText>Pick which book to open the season with</DialogContentText>
-            <FormControl className='o-field o-field--dropdown u-space--bot-large'>
+            <FormControl sx={dialogDropdownFormControlSx}>
               <InputLabel id={closeAdvancedAcceptanceBookLabelId}>Book</InputLabel>
               <Select
                 id='new-season-book'
@@ -64,13 +67,15 @@ export class CloseAdvancedAcceptanceVotingDialogButton extends React.Component<C
             <DialogContentText>
               What the people want:
             </DialogContentText>
-            <ul className='c-close-voting-dialog__result-list'>
-              {results.map((result, i) => <li key={i} className='c-close-voting-dialog__result'>
-                <span className='c-close-voting-dialog__result-book'>{bookText(result.book)}</span>
-                <span className='c-close-voting-dialog__result-points'>{acceptanceVoteResultsString(result.rankings)}</span>
-              </li>)}
-            </ul>
-          </div>
+            <CloseVotingResultsList
+              stacked={true}
+              items={results.map((result, i) => ({
+                key: i,
+                primary: bookText(result.book),
+                secondary: acceptanceVoteResultsString(result.rankings),
+              }))}
+            />
+          </Box>
         }
         confirmText='Close Voting'
         confirmColor='secondary'

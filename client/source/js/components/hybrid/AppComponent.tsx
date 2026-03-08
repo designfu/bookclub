@@ -20,6 +20,11 @@ const appTheme = createTheme({
   },
   typography: {
     fontFamily: "Roboto, Helvetica, Arial, sans-serif",
+    fontWeightRegular: 400,
+    body1: {
+      fontSize: '1rem',
+      fontWeight: 400,
+    },
   },
   components: {
     MuiTooltip: {

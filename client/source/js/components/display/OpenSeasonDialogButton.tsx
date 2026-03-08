@@ -6,6 +6,7 @@ import MenuItem from '@mui/material/MenuItem';
 import DialogContentText from '@mui/material/DialogContentText';
 import { Book } from 'types';
 import { ConfirmDialogButton } from 'components/display/ConfirmDialogButton';
+import { dropdownFormControlSx } from 'components/form-control-sx';
 
 export interface OpenSeasonDialogButtonProps {
   onRef?: Function;
@@ -30,7 +31,7 @@ export class OpenSeasonDialogButton extends React.Component<OpenSeasonDialogButt
         content={
           <div>
             <DialogContentText>Pick which book to open the season with</DialogContentText>
-            <FormControl className='o-field o-field--dropdown'>
+            <FormControl sx={dropdownFormControlSx}>
               <InputLabel id={openSeasonBookLabelId}>Book</InputLabel>
               <Select
                 id='new-season-book'

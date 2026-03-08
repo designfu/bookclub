@@ -3,13 +3,14 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
-import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
+import CardMedia from '@mui/material/CardMedia';
+import Chip from '@mui/material/Chip';
 import DialogContentText from '@mui/material/DialogContentText';
+import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import classnames from 'classnames';
 import { Book, BookStatus } from 'types';
 import { roundToNearest } from '@shared/utils/math';
 import { ConfirmDialog } from 'components/display/ConfirmDialog';
@@ -37,16 +38,20 @@ const ensureProps = (book) => ({
 function renderStatus(status, points = null, votes = null) {
   if(status === BookStatus.BACKLOG) return null;
   if(!points && !votes) return null;
-
-  const className = classnames({
-    'c-book-card__status': true,
-    [`c-book-card__status--${normalize(status)}`]: !!status,
-    'has-points': points,
-  });
+  const statusSx = {
+    position: 'absolute',
+    right: 5,
+    bottom: 5,
+    px: '6px',
+    py: '3px',
+    borderRadius: '3px',
+    backgroundColor: 'grey.200',
+    color: 'text.primary',
+  };
   if (votes) {
-    return <Typography variant='caption' component='span' className={className}>{acceptanceVoteResultsString(votes)}</Typography>;
+    return <Typography variant='caption' component='span' sx={statusSx}>{acceptanceVoteResultsString(votes)}</Typography>;
   } else {
-    return <Typography variant='caption' component='span' className={className}>{points ? pointString(points) : status}</Typography>;
+    return <Typography variant='caption' component='span' sx={statusSx}>{points ? pointString(points) : status}</Typography>;
   }
 }
 
@@ -57,6 +62,80 @@ function statusBadgeLabel(status: string): string {
   const lower = status.toString().toLowerCase();
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
+
+function badgeSx(kind: string) {
+  const styles = {
+    suggested: { backgroundColor: 'grey.200', color: 'text.primary' },
+    reading: { backgroundColor: 'primary.main', color: 'primary.contrastText' },
+    finished: { backgroundColor: 'grey.500', color: 'common.white' },
+    yourBook: { backgroundColor: 'grey.700', color: 'common.white' },
+    new: { backgroundColor: 'success.dark', color: 'common.white' },
+  };
+
+  return {
+    borderRadius: 0,
+    flex: '1 1 0',
+    minWidth: 0,
+    height: 'auto',
+    '& .MuiChip-label': {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+      px: 1,
+      py: 0.375,
+      fontSize: '10px',
+      lineHeight: 1.5,
+      textTransform: 'uppercase',
+    },
+    ...(styles[kind] || {}),
+  };
+}
+
+function MetadataRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <Stack direction='row' spacing={0.5} alignItems='flex-start'>
+      <Typography variant='subtitle2' component='span'>
+        {label}:
+      </Typography>
+      <Typography variant='body2' component='span'>
+        {children}
+      </Typography>
+    </Stack>
+  );
+}
+
+const cardSx = {
+  minWidth: 240,
+  maxWidth: 600,
+  position: 'relative',
+  m: 0,
+  display: 'block',
+};
+
+const borderlessCardSx = {
+  m: 0,
+  minWidth: 'initial',
+  maxWidth: 'initial',
+  boxShadow: 'none',
+};
+
+const topSectionSx = {
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  position: 'relative',
+  borderBottom: '1px solid',
+  borderColor: 'divider',
+};
+
+const detailsSx = {
+  '& .MuiCardHeader-root': {
+    px: 2,
+    pt: 1.5,
+    pb: 1,
+  },
+};
 
 function yourRating(ratings: any[], myId: string) {
   if (!myId) {
@@ -103,10 +182,6 @@ export class BookCard extends React.Component<BookListItemProps, any> {
   render() {
     const { myId, isAdmin, borderless, statusBreak } = this.props;
     const book = ensureProps(this.props.book);
-    const className = classnames('c-book-card', {
-      'c-book-card--borderless': borderless,
-      'c-book-card--status-break': statusBreak,
-    });
 
     const canEdit = myId === book.suggestedBy || isAdmin;
 
@@ -126,68 +201,122 @@ export class BookCard extends React.Component<BookListItemProps, any> {
     const hasActions = !!(actions.edit || actions.propose || actions.retract || actions.delete);
 
     return (
-      <Card className={className}>
+      <Card
+        sx={{
+          ...cardSx,
+          ...(borderless ? borderlessCardSx : {}),
+          ...(statusBreak ? { mt: '44px' } : {}),
+        }}
+      >
         {showBadges ? (
-          <Box className='c-book-card__badges-row'>
-            <Stack component='span' className='c-book-card__badges' direction='row'>
-              {showStatusBadge ? <span className={`c-book-card__badge c-book-card__badge--${normalize(book.status)}`}>{statusBadgeLabel(book.status)}</span> : null}
-              {showYourBookBadge ? <span className='c-book-card__badge c-book-card__badge--your-book'>Your Book</span> : null}
-              {showNewBadge ? <span className='c-book-card__badge c-book-card__badge--new'>New</span> : null}
+          <Box
+            sx={{
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+              zIndex: 2,
+            }}
+          >
+            <Stack direction='row'>
+              {showStatusBadge ? (
+                <Chip
+                  label={statusBadgeLabel(book.status)}
+                  size='small'
+                  sx={badgeSx(normalize(book.status))}
+                />
+              ) : null}
+              {showYourBookBadge ? (
+                <Chip
+                  label='Your Book'
+                  size='small'
+                  sx={badgeSx('yourBook')}
+                />
+              ) : null}
+              {showNewBadge ? (
+                <Chip
+                  label='New'
+                  size='small'
+                  sx={badgeSx('new')}
+                />
+              ) : null}
             </Stack>
           </Box>
         ) : null}
-        <Box className='c-book-card__top'>
+        <Box sx={topSectionSx}>
           <CardMedia
-            className='c-book-card__image-media'
             image={book.links.image ? book.links.image : '/icons/icon-book-256.png'}
             title={`${book.title} - ${book.author}`}
+            sx={{
+              width: 112,
+              maxWidth: 112,
+              minWidth: 112,
+              flex: '0 0 112px',
+              alignSelf: 'flex-start',
+              height: 170,
+            }}
           />
-          <Box className='c-book-card__details'>
+          <Box sx={detailsSx}>
             <CardHeader
               title={book.title}
               subheader={book.author}
             />
 
-            <CardContent className='c-book-card__metadata'>
+            <CardContent sx={{ pt: 0.75 }}>
               {renderStatus(book.status, this.props.points, this.props.rankings)}
-              {book.genre ?
-                <Typography variant='body2' component='p' className='c-book-card__detail c-book-card__detail--genre'>
-                  <Typography variant='subtitle2' component='span'>Genre:</Typography>{' '}
-                  <Typography variant='body2' component='span'>{book.genre}</Typography>
-                </Typography>
-              : null}
-              {book.status === BookStatus.FINISHED ?
-                <Typography variant='body2' component='p' className='c-book-card__detail c-book-card__detail--rating'>
-                  <Typography variant='subtitle2' component='span'>Rating:</Typography>{' '}
-                  <Typography variant='body2' component='span'>
+              <Stack spacing={0}>
+                {book.genre ? (
+                  <MetadataRow label='Genre'>{book.genre}</MetadataRow>
+                ) : null}
+                {book.status === BookStatus.FINISHED ? (
+                  <MetadataRow label='Rating'>
                     {book.hasOwnProperty('averageRating') && book.averageRating > -1
                       ? `${formatRating(book.averageRating)} average from ${book.ratings.length} ratings ${yourRating(book.ratings, myId)}`
                       : 'No ratings yet'
                     }
-                  </Typography>
-                </Typography>
-              : null}
-              <Typography variant='body2' component='p' className='c-book-card__detail c-book-card__detail--goodreads'>
-                <Typography variant='subtitle2' component='span'>Goodreads:</Typography>{' '}
-                <Typography variant='body2' component='span'>
-                  <a href={book.links.goodreads ? ensureGoodreadsUrlIsValid(book.links.goodreads) : '#'} target='_blank' rel='noreferrer'>{ensureGoodreadsUrlIsShort(book.links.goodreads)}</a>
-                </Typography>
-              </Typography>
+                  </MetadataRow>
+                ) : null}
+                <MetadataRow label='Goodreads'>
+                  <Link
+                    href={book.links.goodreads ? ensureGoodreadsUrlIsValid(book.links.goodreads) : '#'}
+                    target='_blank'
+                    rel='noreferrer'
+                    underline='hover'
+                  >
+                    {ensureGoodreadsUrlIsShort(book.links.goodreads)}
+                  </Link>
+                </MetadataRow>
+              </Stack>
             </CardContent>
           </Box>
         </Box>
         {showPitch ? (
-          <CardContent className='c-book-card__secondary'>
-            <Typography variant='body2' component='div' className='c-book-card__detail c-book-card__detail--pitch'>{book.pitch}</Typography>
+          <CardContent>
+            <Typography
+              variant='body2'
+              component='div'
+              sx={{
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word',
+              }}
+            >
+              {book.pitch}
+            </Typography>
           </CardContent>
         ) : null}
         {hasActions ? (
-          <CardActions className='c-book-card__actions'>
+          <CardActions>
             {actions.edit ? <Button size='small' onClick={this.handleEdit}>Edit</Button> : null}
             {actions.propose ? <Button size='small' onClick={this.handlePropose}>Suggest</Button> : null}
             {actions.retract ? <Button size='small' onClick={this.handleRetract}>Move to backlog</Button> : null}
             <Box sx={{ flexGrow: 1 }} />
-            {actions.delete ? <Button size='small' onClick={this.handleDeleteClick} color={toMuiButtonColor('danger')} className='c-book-card__action-delete'>Delete</Button> : null}
+            {actions.delete ? (
+              <Button
+                size='small'
+                onClick={this.handleDeleteClick}
+                color={toMuiButtonColor('danger')}
+              >
+                Delete
+              </Button>
+            ) : null}
           </CardActions>
         ) : null}
         <ConfirmDialog

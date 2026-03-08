@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import Paper from '@mui/material/Paper';
 import { Season, VotingSession, VotingSessionStatus } from 'types';
@@ -78,7 +79,7 @@ export class SeasonInfoWeighted extends SeasonInfoBase {
 
     return (
       <div>
-        <Paper className='c-season-info' elevation={1}>
+        <Paper elevation={1} sx={{ pt: 1.25 }}>
           {this.renderSeasonHeader({
             title: season.title || title,
             systemBadgeLabel: showSystemBadge ? 'Weighted 3x' : undefined,
@@ -91,7 +92,7 @@ export class SeasonInfoWeighted extends SeasonInfoBase {
           {this.renderSeasonDetails(season)}
           {this.renderSeasonJson(showJson, season)}
           {season.book ?
-            <div className='c-season-info__book'>
+            <Box>
               <BookCard
                 book={season.book}
                 points={showVotingResults ? pointsForBookFromVoting(season.book, votingSession) : undefined}
@@ -100,7 +101,7 @@ export class SeasonInfoWeighted extends SeasonInfoBase {
                 hidePitch={this.props.hideBookPitch}
                 hideBadges={this.props.hideBookBadges}
               />
-            </div>
+            </Box>
             : null}
           {this.renderSeasonActions({
             allowToggleVotingResults,
@@ -111,16 +112,17 @@ export class SeasonInfoWeighted extends SeasonInfoBase {
             allowDeleting,
           })}
           <Collapse in={showVotingResults && isVotingSessionClosed} timeout='auto' unmountOnExit>
-            <div className={this.votingResultsWrapClassName()}>
-              <div className='c-season-info__voting-results'>
+            <Box sx={this.votingResultsWrapSx()}>
+              <Box>
                 {voteResultsList(this.props.books, votingSession, season.book).map((book, i) =>
                   <VoteResultCardWeighted
                     key={i}
                     book={book}
+                    isSmallScreen={this.props.isSmallScreen}
                   />
                 )}
-              </div>
-            </div>
+              </Box>
+            </Box>
           </Collapse>
         </Paper>
       </div>

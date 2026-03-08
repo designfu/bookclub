@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import Config from 'config';
@@ -28,6 +29,7 @@ import {
   saveVoteOrderDraft,
 } from 'utils/vote-order-draft';
 import { computeResetAddedBookIds, orderBooksByResetAdded, toBookId } from 'utils/vote-reset-highlight';
+import { votingSessionActionsSx, votingSessionRootSx } from 'components/hybrid/voting-session-sx';
 
 const pointsFor = (i) => Math.max(Config.MAX_VOTES - i, 0);
 
@@ -55,9 +57,9 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
     const { usersHaveVoted, usersHaveNotVoted } = buildVotingParticipation(users, votingSession.votes);
 
     return (
-      <div className='c-voting-session'>
+      <Box sx={votingSessionRootSx}>
         {isAdmin ?
-          <div className='c-voting-session__users-status'>
+          <Box>
             {usersHaveVoted.length > 0 ?
               <UserList
                 label='Voted'
@@ -70,12 +72,11 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
                 voters={usersHaveNotVoted}
               />
             : null}
-          </div>
+          </Box>
         : null}
-        <div className='o-action-row c-voting-session__actions'>
+        <Box sx={votingSessionActionsSx}>
           {isOpen ?
             <Button
-              className='o-action'
               onClick={this.props.castVotes.bind(this)}
               disabled={!enabled}
             >
@@ -85,7 +86,6 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
           {isOpen ?
             <Tooltip title='Reset to votes for this season, or votes from your most recent season.'>
               <Button
-                className='o-action'
                 onClick={this.resetFromVotes.bind(this)}
               >
                 Reset
@@ -101,14 +101,14 @@ class VotingSessionWeightedContainer_ extends React.Component<any, any> {
               results={votingSession.results}
             />
           : null}
-        </div>
+        </Box>
         {isOpen ?
           <ReorderableVotingList
             onUpdate={this.onListUpdate.bind(this)}
           >
             {this.renderVoteRows(books)}
           </ReorderableVotingList> : null}
-      </div>
+      </Box>
     );
   }
 

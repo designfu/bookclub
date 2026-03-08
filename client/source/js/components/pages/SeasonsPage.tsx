@@ -5,7 +5,6 @@ import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -18,6 +17,37 @@ import { SeasonInfoWeighted } from 'components/display/SeasonInfoWeighted';
 import { VotingSessionActions } from '@client/actions/VotingSessionActions';
 import { Book, Season, SeasonStatus } from '@shared/types';
 import { SeasonInfoAdvancedAcceptance } from '@client/components/display/SeasonInfoAdvancedAcceptance';
+import { dropdownFormControlSx } from 'components/form-control-sx';
+
+const seasonsPageContainerSx = {
+  px: { xs: 2, md: 2.5 },
+  py: 1.25,
+  maxWidth: 1024,
+};
+
+const seasonRowSx = (isSmallScreen) => ({
+  display: 'flex',
+  gap: isSmallScreen ? 0.75 : 1.5,
+  flexDirection: isSmallScreen ? 'column' : 'row',
+});
+
+const seasonRankSx = (isSmallScreen) => ({
+  width: isSmallScreen ? 'auto' : 36,
+  minWidth: isSmallScreen ? 0 : 36,
+  pt: isSmallScreen ? 0 : 3,
+  color: 'text.secondary',
+  fontWeight: 600,
+  fontSize: '14pt',
+  lineHeight: 1,
+  background: 'transparent',
+  boxShadow: 'none',
+});
+
+const seasonCardSx = {
+  flex: '1 1 auto',
+  minWidth: 0,
+  maxWidth: 800,
+};
 
 function averageRatingOf(book): number {
   if (!book) {
@@ -101,10 +131,10 @@ class SeasonsPage_ extends React.Component<any, any> {
     const sortLabelId = 'previous-seasons-sort-label';
 
     return (
-      <Container className='l-current-page' maxWidth={false} disableGutters>
-        <Box className='c-seasons-page'>
+      <Container maxWidth={false} disableGutters sx={seasonsPageContainerSx}>
+        <Box>
           <Box sx={{ mb: 2 }}>
-            <FormControl className='o-field o-field--dropdown'>
+            <FormControl sx={dropdownFormControlSx}>
               <InputLabel id={sortLabelId}>Sort Previous Seasons</InputLabel>
               <Select
                 id='previous-seasons-sort'
@@ -153,9 +183,9 @@ class SeasonsPage_ extends React.Component<any, any> {
             : i + 1;
 
           return (
-              <Box className={`c-seasons-page__row${isSmallScreen ? ' c-seasons-page__row--stacked' : ''}`} key={i}>
-                <Box className='c-seasons-page__rank'>#{rankNumber}</Box>
-                <Paper className='c-seasons-page__card'>
+              <Box sx={seasonRowSx(isSmallScreen)} key={i}>
+                <Box sx={seasonRankSx(isSmallScreen)}>#{rankNumber}</Box>
+                <Box sx={seasonCardSx}>
                   <SeasonInfo
                     books={books}
                     title={title}
@@ -175,7 +205,7 @@ class SeasonsPage_ extends React.Component<any, any> {
                     hideBookBadges={true}
                     isSmallScreen={isSmallScreen}
                   />
-                </Paper>
+                </Box>
               </Box>
             );
             })}

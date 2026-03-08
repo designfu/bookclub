@@ -1,5 +1,6 @@
 import * as React from 'react';
-import Card from '@mui/material/Card';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export interface VoteCardDividerProps {
 }
@@ -7,19 +8,46 @@ export interface VoteCardDividerProps {
 export class VoteCardDivider extends React.Component<VoteCardDividerProps, any> {
   render() {
     return (
-      <Card
-        className='c-vote-card c-vote-card--divider'
-        elevation={0}
-        style={{ backgroundColor: 'transparent' }}
+      <Box
+        sx={{
+          width: '100%',
+          py: 1.5,
+          px: 1,
+        }}
       >
-        <div className='c-vote-card__padded'>
-          <div className='c-vote-card__details'>
-            <span className='c-vote-card__no-interest-divider'>
-              <span className='c-vote-card__no-interest-label'>NO INTEREST BELOW THIS LINE</span>
-            </span>
-          </div>
-        </div>
-      </Card>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            width: '100%',
+            alignItems: 'center',
+            textTransform: 'uppercase',
+            color: 'text.secondary',
+            '&:before, &:after': {
+              content: '""',
+              flex: '1 1 auto',
+              borderTop: '1px solid',
+              borderColor: 'divider',
+            },
+            '&:before': {
+              mr: 1.5,
+            },
+            '&:after': {
+              ml: 1.5,
+            },
+          }}
+        >
+          <Typography
+            variant='caption'
+            sx={{
+              whiteSpace: 'nowrap',
+              letterSpacing: '0.04em',
+            }}
+          >
+            No Interest Below This Line
+          </Typography>
+        </Box>
+      </Box>
     );
   }
 }

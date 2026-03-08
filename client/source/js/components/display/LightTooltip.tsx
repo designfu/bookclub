@@ -11,9 +11,9 @@ export const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
     boxShadow: theme.shadows[1],
     textAlign: 'left',
     border: '1px solid #ddd',
-    fontWeight: 400,
+    fontWeight: theme.typography.fontWeightRegular,
     '& strong, & b': {
-      fontWeight: 400,
+      fontWeight: theme.typography.fontWeightRegular,
     },
   },
   [`& .${tooltipClasses.arrow}`]: {

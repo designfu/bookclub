@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Box from '@mui/material/Box';
 import { connect } from 'react-redux';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -59,19 +60,34 @@ class BooksPage_ extends React.Component<any, any> {
     }
 
     return (
-      <Grid container spacing={5} className='l-books-page'>
-        <Grid size={{ xs: 12, md: 6 }} className='l-books-page__column'>
-          <div className='l-books-page__header'>
+      <Grid
+        container
+        spacing={5}
+        sx={{
+          px: { xs: 2, md: 5 },
+          py: 1.25,
+        }}
+      >
+        <Grid size={{ xs: 12, md: 6 }} sx={{ minWidth: 0, width: { xs: '100%', md: 'auto' } }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: { xs: 'flex-start', md: 'center' },
+              justifyContent: 'space-between',
+              gap: 1.5,
+              flexWrap: { xs: 'wrap', md: 'nowrap' },
+            }}
+          >
             <Typography variant='h4'>All Books</Typography>
             <TextField
-              className='l-books-page__search'
               variant='standard'
               placeholder='Search title or author'
               value={this.state.query}
               onChange={this.handleQueryChange}
               margin='dense'
+              sx={{ width: { xs: '100%', md: 220 } }}
             />
-          </div>
+          </Box>
           <EditableBookListContainer
             books={notMyBooks}
             separateStatuses={true}
@@ -80,11 +96,18 @@ class BooksPage_ extends React.Component<any, any> {
             showAdminActions={true}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }} className='l-books-page__column'>
-          <div className='o-action-title'>
+        <Grid size={{ xs: 12, md: 6 }} sx={{ minWidth: 0, width: { xs: '100%', md: 'auto' } }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
             <Typography variant='h4'>Your Books</Typography>
             {isLoggedIn ? <AddBookModalContainer /> : null }
-          </div>
+          </Box>
           <EditableBookListContainer books={myBooks} collapseFinished={true} showAdminActions={false} />
         </Grid>
       </Grid>

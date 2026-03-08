@@ -16,16 +16,10 @@ gulp.task('clean', recipe('clean', {
   input: './dist'
 }));
 
-const cssTasks = Config.CSS_BUNDLES.map(title => {
-  const taskName = `css:${title}`;
-  gulp.task(taskName, recipe('stylus', {
-    input: `./source/css/${title}.bundle.styl`,
-    output: './dist/css',
-    name: `${title}.css`
-  }));
-  return taskName;
-});
-gulp.task('css', parallel(...cssTasks));
+gulp.task('css', recipe('copy', {
+  input: './source/css/main.css',
+  output: './dist/css',
+}));
 
 gulp.task('js:node_modules', recipe('copy', {
   input: [
@@ -68,7 +62,7 @@ gulp.task('watch', () => {
     './dist/**/*.css',
     './dist/vendor/**/*',
   ], series('inject'));
-  gulp.watch('./source/css/**/*.styl', series('css', 'inject'));
+  gulp.watch('./source/css/**/*.css', series('css', 'inject'));
   gulp.watch('./static/**/*', series('static'));
 });
 

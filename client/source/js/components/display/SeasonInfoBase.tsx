@@ -2,6 +2,7 @@ import * as React from 'react';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import CardActions from '@mui/material/CardActions';
+import Chip from '@mui/material/Chip';
 import DialogContentText from '@mui/material/DialogContentText';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
@@ -156,10 +157,13 @@ export class SeasonInfoBase extends React.Component<SeasonInfoBaseProps, SeasonI
     });
   };
 
-  votingResultsWrapClassName() {
-    return this.props.isSmallScreen
-      ? 'c-season-info__voting-results-wrap c-season-info__voting-results-wrap--scroll'
-      : 'c-season-info__voting-results-wrap';
+  votingResultsWrapSx() {
+    return {
+      width: '100%',
+      overflowX: this.props.isSmallScreen ? 'auto' : 'visible',
+      overflowY: this.props.isSmallScreen ? 'hidden' : 'visible',
+      WebkitOverflowScrolling: this.props.isSmallScreen ? 'touch' : undefined,
+    };
   }
 
   componentDidUpdate(prevProps) {
@@ -196,11 +200,17 @@ export class SeasonInfoBase extends React.Component<SeasonInfoBaseProps, SeasonI
               <TextField
                 id='season-title-rename'
                 label='Season Title'
-                className='o-field o-field--text'
                 value={this.state.seasonTitle}
                 onChange={(e) => this.setState({ seasonTitle: e.target.value })}
                 margin='normal'
                 type='text'
+                sx={{
+                  display: 'block',
+                  mx: '5px',
+                  '& .MuiInputBase-root': {
+                    width: 200,
+                  },
+                }}
               />
             </form>
           }
@@ -290,21 +300,44 @@ export class SeasonInfoBase extends React.Component<SeasonInfoBaseProps, SeasonI
     systemBadgeTooltip?: string;
   }) {
     return (
-      <Box className='c-season-info__header o-action-title'>
+      <Box
+        sx={{
+          px: { xs: 2, sm: 2.5 },
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         <Box
-          className={`c-season-info__title-row${this.props.isSmallScreen ? ' c-season-info__title-row--stacked' : ''}`}
+          sx={{
+            display: 'flex',
+            flexDirection: this.props.isSmallScreen ? 'column' : 'row',
+            alignItems: 'flex-start',
+            flex: '1 1 auto',
+            mr: this.props.isSmallScreen ? 0 : 1.25,
+            width: '100%',
+            gap: this.props.isSmallScreen ? 1.5 : 1,
+          }}
         >
-          <Typography variant='h5' component='h3' className='c-season-info__title'>
+          <Typography variant='h5' component='h3'>
             {title}
           </Typography>
           {systemBadgeLabel && systemBadgeTooltip ? (
             <Tooltip title={systemBadgeTooltip}>
-              <Typography
+              <Chip
                 component='span'
-                className={`c-season-info__system${this.props.isSmallScreen ? ' c-season-info__system--stacked' : ''}`}
-              >
-                {systemBadgeLabel}
-              </Typography>
+                label={systemBadgeLabel}
+                size='small'
+                variant='outlined'
+                sx={{
+                  alignSelf: 'flex-start',
+                  ml: this.props.isSmallScreen ? 0 : 'auto',
+                  mb: this.props.isSmallScreen ? 1.5 : 0,
+                  color: 'text.secondary',
+                  borderColor: 'divider',
+                }}
+              />
             </Tooltip>
           ) : null}
         </Box>
@@ -314,7 +347,14 @@ export class SeasonInfoBase extends React.Component<SeasonInfoBaseProps, SeasonI
 
   renderSeasonDetails(season) {
     return (
-      <Typography component='div' className='c-season-info__details'>
+      <Box
+        sx={{
+          px: { xs: 2, sm: 2.5 },
+          pb: 2.5,
+          display: 'grid',
+          rowGap: 0.25,
+        }}
+      >
         {season.dates.created ?
           renderSeasonInfoDate('Started', season.dates.created)
           : null}
@@ -324,7 +364,7 @@ export class SeasonInfoBase extends React.Component<SeasonInfoBaseProps, SeasonI
         {season.dates.finished ?
           renderSeasonInfoDate('Finished', season.dates.finished)
           : null}
-      </Typography>
+      </Box>
     );
   }
 
@@ -334,8 +374,16 @@ export class SeasonInfoBase extends React.Component<SeasonInfoBaseProps, SeasonI
     }
 
     return (
-      <Box className='c-season-info__admin-info'>
-        <Box className='o-json-dump'>
+      <Box sx={{ px: { xs: 2, sm: 2.5 } }}>
+        <Box
+          className='o-json-dump'
+          sx={{
+            pt: 3.125,
+            mt: 6.25,
+            borderTop: '1px solid',
+            borderColor: 'common.black',
+          }}
+        >
           <Typography component='span'>Season JSON</Typography>
           <pre>{toJSON(season)}</pre>
         </Box>

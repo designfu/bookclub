@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { toStandardString } from 'utils/dates';
 
@@ -17,10 +18,16 @@ export function getUserRating(book, myId?): number {
 }
 
 export function renderSeasonInfoDate(label, timestamp) {
-  return <Typography component='p' variant='body2' className='c-season-info__date'>
-    <Typography component='span' variant='subtitle2'>{label}: </Typography>
-    <Typography component='span' variant='body2'>{toStandardString(timestamp)}</Typography>
-  </Typography>;
+  return (
+    <Box component='p' sx={{ my: 0, lineHeight: 1.25 }}>
+      <Typography component='span' variant='subtitle2' sx={{ mr: 0.625, lineHeight: 1.25 }}>
+        {label}:
+      </Typography>
+      <Typography component='span' variant='body2' sx={{ lineHeight: 1.25 }}>
+        {toStandardString(timestamp)}
+      </Typography>
+    </Box>
+  );
 }
 
 export function ensureSeasonInfoProps(props: any) {

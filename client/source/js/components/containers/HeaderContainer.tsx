@@ -9,6 +9,7 @@ import Paper from '@mui/material/Paper';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
@@ -21,6 +22,19 @@ import Select from '@mui/material/Select';
 import ListSubheader from '@mui/material/ListSubheader';
 import { Link, useLocation } from 'react-router-dom';
 import { User } from 'types';
+
+const HEADER_BAR_HEIGHT = 37;
+
+const headerNavItemSx = {
+  minHeight: HEADER_BAR_HEIGHT,
+  height: HEADER_BAR_HEIGHT,
+  boxSizing: 'border-box',
+  borderRadius: 0,
+  '&.Mui-selected': {
+    borderBottom: '2px solid',
+    borderColor: 'primary.main',
+  },
+};
 
 class HeaderContainer_ extends React.Component<any, any> {
   state = {
@@ -61,19 +75,52 @@ class HeaderContainer_ extends React.Component<any, any> {
       .sort((a: User, b: User) => (a.name || '').localeCompare(b.name || ''));
 
     return (
-      <AppBar position='sticky' color='default' elevation={1} component={Paper} className='c-header'>
-        <Toolbar disableGutters className='c-header__toolbar'>
+      <AppBar
+        position='sticky'
+        color='default'
+        elevation={1}
+        component={Paper}
+        sx={{ zIndex: 20, mb: 0.75, backgroundColor: 'common.white' }}
+      >
+        <Toolbar
+          disableGutters
+          sx={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'stretch',
+            minHeight: `${HEADER_BAR_HEIGHT}px !important`,
+            height: HEADER_BAR_HEIGHT,
+            p: 0,
+          }}
+        >
           <HeaderNavTabs isAdmin={users.isAdmin} />
-          <Box className='c-header__right'>
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              alignSelf: 'stretch',
+              flex: '0 0 auto',
+              ml: 1.5,
+            }}
+          >
             {me
               ? (
                 <>
-                  {!this.props.isSmallScreen ? <Box className='c-header__user-name' onClick={this.handleMenuOpen}>{me.name}</Box> : null}
+                  {!this.props.isSmallScreen ? (
+                    <Typography
+                      variant='body2'
+                      component='span'
+                      onClick={this.handleMenuOpen}
+                      sx={{ mr: 0.75, color: 'text.secondary', cursor: 'pointer' }}
+                    >
+                      {me.name}
+                    </Typography>
+                  ) : null}
                   <IconButton
-                    className='c-header__user-button'
                     size='small'
                     onClick={this.handleMenuOpen}
                     aria-label='User menu'
+                    sx={{ mr: 0.75 }}
                   >
                     <Avatar
                       src={me.avatar || undefined}
@@ -214,12 +261,54 @@ const HeaderNavTabs = ({ isAdmin }) => {
         : '/';
 
   return (
-    <Box className='c-header__nav-tabs'>
-      <MenuItem className='c-header__nav-item' component={Link} to='/' selected={selectedPath === '/'}>Voting</MenuItem>
-      <MenuItem className='c-header__nav-item' component={Link} to='/books' selected={selectedPath === '/books'}>Books</MenuItem>
-      <MenuItem className='c-header__nav-item' component={Link} to='/seasons' selected={selectedPath === '/seasons'}>Previous Seasons</MenuItem>
-      <Box className='c-header__nav-spacer' />
-      {isAdmin ? <MenuItem className='c-header__nav-item' component={Link} to='/users' selected={selectedPath === '/users'}>Users</MenuItem> : null}
+    <Box
+      sx={{
+        flex: '1 1 auto',
+        display: 'flex',
+        alignItems: 'stretch',
+        minWidth: 0,
+        minHeight: HEADER_BAR_HEIGHT,
+        height: HEADER_BAR_HEIGHT,
+        overflowX: 'auto',
+        overflowY: 'hidden',
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
+      <MenuItem
+        component={Link}
+        to='/'
+        selected={selectedPath === '/'}
+        sx={headerNavItemSx}
+      >
+        Voting
+      </MenuItem>
+      <MenuItem
+        component={Link}
+        to='/books'
+        selected={selectedPath === '/books'}
+        sx={headerNavItemSx}
+      >
+        Books
+      </MenuItem>
+      <MenuItem
+        component={Link}
+        to='/seasons'
+        selected={selectedPath === '/seasons'}
+        sx={headerNavItemSx}
+      >
+        Previous Seasons
+      </MenuItem>
+      <Box sx={{ flex: '1 1 auto' }} />
+      {isAdmin ? (
+        <MenuItem
+          component={Link}
+          to='/users'
+          selected={selectedPath === '/users'}
+          sx={headerNavItemSx}
+        >
+          Users
+        </MenuItem>
+      ) : null}
     </Box>
   );
 };

@@ -7,7 +7,6 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { VotingSessionStatus } from 'types';
@@ -20,6 +19,7 @@ import { PreviousBookRatingNotice } from 'components/hybrid/PreviousBookRatingNo
 import { SeasonInfoAcceptance } from 'components/display/SeasonInfoAcceptance';
 import { SeasonInfoWeighted } from 'components/display/SeasonInfoWeighted';
 import { SeasonInfoAdvancedAcceptance } from '@client/components/display/SeasonInfoAdvancedAcceptance';
+import { dropdownFormControlSx } from 'components/form-control-sx';
 
 class CurrentPage_ extends React.Component<any, any> {
   openSeasonDialog: ConfirmDialogButton;
@@ -54,7 +54,7 @@ class CurrentPage_ extends React.Component<any, any> {
     }[votingSession.system] || SeasonInfoWeighted;
 
     return (
-      <Container className='l-current-page' maxWidth={false} disableGutters>
+      <Container maxWidth={false} disableGutters sx={{ px: { xs: 2, md: 2.5 }, py: 1.25, maxWidth: 1024 }}>
         {isLoggedIn && isAdmin ?
           <Box>
             {!currentSeason ?
@@ -63,7 +63,7 @@ class CurrentPage_ extends React.Component<any, any> {
                 content={
                   <div>
                     <DialogContentText>This will start a brand new season, and start a voting session for a new book.</DialogContentText>
-                    <FormControl className='o-field o-field--dropdown'>
+                    <FormControl sx={dropdownFormControlSx}>
                       <InputLabel id={votingSystemLabelId}>Voting System</InputLabel>
                       <Select
                         id='new-season-voting-system'
@@ -90,7 +90,7 @@ class CurrentPage_ extends React.Component<any, any> {
           </Box>
         : null}
         {currentSeason ?
-          <Paper className='c-current-page__season-card'>
+          <Box sx={{ maxWidth: 800 }}>
             {ratingNotice}
             <SeasonInfo
               books={this.props.books}
@@ -103,7 +103,7 @@ class CurrentPage_ extends React.Component<any, any> {
               hideBookBadges={true}
               isSmallScreen={isSmallScreen}
             />
-          </Paper>
+          </Box>
         : null}
         {!currentSeason ? ratingNotice : null}
         {isLoggedIn && currentSeason && isVotingOpen ?

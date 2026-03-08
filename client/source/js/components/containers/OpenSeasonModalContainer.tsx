@@ -9,6 +9,7 @@ import InputLabel from '@mui/material/InputLabel';
 import { ReduxActions } from 'actions/ReduxActions';
 import { SeasonActions, SeasonActionTypes } from 'actions/SeasonActions';
 import { BasicModalWrapper } from 'components/containers/BasicModalWrapper';
+import { dropdownFormControlSx } from 'components/form-control-sx';
 
 export class OpenSeasonModalContainer_ extends React.Component<any, any> {
   modal;
@@ -39,7 +40,7 @@ export class OpenSeasonModalContainer_ extends React.Component<any, any> {
               <Typography variant='body2'>
                 Pick which book to open the season with
               </Typography>
-              <FormControl className='o-field o-field--dropdown'>
+              <FormControl sx={dropdownFormControlSx}>
                 <InputLabel id={newSeasonBookLabelId}>Book</InputLabel>
                 <Select
                   id='new-season-book'

@@ -1,9 +1,8 @@
 import * as React from 'react';
-import Card from '@mui/material/Card';
-import CardMedia from '@mui/material/CardMedia';
 import MenuItem from '@mui/material/MenuItem';
 import { Book } from 'types';
 import { rankString } from '@client/utils/strings';
+import { VoteCardBase } from 'components/display/VoteCardBase';
 import { VotePitchTooltip } from 'components/display/VotePitchTooltip';
 import { VotingSelect } from 'components/display/VotingSelect';
 
@@ -19,36 +18,32 @@ export interface VoteCardRankProps {
 export class VoteCardRank extends React.Component<VoteCardRankProps, any> {
   render() {
     const { book, rank, maxRank } = this.props;
-    const image = (book && book.links && book.links.image) ? book.links.image : '/icons/icon-book-256.png';
 
     const card = (
-      <Card className={`c-vote-card${this.props.isResetAdded ? ' c-vote-card--reset-added' : ''}`}>
-        <CardMedia
-          className={`c-vote-card__image-media${image === '/icons/icon-book-256.png' ? ' no-src':''}`}
-          image={image}
-          title={`${book.title} - ${book.author}`}
-        />
-        <div className='c-vote-card__padded'>
-          <div className='c-vote-card__details'>
-            <span className='c-vote-card__title'>{book.title}</span>
-            <span className='c-vote-card__author'>{book.author || '??'}</span>
-          </div>
-          <div className='c-vote-card__points'>
-            <VotingSelect
-              className='c-vote-card__point-dropdown'
-              size='small'
-              name='points'
-              value={rank}
-              onChange={this.onDropdownChange}
-            >
-              {Array.from({ length: maxRank }, (_, i) =>
-                <MenuItem key={i} value={i}>{rankString(i)}</MenuItem>
-              )}
-              <MenuItem key={-1} value={-1}>{rankString(-1)}</MenuItem>
-            </VotingSelect>
-          </div>
-        </div>
-      </Card>
+      <VoteCardBase
+        title={book.title}
+        author={book.author}
+        image={book && book.links && book.links.image}
+        resetAdded={!!this.props.isResetAdded}
+        trailingContent={
+          <VotingSelect
+            size='small'
+            name='points'
+            value={rank}
+            onChange={this.onDropdownChange}
+            sx={{
+              '&:before, &:after': {
+                display: 'none',
+              },
+            }}
+          >
+            {Array.from({ length: maxRank }, (_, i) =>
+              <MenuItem key={i} value={i}>{rankString(i)}</MenuItem>
+            )}
+            <MenuItem key={-1} value={-1}>{rankString(-1)}</MenuItem>
+          </VotingSelect>
+        }
+      />
     );
 
     return (
@@ -59,7 +54,7 @@ export class VoteCardRank extends React.Component<VoteCardRankProps, any> {
   }
 
   onDropdownChange = (e) => {
-    const points = parseInt(e.target.value);
+    const points = parseInt(e.target.value, 10);
     if(this.props.onVote) {
       this.props.onVote(this.props.book, points);
     }

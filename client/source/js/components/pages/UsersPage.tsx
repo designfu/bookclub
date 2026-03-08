@@ -39,6 +39,42 @@ import {
   sortUsersByRoleAndRecentSeason,
 } from 'components/pages/users-page-utils';
 import { toMuiButtonColor } from 'components/display/button-colors';
+import { responsiveDropdownFormControlSx } from 'components/form-control-sx';
+
+const usersTableSx = {
+  width: '100%',
+  '& th, & td': {
+    border: '1px solid',
+    borderColor: 'divider',
+    px: 1,
+    py: 1,
+    textAlign: 'left',
+    verticalAlign: 'top',
+  },
+  '& thead th': {
+    backgroundColor: 'grey.100',
+    fontWeight: 600,
+  },
+  '& tbody tr:nth-of-type(even)': {
+    backgroundColor: 'grey.50',
+  },
+};
+
+const transferTableSx = {
+  width: '100%',
+  mt: 1,
+  '& th, & td': {
+    border: '1px solid',
+    borderColor: 'divider',
+    px: 1,
+    py: 0.75,
+    textAlign: 'left',
+    verticalAlign: 'top',
+  },
+  '& thead th': {
+    backgroundColor: 'grey.50',
+  },
+};
 
 class UsersPage_ extends React.Component<any, any> {
   state = {
@@ -97,7 +133,7 @@ class UsersPage_ extends React.Component<any, any> {
   render() {
     if (!this.props.isAdmin) {
       return (
-        <Container className='l-users-page' maxWidth={false} disableGutters>
+        <Container maxWidth={false} disableGutters sx={{ px: 2, py: 1 }}>
           <Typography variant='h4'>Users</Typography>
           <Typography variant='body1'>Admin access required.</Typography>
         </Container>
@@ -114,14 +150,21 @@ class UsersPage_ extends React.Component<any, any> {
     );
 
     return (
-      <Container className='l-users-page' maxWidth={false} disableGutters>
-        <Box className='o-action-title'>
+      <Container maxWidth={false} disableGutters sx={{ px: 2, py: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <Typography variant='h4'>Users</Typography>
         </Box>
         {this.state.loading ? <Typography variant='body1'>Loading...</Typography> : null}
         {this.state.error ? <Typography variant='body1'>{this.state.error}</Typography> : null}
-        <TableContainer component={Paper} className='c-users-page-table'>
-          <Table size='small'>
+        <TableContainer component={Paper} sx={{ mt: 1.5 }}>
+          <Table size='small' sx={usersTableSx}>
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
@@ -196,9 +239,15 @@ class UsersPage_ extends React.Component<any, any> {
       >
         <DialogTitle id='manage-user-dialog-title'>Migrate User</DialogTitle>
         <DialogContent>
-          <Stack className='c-users-transfer-dialog__meta' direction='row'>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            alignItems={{ xs: 'stretch', sm: 'center' }}
+            justifyContent='space-between'
+            sx={{ mb: 1 }}
+          >
             <Typography variant='body2'><strong>From:</strong> {sourceUser ? `${sourceUser.name} (${sourceUser._id})` : '--'}</Typography>
-            <FormControl className='o-field o-field--dropdown c-users-transfer-dialog__target'>
+            <FormControl sx={responsiveDropdownFormControlSx}>
               <InputLabel id={transferTargetUserLabelId}>To User</InputLabel>
               <Select
                 id='transfer-target-user'
@@ -217,11 +266,11 @@ class UsersPage_ extends React.Component<any, any> {
             </FormControl>
           </Stack>
           {!hasTransferableRecords ? (
-            <Typography variant='body2' className='c-users-transfer-dialog__summary'>
+            <Typography variant='body2' sx={{ mb: 1, color: 'text.secondary' }}>
               This user has no suggested books, winning books, ratings, or season votes to transfer.
             </Typography>
           ) : null}
-          <Box className='c-users-transfer-dialog__summary'>
+          <Box sx={{ mb: 1 }}>
             <Typography variant='body2'>Selected line items: {selectedCount} / {transferItems.length}</Typography>
           </Box>
           {this.renderTransferItemsTable(transferItems, {
@@ -229,9 +278,9 @@ class UsersPage_ extends React.Component<any, any> {
             onToggle: this.toggleTransferItem.bind(this),
             emptyMessage: 'Choose a target user to load transferable items.',
           })}
-          {transferError ? <Typography variant='body1' className='c-users-transfer-dialog__error'>{transferError}</Typography> : null}
-          {transferSummary ? <Typography variant='body1' className='c-users-transfer-dialog__summary-text'>{transferSummary}</Typography> : null}
-          {deleteError ? <Typography variant='body1' className='c-users-transfer-dialog__error'>{deleteError}</Typography> : null}
+          {transferError ? <Typography variant='body1' sx={{ mt: 1, color: 'error.dark' }}>{transferError}</Typography> : null}
+          {transferSummary ? <Typography variant='body1' sx={{ mt: 1, color: 'success.dark' }}>{transferSummary}</Typography> : null}
+          {deleteError ? <Typography variant='body1' sx={{ mt: 1, color: 'error.dark' }}>{deleteError}</Typography> : null}
         </DialogContent>
         <DialogActions>
           <Button
@@ -321,8 +370,8 @@ class UsersPage_ extends React.Component<any, any> {
     const columnCount = showCheckboxes ? 4 : 3;
 
     return (
-      <TableContainer component={Paper} className='c-users-transfer-table'>
-        <Table size='small'>
+      <TableContainer component={Paper}>
+        <Table size='small' sx={transferTableSx}>
           <TableHead>
             <TableRow>
               {showCheckboxes ? <TableCell>Use</TableCell> : null}
@@ -345,7 +394,7 @@ class UsersPage_ extends React.Component<any, any> {
                 ) : null}
                 <TableCell>{item.type}</TableCell>
                 <TableCell>{item.description}</TableCell>
-                <TableCell className={item.conflict ? 'is-conflict' : 'is-ok'}>
+                <TableCell sx={{ color: item.conflict ? 'error.dark' : 'success.dark' }}>
                   {item.conflict ? `Conflict: ${item.conflictReason}` : 'OK'}
                 </TableCell>
               </TableRow>

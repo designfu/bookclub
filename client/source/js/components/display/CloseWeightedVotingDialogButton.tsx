@@ -4,9 +4,12 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import DialogContentText from '@mui/material/DialogContentText';
+import Box from '@mui/material/Box';
 import { Book } from 'types';
 import { ConfirmDialogButton } from 'components/display/ConfirmDialogButton';
+import { CloseVotingResultsList } from 'components/display/CloseVotingResultsList';
 import { pointString } from 'utils/strings';
+import { dialogDropdownFormControlSx } from 'components/form-control-sx';
 
 function bookText(book) {
   return book ? `${book.title} - ${book.author}` : '?? - ??';
@@ -58,9 +61,9 @@ export class CloseWeightedVotingDialogButton extends React.Component<CloseWeight
       <ConfirmDialogButton
         title='Close Voting?'
         content={
-          <div className='c-close-voting-dialog'>
+          <Box>
             <DialogContentText>Pick which book to open the season with</DialogContentText>
-            <FormControl className='o-field o-field--dropdown u-space--bot-large'>
+            <FormControl sx={dialogDropdownFormControlSx}>
               <InputLabel id={closeWeightedBookLabelId}>Book</InputLabel>
               <Select
                 id='new-season-book'
@@ -81,13 +84,15 @@ export class CloseWeightedVotingDialogButton extends React.Component<CloseWeight
             <DialogContentText>
               What the people want:
             </DialogContentText>
-            <ul className='c-close-voting-dialog__result-list'>
-              {resultsWithPoints.map((result, i) => <li key={i} className='c-close-voting-dialog__result'>
-                <span className='c-close-voting-dialog__result-points'>{pointString(result.points)}</span>
-                <span className='c-close-voting-dialog__result-book'>{bookText(result.book)}</span>
-              </li>)}
-            </ul>
-          </div>
+            <CloseVotingResultsList
+              items={resultsWithPoints.map((result, i) => ({
+                key: i,
+                secondary: pointString(result.points),
+                secondaryFirst: true,
+                primary: bookText(result.book),
+              }))}
+            />
+          </Box>
         }
         confirmText='Close Voting'
         confirmColor='secondary'

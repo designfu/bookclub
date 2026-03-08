@@ -1,5 +1,4 @@
 import * as React from 'react';
-import classnames from 'classnames';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { User } from 'types';
@@ -13,10 +12,12 @@ export interface UserListProps {
 export class UserList extends React.Component<UserListProps, any> {
   render() {
     const { label, voters } = this.props;
-    const className = classnames('c-user-list', this.props.className);
 
     return (
-      <Paper className={className}>
+      <Paper
+        className={this.props.className}
+        sx={{ p: 1.25, mb: 1.25 }}
+      >
         <Typography variant='subtitle1' component='h4'>
           {label}
         </Typography>

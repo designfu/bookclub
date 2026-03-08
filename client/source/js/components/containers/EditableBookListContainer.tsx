@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Box from '@mui/material/Box';
 import { connect } from 'react-redux';
 import Snackbar from '@mui/material/Snackbar';
 import SnackbarContent from '@mui/material/SnackbarContent';
@@ -25,7 +26,7 @@ class EditableBookListContainer_ extends React.Component<any, any> {
     const { isAdmin, myId } = this.props;
 
     return (
-      <div className='c-editable-book-list-container'>
+      <Box sx={{ pt: 1 }}>
         <BookList
           isAdmin={isAdmin}
           myId={myId}
@@ -59,7 +60,7 @@ class EditableBookListContainer_ extends React.Component<any, any> {
             style={{ backgroundColor: '#d32f2f' }}
           />
         </Snackbar>
-      </div>
+      </Box>
     );
   }
 

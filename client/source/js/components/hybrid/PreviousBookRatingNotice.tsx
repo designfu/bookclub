@@ -1,9 +1,12 @@
 import * as React from 'react';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import { ConfirmDialog } from 'components/display/ConfirmDialog';
 import { RateBookDialogContent } from 'components/display/RateBookDialogContent';
+import { votingSessionNoticeSx } from 'components/hybrid/voting-session-sx';
 
 function toId(value) {
   if (!value) {
@@ -41,17 +44,21 @@ export class PreviousBookRatingNotice extends React.Component<any, any> {
 
     return (
       <React.Fragment>
-        <Paper className='c-voting-session__notice-card' elevation={1}>
+        <Paper elevation={1} sx={votingSessionNoticeSx}>
           <Alert
-            className='c-voting-session__notice-alert'
             severity='info'
             action={
               <Button color='inherit' size='small' onClick={this.handleOpenDialog}>
                 Rate
               </Button>
             }
+            sx={{ alignItems: 'center' }}
           >
-            Would you like to rate <span className='c-voting-session__notice-book-title'>{book.title || 'the previously finished book'}</span>?
+            Would you like to rate{' '}
+            <Typography component='span' variant='inherit' sx={{ fontStyle: 'italic' }}>
+              {book.title || 'the previously finished book'}
+            </Typography>
+            ?
           </Alert>
         </Paper>
         <ConfirmDialog
