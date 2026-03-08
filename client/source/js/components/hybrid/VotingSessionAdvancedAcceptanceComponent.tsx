@@ -1,16 +1,10 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import { VotingSessionStatus } from 'types';
-import { ReorderableVotingList } from 'lib/reorderable-lists';
 import { VotingSessionActions, VotingSessionActionTypes } from 'actions/VotingSessionActions';
 import { ReduxActions } from 'actions/ReduxActions';
 import { VoteCardRank } from 'components/display/VoteCardRank';
 import { VoteCardDivider } from 'components/display/VoteCardDivider';
 import { CloseAdvancedAcceptanceVotingDialogButton } from 'components/display/CloseAdvancedAcceptanceVotingDialogButton';
-import { UserList } from 'components/display/UserList';
 import {
   buildAcceptanceResetBooks,
   extractAcceptanceBookList,
@@ -19,99 +13,14 @@ import {
   rankValueForAcceptance,
 } from 'utils/vote-reset-acceptance';
 import {
-  buildVotingParticipation,
-  hasUserVoted,
-  hydrateVotingSession,
   selectVotingSessionContainerState,
 } from 'utils/voting-session-container';
-import {
-  hydrateVoteOrderDraft,
-  hasVoteOrderDraft,
-  saveVoteOrderDraft,
-} from 'utils/vote-order-draft';
-import { computeResetAddedBookIds, orderBooksByResetAdded, toBookId } from 'utils/vote-reset-highlight';
-import { votingSessionActionsSx, votingSessionRootSx } from 'components/hybrid/voting-session-sx';
+import { toBookId } from 'utils/vote-reset-highlight';
+import { VotingSessionContainerBase } from 'components/hybrid/VotingSessionContainerBase';
 
-class VotingSessionAdvancedAcceptanceContainer_ extends React.Component<any, any> {
-  closeVotingDialog: CloseAdvancedAcceptanceVotingDialogButton;
+class VotingSessionAdvancedAcceptanceContainer_ extends VotingSessionContainerBase<any, any> {
 
-  constructor(props) {
-    super(props);
-
-    const { books, resetAddedBookIds } = this.booksAndResetIdsFromProps(props);
-    this.state = {
-      books,
-      enabled: true,
-      resetAddedBookIds,
-    };
-  }
-
-  render() {
-    const { books, enabled } = this.state;
-    const { users, isAdmin, latestVotingSession } = this.props;
-    const booksMap = this.props.books;
-    const isOpen = this.props.votingSession.status === VotingSessionStatus.OPEN;
-    const votingSession = hydrateVotingSession(this.props.votingSession, booksMap, users);
-    const hasVoted = hasUserVoted(votingSession.votes, this.props.myId);
-    const { usersHaveVoted, usersHaveNotVoted } = buildVotingParticipation(users, votingSession.votes);
-
-    return (
-      <Box sx={votingSessionRootSx}>
-        {isAdmin ?
-          <Box>
-            {usersHaveVoted.length > 0 ?
-              <UserList
-                label='Voted'
-                voters={usersHaveVoted}
-              />
-            : null}
-            {usersHaveNotVoted.length > 0 ?
-              <UserList
-                label='Not Voted'
-                voters={usersHaveNotVoted}
-              />
-            : null}
-          </Box>
-        : null}
-        <Box sx={votingSessionActionsSx}>
-          {isOpen ?
-            <Button
-              onClick={this.props.castVotes.bind(this)}
-              disabled={!enabled}
-            >
-              {hasVoted ? 'Update Vote': 'Cast Vote'}
-            </Button>
-          : null}
-          {isOpen ?
-            <Tooltip title='Reset to votes for this season, or votes from your most recent season.'>
-              <Button
-                onClick={this.resetFromVotes.bind(this)}
-              >
-                Reset
-              </Button>
-            </Tooltip>
-          : null}
-          {isAdmin ?
-            <CloseAdvancedAcceptanceVotingDialogButton
-              onRef={(ref) => this.closeVotingDialog = ref}
-              onConfirm={this.props.closeVotingSession.bind(this)}
-              books={this.props.books}
-              votes={votingSession.votes}
-              results={votingSession.results}
-            />
-          : null}
-        </Box>
-        {isOpen ?
-          <ReorderableVotingList
-            onUpdate={this.onListUpdate.bind(this)}
-          >
-            {this.renderVoteRows(books)}
-          </ReorderableVotingList> : null}
-      </Box>
-    );
-  }
-
-  renderVoteRows(books = []) {
+  renderVoteRows(books = [], disablePitchTooltip = false) {
     return books.filter(book => !!book).map((book, i) =>
       book.isDivider ?
         <VoteCardDivider key={book._id} />
@@ -122,46 +31,31 @@ class VotingSessionAdvancedAcceptanceContainer_ extends React.Component<any, any
         rank={rankValueForAcceptance(i, books)}
         maxRank={books.length - 1}
         book={book}
-        isResetAdded={this.state.resetAddedBookIds.indexOf(toBookId(book)) > -1}
+        isNewlySuggested={this.state.newlySuggestedBookIds.indexOf(toBookId(book)) > -1}
+        disablePitchTooltip={disablePitchTooltip}
         onVote={this.onVote.bind(this)}
       />
     );
   }
 
-  onListUpdate(list) {
-    const books = mapReorderableListToAcceptanceBooks(list, this.props.books);
-    this.persistVoteOrderDraft(books);
-    this.setState({
-      books,
-      enabled: true,
-    });
+  renderCloseVotingButton(votingSession) {
+    return (
+      <CloseAdvancedAcceptanceVotingDialogButton
+        onRef={(ref) => this.closeVotingDialog = ref}
+        onConfirm={this.props.closeVotingSession.bind(this)}
+        books={this.props.books}
+        votes={votingSession.votes}
+        results={votingSession.results}
+      />
+    );
   }
 
-  async componentDidMount() {
-    const votingSession = hydrateVotingSession(this.props.votingSession, this.props.books, this.props.users);
-    const hasCurrentVote = hasUserVoted(votingSession.votes, this.props.myId);
-    const hasDraft = hasVoteOrderDraft(this.props.votingSession && this.props.votingSession._id, this.props.myId);
-    if (!hasCurrentVote && !hasDraft) {
-      await this.resetFromVotes();
-    }
+  extractBookList(props) {
+    return extractAcceptanceBookList(props);
   }
 
-  componentDidUpdate(prevProps) {
-    if (
-      prevProps.votingSession !== this.props.votingSession
-      || prevProps.books !== this.props.books
-      || prevProps.myId !== this.props.myId
-    ) {
-      const { books, resetAddedBookIds } = this.booksAndResetIdsFromProps(this.props);
-      this.setState({
-        books,
-        resetAddedBookIds,
-      });
-    }
-  }
-
-  componentWillUnmount() {
-    this.persistVoteOrderDraft(this.state.books);
+  mapReorderableListToBooks(list) {
+    return mapReorderableListToAcceptanceBooks(list, this.props.books);
   }
 
   onVote(book, rank) {
@@ -173,60 +67,16 @@ class VotingSessionAdvancedAcceptanceContainer_ extends React.Component<any, any
     });
   }
 
-  async resetFromVotes() {
-    const votingSession = hydrateVotingSession(this.props.votingSession, this.props.books, this.props.users);
-    if (hasUserVoted(votingSession.votes, this.props.myId)) {
-      const books = extractAcceptanceBookList(this.props);
-      this.persistVoteOrderDraft(books, []);
-      this.setState({
-        books,
-        enabled: true,
-        resetAddedBookIds: [],
-      });
-      return;
-    }
-
-    const latestVotingSession = await this.props.fetchLatestWithUserVotes();
-    const previousSession = latestVotingSession || this.props.latestVotingSession;
-    const resetBooks = buildAcceptanceResetBooks({
+  buildResetBooks(previousSession) {
+    return buildAcceptanceResetBooks({
       books: this.state.books,
       latestVotingSession: previousSession,
       myId: this.props.myId,
     });
-    const resetAddedBookIds = this.resetAddedIdsForBooks(resetBooks, previousSession);
-    const books = orderBooksByResetAdded(resetBooks, resetAddedBookIds);
-    this.persistVoteOrderDraft(books, resetAddedBookIds);
-    this.setState({
-      books,
-      enabled: true,
-      resetAddedBookIds,
-    });
   }
 
-  booksAndResetIdsFromProps(props) {
-    return hydrateVoteOrderDraft(
-      props.votingSession && props.votingSession._id,
-      props.myId,
-      extractAcceptanceBookList(props),
-    );
-  }
-
-  persistVoteOrderDraft(books, resetAddedBookIds = this.state.resetAddedBookIds) {
-    saveVoteOrderDraft(
-      this.props.votingSession && this.props.votingSession._id,
-      this.props.myId,
-      books,
-      resetAddedBookIds,
-    );
-  }
-
-  resetAddedIdsForBooks(books = [], previousSession = null) {
-    return computeResetAddedBookIds({
-      localBooks: this.state.books,
-      nextBooks: books,
-      previousSession,
-      shouldIgnoreBook: (book) => !!book && !!book.isDivider,
-    });
+  shouldIgnoreBookForNewlySuggestedIds() {
+    return (book) => !!book && !!book.isDivider;
   }
 }
 
@@ -248,7 +98,7 @@ const mapDispatchToProps = (dispatch: any) => {
       dispatch(ReduxActions.onNext(VotingSessionActionTypes.GOT_VOTES_CAST, () => {
         this.setState({
           enabled: false,
-          resetAddedBookIds: [],
+          newlySuggestedBookIds: [],
         });
         this.persistVoteOrderDraft(this.state.books, []);
       }));

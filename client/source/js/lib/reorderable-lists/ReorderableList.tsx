@@ -14,7 +14,9 @@ type OnUpdateMode = 'during-drag' | 'on-drop';
 
 export interface ReorderableListProps {
   children: React.ReactNode;
-  onClick?: (itemKey: string | number) => void;
+  onItemClick?: (itemKey: string | number) => void;
+  onDragStart?: (itemKey: string | number) => void;
+  onDragEnd?: (didDropOnTarget: boolean) => void;
   /** Called with reordered items; timing is controlled by `onUpdateMode`. */
   onUpdate?: (items: React.ReactElement[]) => void;
   /** Enables FLIP transform animation for reordering. */
@@ -65,6 +67,7 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
   itemNodesById: Record<string | number, HTMLDivElement | null>;
   clearTransitionTimer: number | null;
   itemsBeforeDrag: React.ReactElement[] | null;
+  draggedItemId: string | number | null;
 
   constructor(props: ReorderableListProps) {
     super(props);
@@ -78,17 +81,18 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
     this.itemNodesById = {};
     this.clearTransitionTimer = null;
     this.itemsBeforeDrag = null;
+    this.draggedItemId = null;
 
-    this.handleOnClick = this.handleOnClick.bind(this);
+    this.handleItemClick = this.handleItemClick.bind(this);
     this.moveListItem = this.moveListItem.bind(this);
     this.handleDragStart = this.handleDragStart.bind(this);
     this.handleDragEnd = this.handleDragEnd.bind(this);
     this.handleItemRef = this.handleItemRef.bind(this);
   }
 
-  handleOnClick(itemKey: string | number) {
-    if (this.props.onClick) {
-      this.props.onClick(itemKey);
+  handleItemClick(itemKey: string | number) {
+    if (this.props.onItemClick) {
+      this.props.onItemClick(itemKey);
     }
   }
 
@@ -178,8 +182,12 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
     }
   }
 
-  handleDragStart() {
+  handleDragStart(itemId: string | number) {
     this.itemsBeforeDrag = this.toItemList(this.state.items);
+    this.draggedItemId = itemId;
+    if (this.props.onDragStart) {
+      this.props.onDragStart(itemId);
+    }
     if (!this.state.isDragging) {
       this.setState({
         isDragging: true,
@@ -190,12 +198,27 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
   handleDragEnd(didDropOnTarget: boolean) {
     if (!this.state.isDragging) {
       this.itemsBeforeDrag = null;
+      this.draggedItemId = null;
+      if (this.props.onDragEnd) {
+        this.props.onDragEnd(didDropOnTarget);
+      }
       return;
     }
+    const enableTransitions = !!this.props.enableTransitions;
     const restoreOnFailedDrop = !!this.props.restoreOnFailedDrop;
     const onUpdateMode: OnUpdateMode = this.props.onUpdateMode || 'on-drop';
     const shouldRestoreOriginalOrder = restoreOnFailedDrop && !didDropOnTarget && !!this.itemsBeforeDrag;
     const restoredItems = shouldRestoreOriginalOrder ? this.itemsBeforeDrag : null;
+    const previousTopsById = enableTransitions && restoredItems
+      ? this.captureItemTopsById(this.toItemList(this.state.items))
+      : {};
+    const affectedIds = enableTransitions && restoredItems
+      ? new Set(
+        restoredItems
+          .map((item, idx) => this.toItemKey(item, idx))
+          .filter((itemId) => itemId !== this.draggedItemId),
+      )
+      : null;
     this.resetReorderTransition();
     const finalize = () => {
       if (this.props.onUpdate && onUpdateMode === 'on-drop' && !restoredItems) {
@@ -205,12 +228,21 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
         this.props.onUpdate(restoredItems);
       }
       this.itemsBeforeDrag = null;
+      this.draggedItemId = null;
+      if (this.props.onDragEnd) {
+        this.props.onDragEnd(didDropOnTarget);
+      }
     };
     if (restoredItems) {
       this.setState({
         isDragging: false,
         items: restoredItems,
-      }, finalize);
+      }, () => {
+        if (enableTransitions) {
+          this.applyReorderTransition(previousTopsById, affectedIds);
+        }
+        finalize();
+      });
       return;
     }
     this.setState({
@@ -359,17 +391,16 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
 
     return (
       <DndProvider backend={dndBackend} options={this.props.dndBackendOptions}>
-        <div>
-          <List
-            {...listProps}
-            sx={this.props.listSx}
-          >
-            {items.map((item, i) => {
-              const itemKey = this.toItemKey(item, i);
-              return (
+        <List
+          {...listProps}
+          sx={this.props.listSx}
+        >
+          {items.map((item, i) => {
+            const itemKey = this.toItemKey(item, i);
+            return (
               <ItemComponent
                 key={itemKey}
-                handleOnClick={() => this.handleOnClick(itemKey)}
+                handleItemClick={() => this.handleItemClick(itemKey)}
                 index={i}
                 id={itemKey}
                 moveListItem={this.moveListItem}
@@ -387,10 +418,9 @@ class ReorderableList extends React.Component<ReorderableListProps, ReorderableL
               >
                 {item}
               </ItemComponent>
-              );
-            })}
-          </List>
-        </div>
+            );
+          })}
+        </List>
       </DndProvider>
     );
   }

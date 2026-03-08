@@ -10,7 +10,8 @@ export interface VoteCardProps {
   i: number;
   points: number;
   onVote?: Function;
-  isResetAdded?: boolean;
+  isNewlySuggested?: boolean;
+  disablePitchTooltip?: boolean;
 }
 
 export class VoteCard extends React.Component<VoteCardProps, any> {
@@ -22,7 +23,7 @@ export class VoteCard extends React.Component<VoteCardProps, any> {
         title={book.title}
         author={book.author}
         image={book && book.links && book.links.image}
-        resetAdded={!!this.props.isResetAdded}
+        newlySuggested={!!this.props.isNewlySuggested}
         trailingContent={
           <VotingSelect
             size='small'
@@ -45,7 +46,7 @@ export class VoteCard extends React.Component<VoteCardProps, any> {
     );
 
     return (
-      <VotePitchTooltip title={book.pitch || 'No pitch provided.'}>
+      <VotePitchTooltip title={book.pitch || 'No pitch provided.'} disabled={!!this.props.disablePitchTooltip}>
         {card}
       </VotePitchTooltip>
     );

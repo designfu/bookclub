@@ -19,6 +19,7 @@ export class VoteResultCardAcceptance extends React.Component<VoteResultCardProp
         image={book && book.links && book.links.image}
         primaryText={acceptanceVoteResultsString(book.rankings)}
         isSmallScreen={isSmallScreen}
+        isDeletedPlaceholder={!!(book as any).isDeletedPlaceholder}
       />
     );
   }

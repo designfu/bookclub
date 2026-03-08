@@ -3,7 +3,7 @@ import { BookStatus } from 'types';
 type VoteOrderDraft = {
   userId: string;
   bookIds: string[];
-  resetAddedBookIds: string[];
+  newlySuggestedBookIds: string[];
 };
 
 const draftCache: { [key: string]: VoteOrderDraft } = {};
@@ -29,7 +29,7 @@ function emptyDraft(myId): VoteOrderDraft {
   return {
     userId: myId,
     bookIds: [],
-    resetAddedBookIds: [],
+    newlySuggestedBookIds: [],
   };
 }
 
@@ -48,7 +48,7 @@ function loadDraftPayload(votingSessionId, myId): VoteOrderDraft {
       const payload = {
         userId: parsed.userId,
         bookIds: normalizeIds(parsed.bookIds),
-        resetAddedBookIds: normalizeIds(parsed.resetAddedBookIds || []),
+        newlySuggestedBookIds: normalizeIds(parsed.newlySuggestedBookIds || []),
       };
       draftCache[key] = payload;
       return payload;
@@ -63,7 +63,7 @@ function loadDraft(votingSessionId, myId): string[] {
   return loadDraftPayload(votingSessionId, myId).bookIds;
 }
 
-export function saveVoteOrderDraft(votingSessionId, myId, books = [], resetAddedBookIds?) {
+export function saveVoteOrderDraft(votingSessionId, myId, books = [], newlySuggestedBookIds?) {
   const key = draftKey(votingSessionId, myId);
   if (!key) return;
 
@@ -72,9 +72,9 @@ export function saveVoteOrderDraft(votingSessionId, myId, books = [], resetAdded
   const payload = {
     userId: myId,
     bookIds: ids,
-    resetAddedBookIds: typeof resetAddedBookIds === 'undefined'
-      ? existing.resetAddedBookIds || []
-      : normalizeIds(resetAddedBookIds),
+    newlySuggestedBookIds: typeof newlySuggestedBookIds === 'undefined'
+      ? existing.newlySuggestedBookIds || []
+      : normalizeIds(newlySuggestedBookIds),
   };
   draftCache[key] = payload;
 
@@ -86,8 +86,8 @@ export function saveVoteOrderDraft(votingSessionId, myId, books = [], resetAdded
   }
 }
 
-export function getVoteOrderDraftResetAddedBookIds(votingSessionId, myId) {
-  return loadDraftPayload(votingSessionId, myId).resetAddedBookIds || [];
+export function getVoteOrderDraftNewlySuggestedBookIds(votingSessionId, myId) {
+  return loadDraftPayload(votingSessionId, myId).newlySuggestedBookIds || [];
 }
 
 export function hasVoteOrderDraft(votingSessionId, myId): boolean {
@@ -100,11 +100,11 @@ export function hydrateVoteOrderDraft(votingSessionId, myId, books = []) {
     myId,
     books,
   );
-  const persisted = getVoteOrderDraftResetAddedBookIds(votingSessionId, myId);
-  const resetAddedBookIds = Array.from(new Set([...(persisted || []), ...(addedFromLocalSessionMissIds || [])]));
+  const persisted = getVoteOrderDraftNewlySuggestedBookIds(votingSessionId, myId);
+  const newlySuggestedBookIds = Array.from(new Set([...(persisted || []), ...(addedFromLocalSessionMissIds || [])]));
   return {
     books: draftBooks,
-    resetAddedBookIds,
+    newlySuggestedBookIds,
   };
 }
 

@@ -11,6 +11,9 @@ export interface VoteResultCardAdvancedAcceptanceProps {
 export class VoteResultCardAdvancedAcceptance extends React.Component<VoteResultCardAdvancedAcceptanceProps, any> {
   render() {
     const { book, isSmallScreen } = this.props;
+    const secondaryText = book.tiedCount > 1
+      ? `${book.method} ${book.tiedCount}`
+      : book.method;
 
     return (
       <VoteResultCardBase
@@ -18,8 +21,9 @@ export class VoteResultCardAdvancedAcceptance extends React.Component<VoteResult
         author={book.author}
         image={book && book.links && book.links.image}
         primaryText={acceptanceVoteResultsString(book.rankings)}
-        secondaryText={`${book.method} ${book.tiedCount}`}
+        secondaryText={secondaryText}
         isSmallScreen={isSmallScreen}
+        isDeletedPlaceholder={!!(book as any).isDeletedPlaceholder}
       />
     );
   }

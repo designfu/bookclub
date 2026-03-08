@@ -23,7 +23,7 @@ export function previousSessionBookIdSet(previousSession = null) {
   }, {});
 }
 
-export function computeResetAddedBookIds({
+export function computeNewlySuggestedBookIds({
   localBooks = [],
   nextBooks = [],
   previousSession = null,
@@ -57,14 +57,14 @@ export function computeResetAddedBookIds({
     .filter((id) => !!id);
 }
 
-export function orderBooksByResetAdded(books = [], resetAddedBookIds = []) {
-  const resetAddedSet = (resetAddedBookIds || []).reduce((set, id) => {
+export function orderBooksByNewlySuggested(books = [], newlySuggestedBookIds = []) {
+  const newlySuggestedSet = (newlySuggestedBookIds || []).reduce((set, id) => {
     if (id) {
       set[id] = true;
     }
     return set;
   }, {});
-  if (!books || books.length < 1 || Object.keys(resetAddedSet).length < 1) {
+  if (!books || books.length < 1 || Object.keys(newlySuggestedSet).length < 1) {
     return books;
   }
 
@@ -73,12 +73,12 @@ export function orderBooksByResetAdded(books = [], resetAddedBookIds = []) {
   if (dividerIndex > -1) {
     const topSection = books.slice(0, dividerIndex + 1);
     const bottomSection = books.slice(dividerIndex + 1);
-    const greenBottom = bottomSection.filter((book) => !!resetAddedSet[toBookId(book)]);
-    const nonGreenBottom = bottomSection.filter((book) => !resetAddedSet[toBookId(book)]);
+    const greenBottom = bottomSection.filter((book) => !!newlySuggestedSet[toBookId(book)]);
+    const nonGreenBottom = bottomSection.filter((book) => !newlySuggestedSet[toBookId(book)]);
     return [...topSection, ...greenBottom, ...nonGreenBottom];
   }
 
-  const green = books.filter((book) => !!resetAddedSet[toBookId(book)]);
-  const nonGreen = books.filter((book) => !resetAddedSet[toBookId(book)]);
+  const green = books.filter((book) => !!newlySuggestedSet[toBookId(book)]);
+  const nonGreen = books.filter((book) => !newlySuggestedSet[toBookId(book)]);
   return [...nonGreen, ...green];
 }

@@ -6,7 +6,12 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { ConfirmDialog } from 'components/display/ConfirmDialog';
 import { RateBookDialogContent } from 'components/display/RateBookDialogContent';
-import { votingSessionNoticeSx } from 'components/hybrid/voting-session-sx';
+
+const votingSessionNoticeSx = {
+  maxWidth: 800,
+  borderBottomLeftRadius: 0,
+  borderBottomRightRadius: 0,
+};
 
 function toId(value) {
   if (!value) {

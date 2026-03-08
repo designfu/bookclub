@@ -26,32 +26,32 @@ type ReorderableVotingListProps = Omit<ReorderableListProps, 'enableTransitions'
   listSx?: ReorderableListProps['listSx'];
 };
 
-class ReorderableVotingList extends React.Component<ReorderableVotingListProps> {
-  render() {
-    const { listSx, ...props } = this.props;
-    const mergedListSx = [{ maxWidth: 400 }, listSx].filter(Boolean) as SxProps<Theme>;
-    return (
-      <ReorderableList
-        {...props}
-        enableTransitions
-        transitionDurationMs={180}
-        transitionEasing='ease-out'
-        hoverInsetRatio={0.12}
-        reorderTrigger='edge'
-        hideDraggedSource
-        onUpdateMode='during-drag'
-        restoreOnFailedDrop
-        syncChildrenWhileDragging
-        listSx={mergedListSx}
-        dndBackend={MultiBackend}
-        dndBackendOptions={HTML5toTouchWithDelay}
-        itemComponent={ReorderableVotingListItem}
-        itemComponentProps={{
-          touchHighlightDelayMs: TOUCH_DRAG_DELAY_MS,
-        }}
-      />
-    );
-  }
+function ReorderableVotingList({
+  listSx,
+  ...props
+}: ReorderableVotingListProps) {
+  const mergedListSx = [{ maxWidth: 400 }, listSx].filter(Boolean) as SxProps<Theme>;
+  return (
+    <ReorderableList
+      {...props}
+      enableTransitions
+      transitionDurationMs={180}
+      transitionEasing='ease-out'
+      hoverInsetRatio={0.12}
+      reorderTrigger='edge'
+      hideDraggedSource
+      onUpdateMode='during-drag'
+      restoreOnFailedDrop
+      syncChildrenWhileDragging
+      listSx={mergedListSx}
+      dndBackend={MultiBackend}
+      dndBackendOptions={HTML5toTouchWithDelay}
+      itemComponent={ReorderableVotingListItem}
+      itemComponentProps={{
+        touchHighlightDelayMs: TOUCH_DRAG_DELAY_MS,
+      }}
+    />
+  );
 }
 
 export default ReorderableVotingList;

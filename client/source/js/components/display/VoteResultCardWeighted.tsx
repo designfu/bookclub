@@ -19,6 +19,7 @@ export class VoteResultCardWeighted extends React.Component<VoteResultCardProps,
         image={book && book.links && book.links.image}
         primaryText={pointString(book.points)}
         isSmallScreen={isSmallScreen}
+        isDeletedPlaceholder={!!(book as any).isDeletedPlaceholder}
       />
     );
   }

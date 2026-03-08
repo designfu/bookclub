@@ -64,6 +64,8 @@ export interface VoteCardLayoutProps {
   trailingContent?: React.ReactNode;
   elevation?: number;
   cardSx?: any;
+  titleSx?: any;
+  authorSx?: any;
 }
 
 export function VoteCardLayout({
@@ -73,6 +75,8 @@ export function VoteCardLayout({
   trailingContent,
   elevation,
   cardSx,
+  titleSx,
+  authorSx,
 }: VoteCardLayoutProps) {
   const resolvedImage = image || '/icons/icon-book-256.png';
 
@@ -85,10 +89,10 @@ export function VoteCardLayout({
       />
       <Box sx={voteCardLayoutBodySx}>
         <Box sx={voteCardLayoutDetailsSx}>
-          <Typography variant='body2' sx={voteCardLayoutTitleSx}>
+          <Typography variant='body2' sx={{ ...voteCardLayoutTitleSx, ...titleSx }}>
             {title}
           </Typography>
-          <Typography variant='caption' sx={voteCardLayoutAuthorSx}>
+          <Typography variant='caption' sx={{ ...voteCardLayoutAuthorSx, ...authorSx }}>
             {author || '??'}
           </Typography>
         </Box>

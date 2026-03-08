@@ -22,7 +22,7 @@ export interface ReorderableListItemProps {
   id: string | number;
   index: number;
   moveListItem: (dragIndex: number, hoverIndex: number) => void;
-  onDragStart?: () => void;
+  onDragStart?: (id: string | number) => void;
   onDragEnd?: (didDropOnTarget: boolean) => void;
   offsetY?: number;
   animateReorder?: boolean;
@@ -34,7 +34,7 @@ export interface ReorderableListItemProps {
   contentStyle?: React.CSSProperties;
   contentProps?: React.HTMLAttributes<HTMLDivElement>;
   onMeasureRef?: (id: string | number, node: HTMLDivElement | null) => void;
-  handleOnClick: () => void;
+  handleItemClick: () => void;
   children: React.ReactNode;
 }
 
@@ -64,7 +64,7 @@ const ReorderableListItem = (props: ReorderableListItemProps) => {
     contentStyle,
     contentProps,
     onMeasureRef,
-    handleOnClick,
+    handleItemClick,
     children,
   } = props;
 
@@ -72,7 +72,7 @@ const ReorderableListItem = (props: ReorderableListItemProps) => {
     type: LIST_ITEM_TYPE,
     item: () => {
       if (onDragStart) {
-        onDragStart();
+        onDragStart(id);
       }
       return { id, index };
     },
@@ -166,7 +166,7 @@ const ReorderableListItem = (props: ReorderableListItemProps) => {
         }}
         {...contentProps}
       >
-        <ListItem onClick={handleOnClick}>{children}</ListItem>
+        <ListItem onClick={handleItemClick}>{children}</ListItem>
       </div>
     </div>
   );

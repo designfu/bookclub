@@ -34,9 +34,9 @@ const seasonRowSx = (isSmallScreen) => ({
 const seasonRankSx = (isSmallScreen) => ({
   width: isSmallScreen ? 'auto' : 36,
   minWidth: isSmallScreen ? 0 : 36,
-  pt: isSmallScreen ? 0 : 3,
+  pt: isSmallScreen ? 0 : 2,
   color: 'text.secondary',
-  fontWeight: 600,
+  fontWeight: 500,
   fontSize: '14pt',
   lineHeight: 1,
   background: 'transparent',

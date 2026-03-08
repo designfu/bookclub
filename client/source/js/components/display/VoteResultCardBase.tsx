@@ -10,6 +10,7 @@ export interface VoteResultCardBaseProps {
   primaryText: string;
   secondaryText?: string;
   isSmallScreen?: boolean;
+  isDeletedPlaceholder?: boolean;
 }
 
 export function VoteResultCardBase({
@@ -19,6 +20,7 @@ export function VoteResultCardBase({
   primaryText,
   secondaryText,
   isSmallScreen = false,
+  isDeletedPlaceholder = false,
 }: VoteResultCardBaseProps) {
   return (
     <VoteCardLayout
@@ -30,7 +32,15 @@ export function VoteResultCardBase({
         borderTop: '1px solid',
         borderColor: 'divider',
         minWidth: isSmallScreen ? 560 : undefined,
+        ...(isDeletedPlaceholder ? {
+          backgroundColor: 'grey.50',
+        } : {}),
       }}
+      titleSx={isDeletedPlaceholder ? {
+        color: 'text.secondary',
+        fontSize: 14,
+      } : undefined}
+      authorSx={isDeletedPlaceholder ? { display: 'none' } : undefined}
       trailingContent={
         <Stack
           sx={{
@@ -39,7 +49,7 @@ export function VoteResultCardBase({
             gap: secondaryText ? 0.375 : 0,
           }}
         >
-          <Typography variant='body2'>
+          <Typography variant='body2' sx={isDeletedPlaceholder ? { color: 'text.secondary' } : undefined}>
             {primaryText}
           </Typography>
           {secondaryText ? (

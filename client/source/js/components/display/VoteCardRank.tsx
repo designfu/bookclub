@@ -12,7 +12,8 @@ export interface VoteCardRankProps {
   rank: number;
   maxRank: number;
   onVote?: Function;
-  isResetAdded?: boolean;
+  isNewlySuggested?: boolean;
+  disablePitchTooltip?: boolean;
 }
 
 export class VoteCardRank extends React.Component<VoteCardRankProps, any> {
@@ -24,7 +25,7 @@ export class VoteCardRank extends React.Component<VoteCardRankProps, any> {
         title={book.title}
         author={book.author}
         image={book && book.links && book.links.image}
-        resetAdded={!!this.props.isResetAdded}
+        newlySuggested={!!this.props.isNewlySuggested}
         trailingContent={
           <VotingSelect
             size='small'
@@ -47,7 +48,7 @@ export class VoteCardRank extends React.Component<VoteCardRankProps, any> {
     );
 
     return (
-      <VotePitchTooltip title={book.pitch || 'No pitch provided.'}>
+      <VotePitchTooltip title={book.pitch || 'No pitch provided.'} disabled={!!this.props.disablePitchTooltip}>
         {card}
       </VotePitchTooltip>
     );

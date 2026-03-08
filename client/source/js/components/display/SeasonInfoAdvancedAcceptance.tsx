@@ -6,6 +6,7 @@ import { Season, VotingSession, VotingSessionStatus } from 'types';
 import { BookCard } from 'components/display/BookCard';
 import { SeasonInfoBase } from 'components/display/SeasonInfoBase';
 import { VoteResultCardAdvancedAcceptance } from '@client/components/display/VoteResultCardAdvancedAcceptance';
+import { excludeChosenWinner, resolveVoteResultBook } from 'components/display/season-vote-result-books';
 import {
   ensureSeasonInfoProps,
 } from 'components/display/season-info-common';
@@ -26,7 +27,6 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
     ...votingSession
   };
   const toId = (value) => value && value.toString ? value.toString() : value;
-  const chosenBookId = toId((seasonBook as any) && ((seasonBook as any)._id || seasonBook));
   const topResultBookId = results[0] ? toId(results[0].book) : null;
   const resultsByBookId = results.reduce((acc, result) => ({
     ...acc,
@@ -36,39 +36,35 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
   const rankedList = results
     .map(result => {
       const bookId = toId(result.book);
-      const book = books[bookId];
-      if(!book) {
-        return null;
-      }
-      book.rankings = result.rankings || [];
-      book.method = result.method || null;
-      book.tiedCount = result.tiedCount || 1;
-      return book;
+      const book = resolveVoteResultBook(books, bookId);
+      return {
+        ...book,
+        rankings: result.rankings || [],
+        method: result.method || null,
+        tiedCount: result.tiedCount || 1,
+      };
     })
     .filter(_ => !!_ && _._id);
 
   if(rankedList.length > 0) {
-    return chosenBookId && chosenBookId === topResultBookId
-      ? rankedList.filter(_ => toId(_._id) !== chosenBookId)
-      : rankedList;
+    return excludeChosenWinner(rankedList, seasonBook, topResultBookId);
   }
 
   const fallbackList = (booksVotedOn && booksVotedOn.length > 0 ? booksVotedOn : Object.keys(books))
     .map(toId)
-    .filter(bookId => books[bookId])
     .map(bookId => {
-      const book = books[bookId];
+      const book = resolveVoteResultBook(books, bookId);
       const result = resultsByBookId[bookId];
-      book.rankings = result ? result.rankings : [];
-      book.method = result ? result.method : null;
-      book.tiedCount = result ? result.tiedCount : 1;
-      return book;
+      return {
+        ...book,
+        rankings: result ? result.rankings : [],
+        method: result ? result.method : null,
+        tiedCount: result ? result.tiedCount : 1,
+      };
     })
     .filter(_ => _._id);
 
-  return chosenBookId && chosenBookId === topResultBookId
-    ? fallbackList.filter(_ => toId(_._id) !== chosenBookId)
-    : fallbackList;
+  return excludeChosenWinner(fallbackList, seasonBook, topResultBookId);
 }
 
 export interface SeasonInfoAdvancedAcceptanceProps {

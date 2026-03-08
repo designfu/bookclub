@@ -4,9 +4,8 @@ import { useTheme } from '@mui/material/styles';
 import ReorderableListItem, { ReorderableListItemProps } from './ReorderableListItem';
 
 export interface ReorderableVotingListItemProps extends ReorderableListItemProps {
+  touchHighlightDelayMs?: number;
 }
-
-const TOUCH_HIGHLIGHT_DELAY_MS = 120;
 
 const ReorderableVotingListItem = (props: ReorderableVotingListItemProps) => {
   const theme = useTheme();
@@ -15,6 +14,7 @@ const ReorderableVotingListItem = (props: ReorderableVotingListItemProps) => {
     hideDraggedSource = true,
     contentStyle,
     contentProps,
+    touchHighlightDelayMs = 120,
     ...rest
   } = props;
   const [isPressed, setIsPressed] = React.useState(false);
@@ -29,6 +29,11 @@ const ReorderableVotingListItem = (props: ReorderableVotingListItemProps) => {
 
   React.useEffect(() => () => {
     clearHighlightDelay();
+  }, [clearHighlightDelay]);
+
+  const handleTouchState = React.useCallback((pressed: boolean) => {
+    clearHighlightDelay();
+    setIsPressed(pressed);
   }, [clearHighlightDelay]);
 
   return (
@@ -50,22 +55,20 @@ const ReorderableVotingListItem = (props: ReorderableVotingListItemProps) => {
             highlightDelayRef.current = window.setTimeout(() => {
               setIsPressed(true);
               highlightDelayRef.current = null;
-            }, TOUCH_HIGHLIGHT_DELAY_MS);
+            }, touchHighlightDelayMs);
           }
           if (contentProps && contentProps.onTouchStart) {
             contentProps.onTouchStart(event);
           }
         },
         onTouchEnd: (event) => {
-          clearHighlightDelay();
-          setIsPressed(false);
+          handleTouchState(false);
           if (contentProps && contentProps.onTouchEnd) {
             contentProps.onTouchEnd(event);
           }
         },
         onTouchCancel: (event) => {
-          clearHighlightDelay();
-          setIsPressed(false);
+          handleTouchState(false);
           if (contentProps && contentProps.onTouchCancel) {
             contentProps.onTouchCancel(event);
           }

@@ -6,6 +6,7 @@ import { Season, VotingSession, VotingSessionStatus } from 'types';
 import { BookCard } from 'components/display/BookCard';
 import { SeasonInfoBase } from 'components/display/SeasonInfoBase';
 import { VoteResultCardAcceptance } from 'components/display/VoteResultCardAcceptance';
+import { excludeChosenWinner, resolveVoteResultBook } from 'components/display/season-vote-result-books';
 import {
   ensureSeasonInfoProps,
 } from 'components/display/season-info-common';
@@ -26,17 +27,17 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
     ...votingSession
   };
   const toId = (value) => value && value.toString ? value.toString() : value;
-  const chosenBookId = toId((seasonBook as any) && ((seasonBook as any)._id || seasonBook));
   const topResultBookId = results[0] ? toId(results[0].book) : null;
   const list = (booksVotedOn && booksVotedOn.length > 0 ? booksVotedOn : Object.keys(books))
-    .filter(bookId => books[bookId])
     .map(bookId => {
-      const book = books[bookId];
-      const result = results.find(_ => _.book === book._id);
-      book.rankings = result ? result.rankings : [];
-      return book;
+      const book = resolveVoteResultBook(books, bookId);
+      const result = results.find(_ => toId(_.book) === toId(bookId));
+      return {
+        ...book,
+        rankings: result ? result.rankings : [],
+      };
     })
-    .filter(_ => _._id)
+    .filter(_ => !!_ && !!_._id)
     .sort((a, b) => {
       const diff = b.rankings.length - a.rankings.length;
       if (diff > 0) {
@@ -66,9 +67,7 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
 
       return 0;
     });
-  return chosenBookId && chosenBookId === topResultBookId
-    ? list.filter(_ => toId(_._id) !== chosenBookId)
-    : list;
+  return excludeChosenWinner(list, seasonBook, topResultBookId);
 }
 
 export interface SeasonInfoAcceptanceProps {
