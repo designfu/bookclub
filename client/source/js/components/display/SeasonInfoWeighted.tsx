@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Collapse from '@mui/material/Collapse';
 import Paper from '@mui/material/Paper';
-import { BookStatus, Season, VotingSession, VotingSessionStatus } from 'types';
+import { Season, VotingSession, VotingSessionStatus } from 'types';
 import { BookCard } from 'components/display/BookCard';
 import { SeasonInfoBase } from 'components/display/SeasonInfoBase';
 import { VoteResultCardWeighted } from 'components/display/VoteResultCardWeighted';
@@ -35,7 +35,7 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
       book.points = result ? result.points : 0;
       return book;
     })
-    .filter(_ => (booksVotedOn.length > 0 || _.status !== BookStatus.BACKLOG) && _._id)
+    .filter(_ => _._id)
     .sort((a, b) => b.points - a.points);
   return chosenBookId && chosenBookId === topResultBookId
     ? list.filter(_ => toId(_._id) !== chosenBookId)

@@ -1,3 +1,5 @@
+import { BookStatus } from 'types';
+
 export function getRefId(value) {
   if (!value) {
     return null;
@@ -89,9 +91,14 @@ export function withUserStats(user, booksById = {}, seasonsById = {}, votingSess
   const lastSeasonTitle = latestSeason ? (latestSeason._id || '--') : '--';
   const lastSeasonDateRange = latestSeason ? formatSeasonDateRange(latestSeason) : '--';
 
-  const booksSuggestedCount = Object.keys(booksById || {})
+  const suggestedBooks = Object.keys(booksById || {})
     .map((id) => booksById[id])
-    .filter((book) => getRefId(book.suggestedBy) === user._id)
+    .filter((book) => getRefId(book.suggestedBy) === user._id);
+  const winningBooksCount = suggestedBooks
+    .filter((book) => book && (book.status === BookStatus.READING || book.status === BookStatus.FINISHED))
+    .length;
+  const booksSuggestedCount = suggestedBooks
+    .filter((book) => book && book.status !== BookStatus.READING && book.status !== BookStatus.FINISHED)
     .length;
   const booksRatedCount = Object.keys(booksById || {})
     .map((id) => booksById[id])
@@ -104,6 +111,7 @@ export function withUserStats(user, booksById = {}, seasonsById = {}, votingSess
   return {
     user,
     booksSuggestedCount,
+    winningBooksCount,
     booksRatedCount,
     seasonsVotedCount: votedSeasons.length,
     lastSeasonTimestamp: latestSeason ? toTimestamp(latestSeason) : 0,
@@ -154,9 +162,10 @@ export function buildTransferItemsWithData(
   const sourceBooks = allBooks.filter((book) => getRefId(book.suggestedBy) === sourceUserId);
 
   sourceBooks.forEach((book) => {
+    const isFinishedOrReading = book.status === BookStatus.FINISHED || book.status === BookStatus.READING;
     items.push({
       id: `book:${book._id}`,
-      type: 'BOOK',
+      type: isFinishedOrReading ? 'BOOK_WINNING' : 'BOOK_SUGGESTED',
       checked: true,
       conflict: false,
       conflictReason: '',
@@ -228,6 +237,13 @@ export function buildTransferItemsWithData(
 }
 
 export function buildDeletePreview(userId, booksById = {}, seasonsById = {}, votingSessionsById = {}) {
+  const transferItems = buildTransferItemsWithData(
+    userId,
+    '',
+    booksById,
+    seasonsById,
+    votingSessionsById,
+  );
   const books = Object.keys(booksById || {})
     .map((id) => booksById[id])
     .filter((book) => getRefId(book.suggestedBy) === userId);
@@ -248,28 +264,9 @@ export function buildDeletePreview(userId, booksById = {}, seasonsById = {}, vot
     .filter((item) => !!item)
     .sort((a, b) => (a.title || '').localeCompare(b.title || ''));
 
-  const seasonsBySessionId = getSeasonsBySessionId(seasonsById);
-  const voteItems = Object.keys(votingSessionsById || {})
-    .map((sessionId) => {
-      const session = votingSessionsById[sessionId];
-      const votes = Array.isArray(session && session.votes) ? session.votes : [];
-      const count = votes.filter((vote) => getRefId(vote.user) === userId).length;
-      if (count < 1) {
-        return null;
-      }
-      const season = seasonsBySessionId[sessionId];
-      return {
-        sessionId,
-        count,
-        seasonLabel: season ? (season.title || season._id) : sessionId,
-      };
-    })
-    .filter((item) => !!item)
-    .sort((a, b) => (a.seasonLabel || '').localeCompare(b.seasonLabel || ''));
-
   return {
     books,
     ratingItems,
-    voteItems,
+    transferItems,
   };
 }

@@ -21,7 +21,9 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
 import Config from 'config';
+import { BookStatus } from 'types';
 import SeasonClient from 'clients/SeasonClient';
 import VotingSessionClient from 'clients/VotingSessionClient';
 import BookClient from 'clients/BookClient';
@@ -44,16 +46,13 @@ class UsersPage_ extends React.Component<any, any> {
     votingSessions: {},
     loading: false,
     error: '',
-    transferDialogOpen: false,
-    transferSourceUserId: '',
+    manageDialogOpen: false,
+    manageUserId: '',
     transferTargetUserId: '',
     transferItems: [],
     transferApplying: false,
     transferError: '',
     transferSummary: '',
-    deleteDialogOpen: false,
-    deleteUserId: '',
-    deletePreview: null,
     deleteApplying: false,
     deleteError: '',
   };
@@ -87,7 +86,7 @@ class UsersPage_ extends React.Component<any, any> {
           loading: false,
         });
       })
-      .catch((err) => {
+      .catch(() => {
         this.setState({
           loading: false,
           error: 'Failed to load user debug data.',
@@ -113,6 +112,7 @@ class UsersPage_ extends React.Component<any, any> {
         this.state.votingSessions || {},
       ),
     );
+
     return (
       <Container className='l-users-page' maxWidth={false} disableGutters>
         <Box className='o-action-title'>
@@ -128,6 +128,7 @@ class UsersPage_ extends React.Component<any, any> {
                 <TableCell>User ID</TableCell>
                 <TableCell>Role</TableCell>
                 <TableCell>Suggested Books</TableCell>
+                <TableCell>Winning Books</TableCell>
                 <TableCell>Books Rated</TableCell>
                 <TableCell>Seasons Voted</TableCell>
                 <TableCell>Most Recent Season Voted</TableCell>
@@ -135,12 +136,13 @@ class UsersPage_ extends React.Component<any, any> {
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map(({ user, booksSuggestedCount, booksRatedCount, seasonsVotedCount, lastSeasonTitle, lastSeasonDateRange }) => (
+              {users.map(({ user, booksSuggestedCount, winningBooksCount, booksRatedCount, seasonsVotedCount, lastSeasonTitle, lastSeasonDateRange }) => (
                 <TableRow key={user._id}>
                   <TableCell>{user.name || '--'}</TableCell>
                   <TableCell>{user._id || '--'}</TableCell>
                   <TableCell>{isAdminUser(user) ? 'ADMIN' : 'MEMBER'}</TableCell>
                   <TableCell>{booksSuggestedCount}</TableCell>
+                  <TableCell>{winningBooksCount}</TableCell>
                   <TableCell>{booksRatedCount}</TableCell>
                   <TableCell>{seasonsVotedCount}</TableCell>
                   <TableCell>
@@ -150,17 +152,8 @@ class UsersPage_ extends React.Component<any, any> {
                     </Stack>
                   </TableCell>
                   <TableCell>
-                    <Button
-                      color='primary'
-                      onClick={() => this.openTransferDialog(user._id)}
-                    >
-                      Transfer
-                    </Button>
-                    <Button
-                      color={toMuiButtonColor('danger')}
-                      onClick={() => this.openDeleteDialog(user._id)}
-                    >
-                      Delete
+                    <Button color='primary' onClick={() => this.openManageDialog(user._id)}>
+                      Migrate
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -168,38 +161,40 @@ class UsersPage_ extends React.Component<any, any> {
             </TableBody>
           </Table>
         </TableContainer>
-        {this.renderTransferDialog()}
-        {this.renderDeleteDialog()}
+        {this.renderManageDialog()}
       </Container>
     );
   }
 
-  renderTransferDialog() {
+  renderManageDialog() {
     const {
-      transferDialogOpen,
-      transferSourceUserId,
+      manageDialogOpen,
+      manageUserId,
       transferTargetUserId,
       transferItems,
       transferApplying,
       transferError,
       transferSummary,
+      deleteApplying,
+      deleteError,
     } = this.state;
-    const sourceUser = this.props.users[transferSourceUserId];
-    const targetCandidates = getTransferTargetCandidates(this.props.users || {}, transferSourceUserId);
+    const sourceUser = this.props.users[manageUserId];
+    const targetCandidates = getTransferTargetCandidates(this.props.users || {}, manageUserId);
     const selectedCount = transferItems.filter((item) => item.checked).length;
     const transferTargetUserLabelId = 'transfer-target-user-label';
+    const deleteDisabledReason = this.getDeleteDisabledReason(manageUserId);
+    const canDelete = !!manageUserId && !deleteDisabledReason;
+    const hasTransferableRecords = this.userHasTransferableRecordsForUser(manageUserId);
 
     return (
       <Dialog
-        open={transferDialogOpen}
-        onClose={this.closeTransferDialog.bind(this)}
-        aria-labelledby='transfer-user-dialog-title'
+        open={manageDialogOpen}
+        onClose={this.closeManageDialog.bind(this)}
+        aria-labelledby='manage-user-dialog-title'
         fullWidth
         maxWidth='md'
       >
-        <DialogTitle id='transfer-user-dialog-title'>
-          Transfer Records
-        </DialogTitle>
+        <DialogTitle id='manage-user-dialog-title'>Migrate User</DialogTitle>
         <DialogContent>
           <Stack className='c-users-transfer-dialog__meta' direction='row'>
             <Typography variant='body2'><strong>From:</strong> {sourceUser ? `${sourceUser.name} (${sourceUser._id})` : '--'}</Typography>
@@ -221,167 +216,91 @@ class UsersPage_ extends React.Component<any, any> {
               </Select>
             </FormControl>
           </Stack>
+          {!hasTransferableRecords ? (
+            <Typography variant='body2' className='c-users-transfer-dialog__summary'>
+              This user has no suggested books, winning books, ratings, or season votes to transfer.
+            </Typography>
+          ) : null}
           <Box className='c-users-transfer-dialog__summary'>
             <Typography variant='body2'>Selected line items: {selectedCount} / {transferItems.length}</Typography>
           </Box>
-          <TableContainer component={Paper} className='c-users-transfer-table'>
-            <Table size='small'>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Use</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Conflicts</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {transferItems.map((item, i) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      <Checkbox
-                        checked={!!item.checked}
-                        onChange={() => this.toggleTransferItem(i)}
-                        color='primary'
-                      />
-                    </TableCell>
-                    <TableCell>{item.type}</TableCell>
-                    <TableCell>{item.description}</TableCell>
-                    <TableCell className={item.conflict ? 'is-conflict' : 'is-ok'}>
-                      {item.conflict ? `Conflict: ${item.conflictReason}` : 'OK'}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {transferItems.length < 1 ? (
-                  <TableRow>
-                    <TableCell colSpan={4}>Choose a target user to load transferable items.</TableCell>
-                  </TableRow>
-                ) : null}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          {this.renderTransferItemsTable(transferItems, {
+            showCheckboxes: true,
+            onToggle: this.toggleTransferItem.bind(this),
+            emptyMessage: 'Choose a target user to load transferable items.',
+          })}
           {transferError ? <Typography variant='body1' className='c-users-transfer-dialog__error'>{transferError}</Typography> : null}
           {transferSummary ? <Typography variant='body1' className='c-users-transfer-dialog__summary-text'>{transferSummary}</Typography> : null}
-        </DialogContent>
-        <DialogActions>
-          <Button color='primary' onClick={this.closeTransferDialog.bind(this)} disabled={transferApplying}>Close</Button>
-          <Button
-            color='secondary'
-            onClick={this.applyTransfer.bind(this)}
-            disabled={transferApplying || !transferTargetUserId || selectedCount < 1}
-          >
-            {transferApplying ? 'Transferring...' : 'Transfer Selected'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  }
-
-  renderDeleteDialog() {
-    const {
-      deleteDialogOpen,
-      deleteUserId,
-      deletePreview,
-      deleteApplying,
-      deleteError,
-    } = this.state;
-    const user = this.props.users[deleteUserId];
-    const books = deletePreview && Array.isArray(deletePreview.books) ? deletePreview.books : [];
-    const ratingItems = deletePreview && Array.isArray(deletePreview.ratingItems) ? deletePreview.ratingItems : [];
-    const voteItems = deletePreview && Array.isArray(deletePreview.voteItems) ? deletePreview.voteItems : [];
-    const voteTotal = voteItems.reduce((sum, item) => sum + (item.count || 0), 0);
-
-    return (
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={this.closeDeleteDialog.bind(this)}
-        aria-labelledby='delete-user-dialog-title'
-        fullWidth
-        maxWidth='md'
-      >
-        <DialogTitle id='delete-user-dialog-title'>
-          Delete User
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant='body1'>
-            Delete <strong>{user ? `${user.name} (${user._id})` : deleteUserId}</strong>?
-          </Typography>
-          <Typography variant='body1'>
-            The following records will be cleaned up first.
-          </Typography>
-          <Box className='c-users-delete-dialog__section'>
-            <Typography variant='h6'>Suggested Books ({books.length})</Typography>
-            {books.length > 0 ? (
-              <Typography variant='body1'>
-                {books.map((book) => `${book.title || '--'} by ${book.author || '--'} (${book._id})`).join(', ')}
-              </Typography>
-            ) : (
-              <Typography variant='body1'>None</Typography>
-            )}
-          </Box>
-          <Box className='c-users-delete-dialog__section'>
-            <Typography variant='h6'>Book Ratings To Remove ({ratingItems.length})</Typography>
-            {ratingItems.length > 0 ? (
-              <Typography variant='body1'>
-                {ratingItems.map((item) => `${item.title || '--'} (${item.bookId}) rating ${item.value}`).join(', ')}
-              </Typography>
-            ) : (
-              <Typography variant='body1'>None</Typography>
-            )}
-          </Box>
-          <Box className='c-users-delete-dialog__section'>
-            <Typography variant='h6'>Votes To Remove ({voteTotal})</Typography>
-            {voteItems.length > 0 ? (
-              <Typography variant='body1'>
-                {voteItems.map((item) => `${item.seasonLabel}: ${item.count} vote(s)`).join(', ')}
-              </Typography>
-            ) : (
-              <Typography variant='body1'>None</Typography>
-            )}
-          </Box>
           {deleteError ? <Typography variant='body1' className='c-users-transfer-dialog__error'>{deleteError}</Typography> : null}
         </DialogContent>
         <DialogActions>
-          <Button color='primary' onClick={this.closeDeleteDialog.bind(this)} disabled={deleteApplying}>Cancel</Button>
-          <Button color={toMuiButtonColor('danger')} onClick={this.applyDelete.bind(this)} disabled={deleteApplying}>
-            {deleteApplying ? 'Deleting...' : 'Delete User'}
+          <Button
+            color='primary'
+            onClick={this.closeManageDialog.bind(this)}
+            disabled={transferApplying || deleteApplying}
+          >
+            Close
           </Button>
+          <Button
+            color='secondary'
+            onClick={this.applyTransfer.bind(this)}
+            disabled={transferApplying || deleteApplying || !transferTargetUserId || selectedCount < 1}
+          >
+            {transferApplying ? 'Transferring...' : 'Transfer Selected'}
+          </Button>
+          <Tooltip title={deleteDisabledReason || ''}>
+            <span>
+              <Button
+                color={toMuiButtonColor('danger')}
+                onClick={this.applyDelete.bind(this)}
+                disabled={transferApplying || deleteApplying || !canDelete}
+              >
+                {deleteApplying ? 'Deleting...' : 'Delete User'}
+              </Button>
+            </span>
+          </Tooltip>
         </DialogActions>
       </Dialog>
     );
   }
 
-  openTransferDialog(sourceUserId) {
+  openManageDialog(userId) {
     this.setState({
-      transferDialogOpen: true,
-      transferSourceUserId: sourceUserId,
+      manageDialogOpen: true,
+      manageUserId: userId,
       transferTargetUserId: '',
       transferItems: [],
       transferApplying: false,
       transferError: '',
       transferSummary: '',
+      deleteApplying: false,
+      deleteError: '',
     });
   }
 
-  closeTransferDialog() {
+  closeManageDialog() {
     this.setState({
-      transferDialogOpen: false,
-      transferSourceUserId: '',
+      manageDialogOpen: false,
+      manageUserId: '',
       transferTargetUserId: '',
       transferItems: [],
       transferApplying: false,
       transferError: '',
       transferSummary: '',
+      deleteApplying: false,
+      deleteError: '',
     });
   }
 
   handleTransferTargetChange(event) {
     const transferTargetUserId = event.target.value;
-    const transferItems = this.buildTransferItems(this.state.transferSourceUserId, transferTargetUserId);
+    const transferItems = this.buildTransferItems(this.state.manageUserId, transferTargetUserId);
     this.setState({
       transferTargetUserId,
       transferItems,
       transferError: '',
       transferSummary: '',
+      deleteError: '',
     });
   }
 
@@ -392,6 +311,54 @@ class UsersPage_ extends React.Component<any, any> {
       checked: !transferItems[index].checked,
     };
     this.setState({ transferItems });
+  }
+
+  renderTransferItemsTable(transferItems = [], {
+    showCheckboxes = false,
+    onToggle = null,
+    emptyMessage = 'No items found.',
+  } = {}) {
+    const columnCount = showCheckboxes ? 4 : 3;
+
+    return (
+      <TableContainer component={Paper} className='c-users-transfer-table'>
+        <Table size='small'>
+          <TableHead>
+            <TableRow>
+              {showCheckboxes ? <TableCell>Use</TableCell> : null}
+              <TableCell>Type</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Conflicts</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {transferItems.map((item, i) => (
+              <TableRow key={item.id}>
+                {showCheckboxes ? (
+                  <TableCell>
+                    <Checkbox
+                      checked={!!item.checked}
+                      onChange={() => onToggle && onToggle(i)}
+                      color='primary'
+                    />
+                  </TableCell>
+                ) : null}
+                <TableCell>{item.type}</TableCell>
+                <TableCell>{item.description}</TableCell>
+                <TableCell className={item.conflict ? 'is-conflict' : 'is-ok'}>
+                  {item.conflict ? `Conflict: ${item.conflictReason}` : 'OK'}
+                </TableCell>
+              </TableRow>
+            ))}
+            {transferItems.length < 1 ? (
+              <TableRow>
+                <TableCell colSpan={columnCount}>{emptyMessage}</TableCell>
+              </TableRow>
+            ) : null}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
   }
 
   buildTransferItems(sourceUserId, targetUserId) {
@@ -405,7 +372,7 @@ class UsersPage_ extends React.Component<any, any> {
   }
 
   async applyTransfer() {
-    const sourceUserId = this.state.transferSourceUserId;
+    const sourceUserId = this.state.manageUserId;
     const targetUserId = this.state.transferTargetUserId;
     const selected = this.state.transferItems.filter((item) => item.checked);
     if (!sourceUserId || !targetUserId || selected.length < 1) {
@@ -416,10 +383,13 @@ class UsersPage_ extends React.Component<any, any> {
       transferApplying: true,
       transferError: '',
       transferSummary: '',
+      deleteError: '',
     });
 
     try {
-      const selectedBooks = selected.filter((item) => item.type === 'BOOK');
+      const selectedBooks = selected.filter((item) =>
+        item.type === 'BOOK_SUGGESTED' || item.type === 'BOOK_WINNING'
+      );
       const selectedBookRatings = selected.filter((item) => item.type === 'BOOK_RATING');
       for (const item of selectedBooks) {
         await BookClient.update(item.bookId, {
@@ -518,26 +488,6 @@ class UsersPage_ extends React.Component<any, any> {
     }
   }
 
-  openDeleteDialog(userId) {
-    this.setState({
-      deleteDialogOpen: true,
-      deleteUserId: userId,
-      deletePreview: this.buildDeletePreview(userId),
-      deleteApplying: false,
-      deleteError: '',
-    });
-  }
-
-  closeDeleteDialog() {
-    this.setState({
-      deleteDialogOpen: false,
-      deleteUserId: '',
-      deletePreview: null,
-      deleteApplying: false,
-      deleteError: '',
-    });
-  }
-
   buildDeletePreview(userId) {
     return buildDeletePreviewData(
       userId,
@@ -547,29 +497,74 @@ class UsersPage_ extends React.Component<any, any> {
     );
   }
 
+  userHasSeasonVotes(userId) {
+    return Object.keys(this.state.votingSessions || {}).some((sessionId) => {
+      const session = this.state.votingSessions[sessionId];
+      const votes = Array.isArray(session && session.votes) ? session.votes : [];
+      return votes.some((vote) => getRefId(vote.user) === userId);
+    });
+  }
+
+  userHasWinningBooks(userId) {
+    return Object.keys(this.props.books || {}).some((bookId) => {
+      const book = this.props.books[bookId];
+      if (!book) {
+        return false;
+      }
+      return getRefId(book.suggestedBy) === userId
+        && (book.status === BookStatus.READING || book.status === BookStatus.FINISHED);
+    });
+  }
+
+  getDeleteDisabledReason(userId) {
+    if (this.userHasSeasonVotes(userId)) {
+      return 'Cannot delete users with season votes. Transfer the votes to another user first.';
+    }
+    if (this.userHasWinningBooks(userId)) {
+      return 'Cannot delete users with winning books. Transfer the books to another user first.';
+    }
+    return '';
+  }
+
+  userHasTransferableRecords({
+    booksSuggestedCount = 0,
+    winningBooksCount = 0,
+    booksRatedCount = 0,
+    seasonsVotedCount = 0,
+  } = {}) {
+    return booksSuggestedCount > 0
+      || winningBooksCount > 0
+      || booksRatedCount > 0
+      || seasonsVotedCount > 0;
+  }
+
+  userHasTransferableRecordsForUser(userId) {
+    if (!userId || !this.props.users[userId]) {
+      return false;
+    }
+    const userStats = getUsersWithStats(
+      { [userId]: this.props.users[userId] },
+      this.props.books || {},
+      this.state.seasons || {},
+      this.state.votingSessions || {},
+    )[0];
+    return this.userHasTransferableRecords(userStats || {});
+  }
+
   async applyDelete() {
-    const deleteUserId = this.state.deleteUserId;
-    if (!deleteUserId) {
+    const deleteUserId = this.state.manageUserId;
+    if (!deleteUserId || this.getDeleteDisabledReason(deleteUserId)) {
       return;
     }
 
     this.setState({
       deleteApplying: true,
       deleteError: '',
+      transferError: '',
     });
 
     try {
       const preview = this.buildDeletePreview(deleteUserId);
-
-      for (const voteItem of preview.voteItems) {
-        const session = this.state.votingSessions[voteItem.sessionId];
-        if (!session) {
-          continue;
-        }
-        const votes = Array.isArray(session.votes) ? session.votes : [];
-        const remainingVotes = votes.filter((vote) => getRefId(vote.user) !== deleteUserId);
-        await VotingSessionClient.update(voteItem.sessionId, { votes: remainingVotes });
-      }
 
       for (const book of preview.books) {
         await BookClient.delete(book._id);
@@ -598,13 +593,7 @@ class UsersPage_ extends React.Component<any, any> {
 
       await this.props.refreshCoreData();
       this.loadAuxData();
-      this.setState({
-        deleteDialogOpen: false,
-        deleteUserId: '',
-        deletePreview: null,
-        deleteApplying: false,
-        deleteError: '',
-      });
+      this.closeManageDialog();
     } catch (err) {
       this.setState({
         deleteApplying: false,

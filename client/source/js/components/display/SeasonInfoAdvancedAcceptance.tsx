@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Collapse from '@mui/material/Collapse';
 import Paper from '@mui/material/Paper';
-import { BookStatus, Season, VotingSession, VotingSessionStatus } from 'types';
+import { Season, VotingSession, VotingSessionStatus } from 'types';
 import { BookCard } from 'components/display/BookCard';
 import { SeasonInfoBase } from 'components/display/SeasonInfoBase';
 import { VoteResultCardAdvancedAcceptance } from '@client/components/display/VoteResultCardAdvancedAcceptance';
@@ -44,7 +44,7 @@ function voteResultsList(books = {}, votingSession: VotingSession, seasonBook = 
       book.tiedCount = result.tiedCount || 1;
       return book;
     })
-    .filter(_ => !!_ && _.status !== BookStatus.BACKLOG && _._id);
+    .filter(_ => !!_ && _._id);
 
   if(rankedList.length > 0) {
     return chosenBookId && chosenBookId === topResultBookId
