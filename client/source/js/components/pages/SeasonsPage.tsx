@@ -6,9 +6,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Stack from '@mui/material/Stack';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
 import { timeOf, toStandardString } from '@client/utils/dates';
 import { SeasonActions } from 'actions/SeasonActions';
 import { BookActions } from 'actions/BookActions';
@@ -19,22 +17,35 @@ import { Book, Season, SeasonStatus } from '@shared/types';
 import { SeasonInfoAdvancedAcceptance } from '@client/components/display/SeasonInfoAdvancedAcceptance';
 import { dropdownFormControlSx } from 'components/form-control-sx';
 
+const PREVIOUS_SEASONS_MULTI_COLUMN_MIN = 1056;
+
 const seasonsPageContainerSx = {
   px: { xs: 2, md: 2.5 },
   py: 1.25,
-  maxWidth: 1024,
+  maxWidth: 'none',
 };
 
-const seasonRowSx = (isSmallScreen) => ({
+const previousSeasonsListSx = (singleColumn) => (
+  singleColumn
+    ? {}
+    : {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
+      gap: 2,
+      alignItems: 'start',
+    }
+);
+
+const seasonRowSx = (singleColumn) => ({
   display: 'flex',
-  gap: isSmallScreen ? 0.75 : 1.5,
-  flexDirection: isSmallScreen ? 'column' : 'row',
+  gap: singleColumn ? 0.75 : 1.5,
+  flexDirection: singleColumn ? 'column' : 'row',
 });
 
-const seasonRankSx = (isSmallScreen) => ({
-  width: isSmallScreen ? 'auto' : 36,
-  minWidth: isSmallScreen ? 0 : 36,
-  pt: isSmallScreen ? 0 : 2,
+const seasonRankSx = (singleColumn) => ({
+  width: singleColumn ? 'auto' : 36,
+  minWidth: singleColumn ? 0 : 36,
+  pt: singleColumn ? 2 : 2,
   color: 'text.secondary',
   fontWeight: 500,
   fontSize: '14pt',
@@ -98,7 +109,7 @@ class SeasonsPage_ extends React.Component<any, any> {
       isLoggedIn,
       isAdmin,
       myId,
-      isSmallScreen,
+      singleColumn,
     } = this.props;
 
     const seasonList = Object.keys(seasons)
@@ -151,7 +162,7 @@ class SeasonsPage_ extends React.Component<any, any> {
               </Select>
             </FormControl>
           </Box>
-          <Stack spacing={2}>
+          <Box sx={previousSeasonsListSx(singleColumn)}>
             {seasonList.map((season, i) => {
           const seasonBook = resolvedSeasonBook(season, this.props.books);
 
@@ -183,8 +194,8 @@ class SeasonsPage_ extends React.Component<any, any> {
             : i + 1;
 
           return (
-              <Box sx={seasonRowSx(isSmallScreen)} key={i}>
-                <Box sx={seasonRankSx(isSmallScreen)}>#{rankNumber}</Box>
+              <Box sx={seasonRowSx(singleColumn)} key={i}>
+                <Box sx={seasonRankSx(singleColumn)}>#{rankNumber}</Box>
                 <Box sx={seasonCardSx}>
                   <SeasonInfo
                     books={books}
@@ -203,13 +214,13 @@ class SeasonsPage_ extends React.Component<any, any> {
                     myId={myId}
                     hideBookPitch={true}
                     hideBookBadges={true}
-                    isSmallScreen={isSmallScreen}
+                    isSmallScreen={singleColumn}
                   />
                 </Box>
               </Box>
             );
             })}
-          </Stack>
+          </Box>
         </Box>
       </Container>
     );
@@ -283,7 +294,6 @@ const SeasonsPageConnected = connect(
 )(SeasonsPage_);
 
 export const SeasonsPage = () => {
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
-  return <SeasonsPageConnected isSmallScreen={isSmallScreen} />;
+  const singleColumn = useMediaQuery(`(max-width:${PREVIOUS_SEASONS_MULTI_COLUMN_MIN - 0.05}px)`);
+  return <SeasonsPageConnected singleColumn={singleColumn} />;
 };

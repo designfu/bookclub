@@ -1,7 +1,6 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import { connect } from 'react-redux';
-import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -32,7 +31,7 @@ class BooksPage_ extends React.Component<any, any> {
   };
 
   render() {
-    const { books, myId, isLoggedIn, previousSeason, isSmallScreen } = this.props;
+    const { books, myId, isLoggedIn, previousSeason, singleColumn } = this.props;
     const query = (this.state.query || '').trim().toLowerCase();
     const myBooks = {};
     const notMyBooks = {};
@@ -60,23 +59,21 @@ class BooksPage_ extends React.Component<any, any> {
     }
 
     return (
-      <Grid
-        container
-        spacing={5}
+      <Box
         sx={{
-          flexDirection: isSmallScreen ? 'column' : 'row',
-          justifyContent: isSmallScreen ? 'flex-start' : 'center',
+          display: 'flex',
+          flexDirection: singleColumn ? 'column' : 'row',
+          alignItems: 'flex-start',
+          gap: 5,
           px: { xs: 2, md: 5 },
           py: 1.25,
         }}
       >
-        <Grid
-          size={{ xs: 12, md: 6 }}
+        <Box
           sx={{
             minWidth: 0,
             width: '100%',
-            maxWidth: isSmallScreen ? '100%' : 800,
-            mx: isSmallScreen ? 0 : 'auto',
+            flex: singleColumn ? '1 1 auto' : '999 1 720px',
           }}
         >
           <Box
@@ -100,19 +97,19 @@ class BooksPage_ extends React.Component<any, any> {
           </Box>
           <EditableBookListContainer
             books={notMyBooks}
+            singleColumn={singleColumn}
             separateStatuses={true}
             newSince={newSince}
             yourBookPlaceholders={filteredMyBookList}
             showAdminActions={true}
           />
-        </Grid>
-        <Grid
-          size={{ xs: 12, md: 6 }}
+        </Box>
+        <Box
           sx={{
             minWidth: 0,
             width: '100%',
-            maxWidth: isSmallScreen ? '100%' : 800,
-            mx: isSmallScreen ? 0 : 'auto',
+            flex: singleColumn ? '1 1 auto' : '0 0 540px',
+            maxWidth: singleColumn ? '100%' : 540,
           }}
         >
           <Box
@@ -126,9 +123,14 @@ class BooksPage_ extends React.Component<any, any> {
             <Typography variant='h4'>Your Books</Typography>
             {isLoggedIn ? <AddBookModalContainer /> : null }
           </Box>
-          <EditableBookListContainer books={myBooks} collapseFinished={true} showAdminActions={false} />
-        </Grid>
-      </Grid>
+          <EditableBookListContainer
+            books={myBooks}
+            singleColumn={true}
+            collapseFinished={true}
+            showAdminActions={false}
+          />
+        </Box>
+      </Box>
     );
   }
 
@@ -145,12 +147,12 @@ class BooksPage_ extends React.Component<any, any> {
 
 const BooksPageResponsive = (props) => {
   const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const singleColumn = useMediaQuery(theme.breakpoints.down('lg'));
 
   return (
     <BooksPage_
       {...props}
-      isSmallScreen={isSmallScreen}
+      singleColumn={singleColumn}
     />
   );
 };

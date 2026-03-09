@@ -31,6 +31,7 @@ class EditableBookListContainer_ extends React.Component<any, any> {
           isAdmin={isAdmin}
           myId={myId}
           books={this.props.books}
+          singleColumn={this.props.singleColumn}
           separateStatuses={this.props.separateStatuses}
           collapseFinished={this.props.collapseFinished}
           newSince={this.props.newSince}

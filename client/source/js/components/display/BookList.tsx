@@ -18,6 +18,13 @@ const bookListItemsSx = {
   listStyle: 'none',
 };
 
+const multiColumnGridSx = {
+  ...bookListItemsSx,
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 500px), 1fr))',
+  gap: 2,
+};
+
 const bookListGroupSx = {
   mt: 1.25,
   '& > summary': {
@@ -105,6 +112,17 @@ function sortBooksByDateForStatus(a, b, status?: string) {
 }
 
 export class BookList extends React.Component<any, any> {
+  itemSx() {
+    if (this.props.singleColumn) {
+      return undefined;
+    }
+
+    return {
+      width: '100%',
+      minWidth: 0,
+    };
+  }
+
   isNewBook(book): boolean {
     const cutoff = this.props.newSince || 0;
     if (!cutoff) {
@@ -115,7 +133,7 @@ export class BookList extends React.Component<any, any> {
 
   renderBooks(books) {
     return books.map(({ book, id, isPlaceholder }) => (
-      <Item key={id}>
+      <Item key={id} sx={this.itemSx()}>
         <BookCard
           isAdmin={this.props.isAdmin}
           myId={this.props.myId}
@@ -130,6 +148,22 @@ export class BookList extends React.Component<any, any> {
         />
       </Item>
     ));
+  }
+
+  renderList(books, extraProps = {}) {
+    if (!this.props.singleColumn) {
+      return (
+        <Box sx={multiColumnGridSx} {...extraProps}>
+          {this.renderBooks(books)}
+        </Box>
+      );
+    }
+
+    return (
+      <Stack spacing={2} sx={bookListItemsSx} {...extraProps}>
+        {this.renderBooks(books)}
+      </Stack>
+    );
   }
 
   render() {
@@ -172,15 +206,11 @@ export class BookList extends React.Component<any, any> {
 
       return (
         <Box>
-          <Stack spacing={2} sx={bookListItemsSx}>
-            {this.renderBooks(suggestedBooksWithPlaceholders)}
-          </Stack>
+          {this.renderList(suggestedBooksWithPlaceholders)}
           {nonSuggestedStatuses.map((status) => (
             <Box component='details' key={status} sx={bookListGroupSx}>
               <summary>{formatStatusLabel(status)} ({byStatus[status].length})</summary>
-              <Stack spacing={2} sx={bookListItemsSx} className='book-list-group-items'>
-                {this.renderBooks(byStatus[status])}
-              </Stack>
+              {this.renderList(byStatus[status], { className: 'book-list-group-items' })}
             </Box>
           ))}
         </Box>
@@ -201,41 +231,29 @@ export class BookList extends React.Component<any, any> {
 
       return (
         <Box>
-          <Stack spacing={2} sx={bookListItemsSx}>
-            {this.renderBooks(alwaysVisibleBooks)}
-          </Stack>
+          {this.renderList(alwaysVisibleBooks)}
           {backlogBooks.length > 0 ? (
             <Box component='details' open sx={bookListGroupSx}>
               <summary>Backlog ({backlogBooks.length})</summary>
-              <Stack spacing={2} sx={bookListItemsSx} className='book-list-group-items'>
-                {this.renderBooks(backlogBooks)}
-              </Stack>
+              {this.renderList(backlogBooks, { className: 'book-list-group-items' })}
             </Box>
           ) : null}
           {suggestedBooks.length > 0 ? (
             <Box component='details' sx={bookListGroupSx}>
               <summary>Suggested ({suggestedBooks.length})</summary>
-              <Stack spacing={2} sx={bookListItemsSx} className='book-list-group-items'>
-                {this.renderBooks(suggestedBooks)}
-              </Stack>
+              {this.renderList(suggestedBooks, { className: 'book-list-group-items' })}
             </Box>
           ) : null}
           {finishedBooks.length > 0 ? (
             <Box component='details' sx={bookListGroupSx}>
               <summary>Finished ({finishedBooks.length})</summary>
-              <Stack spacing={2} sx={bookListItemsSx} className='book-list-group-items'>
-                {this.renderBooks(sortedFinishedBooks)}
-              </Stack>
+              {this.renderList(sortedFinishedBooks, { className: 'book-list-group-items' })}
             </Box>
           ) : null}
         </Box>
       );
     }
 
-    return (
-      <Stack spacing={2} sx={bookListItemsSx}>
-        {this.renderBooks(books)}
-      </Stack>
-    );
+    return this.renderList(books);
   }
 }
