@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
 import { VotingSessionAcceptanceContainer } from 'components/hybrid/VotingSessionAcceptanceComponent';
 import { VotingSessionWeightedContainer } from 'components/hybrid/VotingSessionWeightedComponent';
 import {
@@ -20,9 +19,7 @@ class VotingSessionContainer_ extends React.Component<any, any> {
     }[system] || VotingSessionWeightedContainer;
 
     return (
-      <React.Fragment>
-        <VotingSession />
-      </React.Fragment>
+      <VotingSession />
     );
   }
 }
@@ -33,12 +30,7 @@ const mapStateToProps = (state: any) => {
   }
 };
 
-const mapDispatchToProps = (dispatch: any) => {
-  return {
-  }
-};
-
-export const VotingSessionContainer = withRouter(connect(
+export const VotingSessionContainer = connect(
   mapStateToProps,
-  mapDispatchToProps,
-)(VotingSessionContainer_));
+  null,
+)(VotingSessionContainer_);

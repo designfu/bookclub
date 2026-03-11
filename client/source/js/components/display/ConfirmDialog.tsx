@@ -1,11 +1,12 @@
 import * as React from 'react';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import { PropTypes } from '@material-ui/core';
+import Button from '@mui/material/Button';
+import { ButtonProps } from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { SemanticButtonColor, toMuiButtonColor } from 'components/display/button-colors';
 
 export interface ConfirmDialogProps {
   onOpen?: Function;
@@ -14,9 +15,9 @@ export interface ConfirmDialogProps {
   title: string;
   content: any;
   confirmText?: string;
-  confirmColor?: string | PropTypes.Color;
+  confirmColor?: SemanticButtonColor;
   cancelText?: string;
-  cancelColor?: string | PropTypes.Color;
+  cancelColor?: SemanticButtonColor;
   onRef?: Function;
   closeOnConfirm?: boolean;
   closeOnCancel?: boolean;
@@ -84,8 +85,8 @@ export class ConfirmDialog extends React.Component<ConfirmDialogProps, any> {
       ...this.props
     };
 
-    const confirmColor: PropTypes.Color = (this.props.confirmColor || 'primary') as PropTypes.Color;
-    const cancelColor: PropTypes.Color = (this.props.cancelColor || 'primary') as PropTypes.Color;
+    const confirmColor: ButtonProps['color'] = toMuiButtonColor(this.props.confirmColor);
+    const cancelColor: ButtonProps['color'] = toMuiButtonColor(this.props.cancelColor);
 
     return (
       <div>
@@ -124,10 +125,14 @@ export class ConfirmDialog extends React.Component<ConfirmDialogProps, any> {
     }
   }
 
-  componentWillReceiveProps(props) {
-    if(props.hasOwnProperty('open')) {
+  componentDidUpdate(prevProps) {
+    if (
+      this.props.hasOwnProperty('open')
+      && prevProps.open !== this.props.open
+      && this.state.open !== this.props.open
+    ) {
       this.setState({
-        open: props.open,
+        open: this.props.open,
       });
     }
   }

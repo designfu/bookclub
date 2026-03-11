@@ -1,15 +1,15 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
-import Button from '@material-ui/core/Button';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import Typography from '@material-ui/core/Typography';
-import InputLabel from '@material-ui/core/InputLabel';
+import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
+import InputLabel from '@mui/material/InputLabel';
 import { ReduxActions } from 'actions/ReduxActions';
 import { SeasonActions, SeasonActionTypes } from 'actions/SeasonActions';
 import { BasicModalWrapper } from 'components/containers/BasicModalWrapper';
+import { dropdownFormControlSx } from 'components/form-control-sx';
 
 export class CreateNewGoalModalContainer_ extends React.Component<any, any> {
   modal;
@@ -31,23 +31,24 @@ export class CreateNewGoalModalContainer_ extends React.Component<any, any> {
         onClose={this.onClose.bind(this)}
         renderTrigger={(modal) => this.props.isAdmin ? <Button onClick={modal.openModal}>Create New Goal</Button> : null}
         renderBody={(modal) => {
+          const newGoalChapterLabelId = 'new-goal-chapter-label';
           return (
             <div>
-              <Typography variant='title' id='modal-title'>
+              <Typography variant='h6' id='modal-title'>
                 Create a new goal
               </Typography>
               <Typography variant='body2'>
                 Pick which chapter to target
               </Typography>
-              <FormControl className='o-field o-field--dropdown'>
-                <InputLabel htmlFor='new-goal-chapter'>Chapter</InputLabel>
+              <FormControl sx={dropdownFormControlSx}>
+                <InputLabel id={newGoalChapterLabelId}>Chapter</InputLabel>
                 <Select
+                  id='new-goal-chapter'
+                  labelId={newGoalChapterLabelId}
+                  label='Chapter'
+                  name='chapter'
                   value={this.state.chapter}
                   onChange={this.handleChange.bind(this)}
-                  inputProps={{
-                    name: 'chapter',
-                    id: 'new-goal-chapter',
-                  }}
                 >
                   <MenuItem value=''>
                     <em>None</em>
@@ -102,7 +103,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const CreateNewGoalModalContainer = withRouter(connect(
+export const CreateNewGoalModalContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(CreateNewGoalModalContainer_));
+)(CreateNewGoalModalContainer_);

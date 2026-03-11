@@ -1,0 +1,49 @@
+import * as React from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { toStandardString } from 'utils/dates';
+
+export const RatingDescriptions = [
+  `5 - I would recommend this book to everyone - regardless of their interested in the genre. Everyone should read this book.`,
+  `4 - I would recommend this book to someone interested in the genre.`,
+  `3 - Good book to read if you have the time.`,
+  `2 - Don't recommend. It was ok.`,
+  `1 - I didn't like it, and no one should read this book.`,
+];
+
+export function getUserRating(book, myId?): number {
+  if(!myId) return -1;
+  const rating = book ? book.ratings.find(rating => rating.user === myId) : null;
+  return rating ? rating.value : -1;
+}
+
+export function renderSeasonInfoDate(label, timestamp) {
+  return (
+    <Box component='p' sx={{ my: 0, lineHeight: 1.25 }}>
+      <Typography component='span' variant='subtitle2' sx={{ mr: 0.625, lineHeight: 1.25 }}>
+        {label}:
+      </Typography>
+      <Typography component='span' variant='body2' sx={{ lineHeight: 1.25 }}>
+        {toStandardString(timestamp)}
+      </Typography>
+    </Box>
+  );
+}
+
+export function ensureSeasonInfoProps(props: any) {
+  return {
+    season: {
+      dates: {
+        created: null,
+        ...props.season.dates,
+      },
+      ...props.season,
+    },
+    votingSession: {
+      ...props.votingSession,
+      status: null,
+    },
+    startVotingOpen: props.hasOwnProperty('startVotingOpen') ? props.startVotingOpen : true,
+    ...props,
+  };
+}

@@ -1,7 +1,7 @@
 import * as React from 'react';
+import Box from '@mui/material/Box';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
-import Modal from '@material-ui/core/Modal';
+import Modal from '@mui/material/Modal';
 
 export class BasicModalWrapper_ extends React.Component<any, any> {
   constructor(props) {
@@ -26,9 +26,20 @@ export class BasicModalWrapper_ extends React.Component<any, any> {
           open={this.state.isModalOpen}
           onClose={this.closeModal}
         >
-          <div className='o-dialog'>
+          <Box
+            sx={{
+              position: 'absolute',
+              minWidth: 120,
+              backgroundColor: 'common.white',
+              boxShadow: 3,
+              p: 1,
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
             {this.props.renderBody(this)}
-          </div>
+          </Box>
         </Modal>
       </div>
     );
@@ -75,7 +86,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const BasicModalWrapper = withRouter(connect(
+export const BasicModalWrapper = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(BasicModalWrapper_));
+)(BasicModalWrapper_);

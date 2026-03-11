@@ -1,13 +1,16 @@
 import './debug';
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { AppComponent } from 'components/hybrid/AppComponent';
 import { store } from 'reducers/store';
 
-ReactDOM.render(
-  (<Provider store={store}>
-    <AppComponent />
-  </Provider>),
-  document.getElementById('mount')
-);
+const mountNode = document.getElementById('mount');
+
+if (mountNode) {
+  createRoot(mountNode).render(
+    <Provider store={store}>
+      <AppComponent />
+    </Provider>
+  );
+}

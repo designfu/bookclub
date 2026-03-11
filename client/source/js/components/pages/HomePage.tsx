@@ -1,9 +1,5 @@
 import * as React from 'react';
-import { Router, Route, Switch, browserHistory } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
-import { withRouter } from 'react-router';
 import { AppstateActions } from 'actions/AppstateActions';
 
 class HomePage_ extends React.Component<any, any> {
@@ -27,7 +23,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const HomePage = withRouter(connect(
+export const HomePage = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(HomePage_));
+)(HomePage_);

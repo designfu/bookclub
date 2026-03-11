@@ -1,9 +1,6 @@
 import * as React from 'react';
-import { Router, Route, Switch, browserHistory } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
-import { withRouter } from 'react-router';
+import { Outlet } from 'react-router-dom';
 import { HeaderContainer } from 'components/containers/HeaderContainer';
 
 class AppContainer_ extends React.Component<any, any> {
@@ -12,7 +9,7 @@ class AppContainer_ extends React.Component<any, any> {
       <div>
         <HeaderContainer />
         <main>
-          <div>{this.props.main}</div>
+          <div><Outlet /></div>
         </main>
       </div>
     );
@@ -29,7 +26,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const AppContainer = withRouter(connect(
+export const AppContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(AppContainer_));
+)(AppContainer_);

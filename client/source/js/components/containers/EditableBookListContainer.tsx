@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { Router, Route, Switch, browserHistory } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux';
+import Box from '@mui/material/Box';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
-import { withRouter } from 'react-router';
+import Snackbar from '@mui/material/Snackbar';
+import SnackbarContent from '@mui/material/SnackbarContent';
 import { BookList } from 'components/display/BookList';
 import { EditBookDialog } from 'components/display/EditBookDialog';
 import { BookActions, BookActionTypes } from 'actions/BookActions';
@@ -16,6 +15,7 @@ class EditableBookListContainer_ extends React.Component<any, any> {
     this.state = {
       isModalOpen: this.props.isOpen || false,
       book: null,
+      deleteError: '',
     };
 
     this.openModal = this.props.openModal || this.openModal.bind(this);
@@ -26,11 +26,17 @@ class EditableBookListContainer_ extends React.Component<any, any> {
     const { isAdmin, myId } = this.props;
 
     return (
-      <div>
+      <Box sx={{ pt: 1 }}>
         <BookList
           isAdmin={isAdmin}
           myId={myId}
           books={this.props.books}
+          singleColumn={this.props.singleColumn}
+          separateStatuses={this.props.separateStatuses}
+          collapseFinished={this.props.collapseFinished}
+          newSince={this.props.newSince}
+          yourBookPlaceholders={this.props.yourBookPlaceholders}
+          showAdminActions={this.props.showAdminActions}
           onItemEdit={this.onEditClick.bind(this)}
           onItemDelete={this.onDeleteClick.bind(this)}
           onItemPropose={this.onProposeClick.bind(this)}
@@ -43,7 +49,19 @@ class EditableBookListContainer_ extends React.Component<any, any> {
           open={this.state.isModalOpen}
           book={this.state.book}
         />
-      </div>
+
+        <Snackbar
+          open={!!this.state.deleteError}
+          autoHideDuration={5000}
+          onClose={this.handleDeleteErrorClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <SnackbarContent
+            message={this.state.deleteError}
+            style={{ backgroundColor: '#d32f2f' }}
+          />
+        </Snackbar>
+      </Box>
     );
   }
 
@@ -56,8 +74,19 @@ class EditableBookListContainer_ extends React.Component<any, any> {
   }
 
   onDeleteClick(book) {
-    this.props.deleteBook(book);
+    this.setState({ deleteError: '' });
+    this.props.deleteBook(book)
+      .catch((err) => {
+        const message = err && err.message
+          ? err.message
+          : 'Could not delete this book. Only backlog or suggested books can be deleted.';
+        this.setState({ deleteError: message });
+      });
   }
+
+  handleDeleteErrorClose = () => {
+    this.setState({ deleteError: '' });
+  };
 
   onProposeClick(book) {
     this.props.proposeBook(book);
@@ -107,7 +136,7 @@ const mapDispatchToProps = (dispatch: any) => {
       dispatch(BookActions.updateBook(bookPostData));
     },
     deleteBook(book) {
-      dispatch(BookActions.deleteBook(book));
+      return dispatch(BookActions.deleteBook(book));
     },
     proposeBook(book) {
       const bookPostData = {
@@ -128,7 +157,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const EditableBookListContainer = withRouter(connect(
+export const EditableBookListContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(EditableBookListContainer_));
+)(EditableBookListContainer_);
