@@ -65,7 +65,7 @@ function areVotesValidForAcceptance(votes, user) {
  *  points: number,
  * }[]}
  */
-function calculateResultsForWeighted(votes: { user: string, book: string, points: number }[] = []): { book: string, points: number }[] {
+function calculateResultsForWeighted(votes: any[] = []): { book: string, points: number }[] {
   const votesByBook = votes.reduce((votes, vote) => {
     return {
       ...votes,
@@ -79,7 +79,7 @@ function calculateResultsForWeighted(votes: { user: string, book: string, points
     .sort((a, b) => b.points - a.points);
 }
 
-function calculateResultsForAcceptance(votes: { user: string, book: string, rank: number }[] = []): { book: string, rankings: number[] }[] {
+function calculateResultsForAcceptance(votes: any[] = []): { book: string, rankings: number[] }[] {
   const votesByBook = votes.reduce((votes, vote) => {
     const existing = votes[vote.book] || [];
     return {
@@ -215,7 +215,7 @@ class CompletedRanker extends Ranker {
   }
 }
 
-function calculateResultsForAcceptanceWithInstantRunoff(mongooseVotes: { user: object, book: object, rank: number }[] = []): { book: string, rankings: number[], method: AdvancedAcceptanceMethod, tiedCount: number }[] {
+function calculateResultsForAcceptanceWithInstantRunoff(mongooseVotes: { user: object, book: object, rank?: number }[] = []): { book: string, rankings: number[], method: AdvancedAcceptanceMethod, tiedCount: number }[] {
   const votes = mongooseVotes.map((vote) => {
     return {
       book: vote.book.toString(),
@@ -499,7 +499,7 @@ VotingSessionSchema.methods.replaceVotesFromUser = async function (userId, votes
   return await instance.save();
 };
 
-const VotingSessionModel = mongoose.model('VotingSession', VotingSessionSchema);
+const VotingSessionModel: any = mongoose.model('VotingSession', VotingSessionSchema);
 
 export {
   VotingSessionModel,

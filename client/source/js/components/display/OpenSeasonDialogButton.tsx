@@ -1,11 +1,12 @@
 import * as React from 'react';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import DialogContentText from '@material-ui/core/DialogContentText';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import DialogContentText from '@mui/material/DialogContentText';
 import { Book } from 'types';
 import { ConfirmDialogButton } from 'components/display/ConfirmDialogButton';
+import { dropdownFormControlSx } from 'components/form-control-sx';
 
 export interface OpenSeasonDialogButtonProps {
   onRef?: Function;
@@ -22,6 +23,7 @@ export class OpenSeasonDialogButton extends React.Component<OpenSeasonDialogButt
 
   render() {
     const books: any[] = Object.values(this.props.books);
+    const openSeasonBookLabelId = 'open-season-book-label';
 
     return (
       <ConfirmDialogButton
@@ -29,15 +31,15 @@ export class OpenSeasonDialogButton extends React.Component<OpenSeasonDialogButt
         content={
           <div>
             <DialogContentText>Pick which book to open the season with</DialogContentText>
-            <FormControl className='o-field o-field--dropdown'>
-              <InputLabel htmlFor='new-season-book'>Book</InputLabel>
+            <FormControl sx={dropdownFormControlSx}>
+              <InputLabel id={openSeasonBookLabelId}>Book</InputLabel>
               <Select
+                id='new-season-book'
+                labelId={openSeasonBookLabelId}
+                label='Book'
+                name='book'
                 value={this.state.book}
                 onChange={this.handleChange.bind(this)}
-                inputProps={{
-                  name: 'book',
-                  id: 'new-season-book',
-                }}
               >
                 <MenuItem value=''>
                   <em>None</em>

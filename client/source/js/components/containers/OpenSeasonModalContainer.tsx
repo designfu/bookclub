@@ -1,15 +1,15 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
-import Button from '@material-ui/core/Button';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import Typography from '@material-ui/core/Typography';
-import InputLabel from '@material-ui/core/InputLabel';
+import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
+import InputLabel from '@mui/material/InputLabel';
 import { ReduxActions } from 'actions/ReduxActions';
 import { SeasonActions, SeasonActionTypes } from 'actions/SeasonActions';
 import { BasicModalWrapper } from 'components/containers/BasicModalWrapper';
+import { dropdownFormControlSx } from 'components/form-control-sx';
 
 export class OpenSeasonModalContainer_ extends React.Component<any, any> {
   modal;
@@ -31,23 +31,24 @@ export class OpenSeasonModalContainer_ extends React.Component<any, any> {
         onClose={this.onClose.bind(this)}
         renderTrigger={(modal) => this.props.isAdmin ? <Button onClick={modal.openModal}>Open New Season</Button> : null}
         renderBody={(modal) => {
+          const newSeasonBookLabelId = 'new-season-book-label';
           return (
             <div>
-              <Typography variant='title' id='modal-title'>
+              <Typography variant='h6' id='modal-title'>
                 Open new season?
               </Typography>
               <Typography variant='body2'>
                 Pick which book to open the season with
               </Typography>
-              <FormControl className='o-field o-field--dropdown'>
-                <InputLabel htmlFor='new-season-book'>Book</InputLabel>
+              <FormControl sx={dropdownFormControlSx}>
+                <InputLabel id={newSeasonBookLabelId}>Book</InputLabel>
                 <Select
+                  id='new-season-book'
+                  labelId={newSeasonBookLabelId}
+                  label='Book'
+                  name='book'
                   value={this.state.book}
                   onChange={this.handleChange.bind(this)}
-                  inputProps={{
-                    name: 'book',
-                    id: 'new-season-book',
-                  }}
                 >
                   <MenuItem value=''>
                     <em>None</em>
@@ -99,7 +100,7 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const OpenSeasonModalContainer = withRouter(connect(
+export const OpenSeasonModalContainer = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(OpenSeasonModalContainer_));
+)(OpenSeasonModalContainer_);

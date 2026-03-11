@@ -22,15 +22,15 @@ export function connectMongoose() {
   console.log('Attempting to connect to mongo', uri, connectArgs);
 
   mongoose.connect(uri, connectArgs)
-    .then(msg => {
-      console.log('Mongoose connected', msg);
+    .then(() => {
+      console.log('Mongoose connected');
     })
     .catch(err => {
       console.log('Mongoose failed to connect', err);
     });
 
   if (Config.ENV === Environment.LOCAL || Config.ENV === Environment.STAGING) {
-    mongoose.set('debug', true);
+    mongoose.set('debug', false);
   }
 }
 

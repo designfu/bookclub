@@ -60,7 +60,7 @@ UserSchema.statics.findOrCreate = async function(profile) {
   }
 };
 
-const UserModel = mongoose.model('User', UserSchema);
+const UserModel: any = mongoose.model('User', UserSchema);
 
 export {
   UserModel,

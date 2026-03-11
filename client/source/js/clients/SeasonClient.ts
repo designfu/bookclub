@@ -3,13 +3,13 @@ import { BaseResourceClient } from 'clients/_BaseResourceClient';
 import { create, fetch_ } from 'utils/service';
 
 class SeasonClient extends BaseResourceClient {
-  open() {
+  open(system = 'ADVANCED_ACCEPTANCE') {
     return fetch_(`${Config.API_HOST}/api/actions/start-new-season`, {
       method: 'POST',
       shouldAcceptStatus: _ => _ === 201,
       data: {
         votingSession: {
-          system: 'ADVANCED_ACCEPTANCE',
+          system,
         },
       },
     });
@@ -26,6 +26,13 @@ class SeasonClient extends BaseResourceClient {
     return create(null, goal, {
       url: `${this.basePath}/${seasonId}/goals`,
       errorMessage: `Error creating goal ${seasonId}`,
+      shouldAcceptStatus: _ => _ === 200,
+    });
+  }
+
+  deleteSeason(seasonId) {
+    return fetch_(`${this.basePath}/${seasonId}`, {
+      method: 'DELETE',
       shouldAcceptStatus: _ => _ === 200,
     });
   }

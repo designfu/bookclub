@@ -8,7 +8,7 @@ routes.get('/me', (req, res) => {
   if(req.user) {
     res.json(req.user);
   } else {
-    res.send(404);
+    res.sendStatus(404);
   }
 });
 

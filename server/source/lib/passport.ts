@@ -11,10 +11,13 @@ export default function initPassport(server) {
   passport.serializeUser(function(user: any, done) {
     done(null, user._id);
   });
-  passport.deserializeUser(function(userId, done) {
-    UserModel.findOne({ _id: userId }, function (err, user) {
-      done(err, user);
-    });
+  passport.deserializeUser(async function(userId, done) {
+    try {
+      const user = await (UserModel as any).findOne({ _id: userId }).exec();
+      done(null, user);
+    } catch(err) {
+      done(err, null);
+    }
   });
   passport.use(new GoogleStrategy({
       clientID: Config.GOOGLE_AUTH_CLIENT_ID,
@@ -24,7 +27,7 @@ export default function initPassport(server) {
     },
     async function(accessToken, refreshToken, profile, done) {
       try {
-        const user = await UserModel.findOrCreate(profile);
+        const user = await (UserModel as any).findOrCreate(profile);
         done(null, user);
       } catch(err) {
         console.log('Error creating new user: ', err);

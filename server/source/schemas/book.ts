@@ -101,7 +101,7 @@ BookSchema.methods.replaceRatingFromUser = async function({ user, value } : { us
   return await instance.save();
 };
 
-const BookModel = mongoose.model('Book', BookSchema);
+const BookModel: any = mongoose.model('Book', BookSchema);
 
 export {
   BookModel,

@@ -22,10 +22,9 @@ export const UserReducer = (state: UserState = defaultState, action: ReduxAction
     case UserActionTypes.GOT_ALL:
       return {
         ...state,
-        users: {
-          ...state.users,
+        users: action.users ? {
           ...action.users,
-        }
+        } : state.users,
       };
     case UserActionTypes.GOT_SELF:
       return action.user ? {
