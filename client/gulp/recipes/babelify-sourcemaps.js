@@ -5,7 +5,7 @@ const source = require('vinyl-source-stream');
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify');
 const buffer = require('vinyl-buffer');
-const gutil = require('gulp-util');
+const log = require('fancy-log');
 
 module.exports = function(config) {
   return () => {
@@ -38,7 +38,7 @@ module.exports = function(config) {
       .pipe(source(config.name))
       .pipe(buffer())
       .pipe(sourcemaps.init({ loadMaps: true }))
-      .on('error', gutil.log)
+      .on('error', log)
       .pipe(sourcemaps.write('./'))
       .pipe(gulp.dest(config.output));
   };

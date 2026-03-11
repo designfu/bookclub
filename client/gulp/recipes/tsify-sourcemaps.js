@@ -6,7 +6,8 @@ const source = require('vinyl-source-stream');
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify');
 const buffer = require('vinyl-buffer');
-const gutil = require('gulp-util');
+const log = require('fancy-log');
+const colors = require('ansi-colors');
 const plumber = require('gulp-plumber');
 
 module.exports = function(config) {
@@ -48,7 +49,7 @@ module.exports = function(config) {
             return;
           }
         }
-        gutil.log(gutil.colors.red('Error: '), gutil.colors.red(err.message))
+        log(colors.red('Error: '), colors.red(err.message));
       })
       .pipe(source(config.name))
       .pipe(buffer())

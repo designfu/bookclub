@@ -1,5 +1,4 @@
 const gulp = require('gulp');
-const plumber = require('gulp-plumber');
 const browserify = require('browserify');
 const source = require('vinyl-source-stream');
 
@@ -21,7 +20,6 @@ module.exports = function(config) {
 
     return b
       .bundle()
-      .pipe(plumber())
       .pipe(source(config.name))
       .pipe(gulp.dest(config.output));
   };

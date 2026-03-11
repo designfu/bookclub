@@ -10,8 +10,12 @@ client/gulp/@env/
 server/source/@shared
 server/source/@env
 shared/@env/*.js
+shared/@env/*.js.map
 shared/@env/*.ts
 shared/**/*.js
 shared/**/*.js.map
 deploy.sh
 forever.sh
+npm-debug.log
+server/scripts
+backups

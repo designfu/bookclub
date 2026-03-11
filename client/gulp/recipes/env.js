@@ -2,9 +2,10 @@ const gulp = require('gulp');
 const env = require('gulp-env');
 
 module.exports = (config) => {
-  return () => {
+  return (done) => {
     env({
       vars: config
-    })
+    });
+    done();
   }
 };

@@ -40,10 +40,6 @@ In `@env/local-server.ts`, the following ENV variables will need updating from t
 - `GOOGLE_AUTH_CLIENT_ID`
 - `GOOGLE_AUTH_CLIENT_SECRET`
 
-In `@env/shared-server.ts`, the following ENV variable will need updating from its default state:
-
-- `BOOKSCRAPS_API_KEY`
-
 Check out [Appendix A. Setting up a Google API Project with Oauth](#a-setting-up-a-google-api-project-with-oauth), or contact an admin, if you need help getting these keys.
 
 ### Running & Viewing
@@ -53,6 +49,21 @@ Open two terminal tabs. One in `./server` and one in `./client`. Run the followi
     $ npm start
 
 Default port for local is `3000`. Navigate to `http://localhost:3000` in your browser, and you should see the application running.
+
+### Local OAuth Bypass (Temporary Dev Mode)
+
+For local development only, you can bypass Google OAuth and auto-login as a seeded test admin user.
+
+In `./server`, start with:
+
+    $ AUTH_BYPASS=true npm start
+
+This mode is only active when:
+
+- `ENV=local`
+- `AUTH_BYPASS=true`
+
+Do not use this in staging or production.
 
 ## Contributing
 

@@ -1,13 +1,10 @@
 const ENV = process.env.ENV || 'production';
 
 const gulp = require('gulp');
-const path = require('path');
-const fs = require('fs');
-const sync = require('gulp-sync')(gulp).sync;
 const ga = require('./utils/ga');
 const Config = require('./config')(ENV);
-var recipe = (name, config) => require('./recipes/' + name)(config);
-var bundles = (srcPath, opts = {}) => fs.readdirSync(path.resolve(__dirname, srcPath)).filter(name => name.indexOf('.bundle') > -1).filter(name => opts.ignore ? opts.ignore.indexOf(name) == -1 : true).map(name => name.replace(/\.bundle.*$/g, ''));
+const recipe = (name, config) => require('./recipes/' + name)(config);
+const { series, parallel } = gulp;
 
 gulp.task('env', recipe('env', {
   NODE_PATH: 'source/js::../shared:node_modules'
@@ -17,47 +14,30 @@ gulp.task('clean', recipe('clean', {
   input: './dist'
 }));
 
-gulp.task('css', Config.CSS_BUNDLES.map(title => {
-  gulp.task(`css:${title}`, recipe('stylus', {
-    input: `./source/css/${title}.bundle.styl`,
-    output: './dist/css',
-    name: `${title}.css`
-  }));
-
-  return `css:${title}`;
+gulp.task('css', recipe('copy', {
+  input: './source/css/main.css',
+  output: './dist/css',
 }));
 
-gulp.task('js:node_modules', recipe('browserify', {
-  input: '',
-  require: Config.NODE_MODULES,
+gulp.task('js:node_modules', recipe('copy', {
+  input: [
+    './node_modules/lodash/lodash.js',
+    './node_modules/jquery/dist/jquery.js',
+    './node_modules/lockr/lockr.js',
+  ],
   output: './dist/vendor',
-  name: 'node_modules.js'
-}));
-
-gulp.task('js:client', Config.JS_BUNDLES.map((title, i) => {
-  gulp.task(`js:source:${title}`, recipe('tsify-sourcemaps', {
-    input: `./source/js/${title}.bundle.${Config.EXT.JS}`,
-    external: Config.NODE_MODULES,
-    output: './dist/js',
-    name: `${title}.js`,
-    baseUrl: './source/js',
-    ignoreErrors: [
-      /Error TS2686: '_' refers to a UMD global, but the current file is a module. Consider adding an import instead./
-    ]
-  }));
-
-  return `js:source:${title}`;
 }));
 
 gulp.task('inject', recipe('html', {
   cwd: './dist',
   input: './source/html/**/*.html',
   sources: [[
-    'vendor/**/*'
+    'vendor/jquery.js',
+    'vendor/lockr.js',
+    'vendor/lodash.js',
   ], [
-    'css/client.css',
-    'css/**/*',
-    'js/**/*',
+    'css/main.css',
+    'js/bundle.js',
   ]],
   output: './dist',
   replacements: [
@@ -79,12 +59,15 @@ gulp.task('watch', () => {
     './dist/**/*.js',
     './dist/**/*.css',
     './dist/vendor/**/*',
-  ], ['inject']);
-  gulp.watch('./source/css/**/*.styl', ['css']);
-  gulp.watch('./static/**/*', ['static']);
-  gulp.watch('./bower_components/**/*', ['bower']);
+  ], series('inject'));
+  gulp.watch('./source/css/**/*.css', series('css', 'inject'));
+  gulp.watch('./static/**/*', series('static'));
 });
 
-var compileAsync = ['js:node_modules', 'static', 'css'];
-gulp.task('compile', sync(['env', compileAsync, 'inject']));
-gulp.task('default', ['compile']);
+gulp.task('compile', series(
+  'env',
+  parallel('js:node_modules', 'static', 'css'),
+  'inject'
+));
+
+gulp.task('default', series('compile'));
