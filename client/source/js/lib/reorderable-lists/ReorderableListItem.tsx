@@ -1,106 +1,169 @@
-import * as React from 'react'
-import { findDOMNode } from 'react-dom'
-import { DragSource, DropTarget } from 'react-dnd'
-import ListItem from '@material-ui/core/ListItem'
+import * as React from 'react';
+import { useDrag, useDrop } from 'react-dnd';
+import ListItem from '@mui/material/ListItem';
+import { useTheme } from '@mui/material/styles';
 
 const style = {
   cursor: 'move',
+  userSelect: 'none' as const,
+  WebkitUserSelect: 'none' as const,
+  WebkitTouchCallout: 'none' as const,
 };
 
-const cardSource = {
-  beginDrag(props) {
-    return {
-      id: props.key,
-      index: props.index,
-    };
-  },
-};
+const LIST_ITEM_TYPE = 'listItem';
+const HOVER_INSET_RATIO = 0.12;
 
-const cardTarget = {
-  hover(props, monitor, component) {
-    const dragIndex = monitor.getItem().index;
-    const hoverIndex = props.index;
-
-    // Don't replace items with themselves
-    if (dragIndex === hoverIndex) {
-      return;
-    }
-
-    // Determine rectangle on screen
-    const hoverBoundingRect = (findDOMNode(component) as any).getBoundingClientRect();
-
-    // Get vertical middle
-    const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-
-    // Determine mouse position
-    const clientOffset = monitor.getClientOffset();
-
-    // Get pixels to the top
-    const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-
-    // Only perform the move when the mouse has crossed half of the items height
-    // When dragging downwards, only move when the cursor is below 50%
-    // When dragging upwards, only move when the cursor is above 50%
-
-    // Dragging downwards
-    if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
-      return;
-    }
-
-    // Dragging upwards
-    if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
-      return;
-    }
-
-    // Time to actually perform the action
-    props.moveListItem(dragIndex, hoverIndex);
-
-    // Note: we're mutating the monitor item here!
-    // Generally it's better to avoid mutations,
-    // but it's good here for the sake of performance
-    // to avoid expensive index searches.
-    monitor.getItem().index = hoverIndex;
-  },
-};
-
-const withDropTarget = DropTarget('listItem', cardTarget, connect => ({
-  connectDropTarget: connect.dropTarget(),
-}));
-
-const withDropSource = DragSource('listItem', cardSource, (connect, monitor) => ({
-  connectDragSource: connect.dragSource(),
-  isDragging: monitor.isDragging(),
-}));
-
-class ReorderableListItem extends React.Component<any, any> {
-  // static propTypes = {
-    // connectDragSource: PropTypes.func.isRequired,
-    // connectDropTarget: PropTypes.func.isRequired,
-    // handleOnClick: PropTypes.func.isRequired,
-    // index: PropTypes.number.isRequired,
-    // isDragging: PropTypes.bool.isRequired,
-    // id: PropTypes.oneOfType([PropTypes.string.isRequired, PropTypes.number.isRequired]),
-    // text: PropTypes.string.isRequired,
-    // moveListItem: PropTypes.func.isRequired,
-  // };
-
-  render() {
-    const {
-      isDragging,
-      connectDragSource,
-      connectDropTarget,
-      // props for onClick selection
-      handleOnClick,
-    } = this.props;
-    const opacity = isDragging ? 0 : 1;
-
-    return connectDragSource(
-      connectDropTarget(
-        <div style={{...style, opacity}}>
-          <ListItem onClick={handleOnClick}>{this.props.children}</ListItem>
-        </div>)
-    );
-  }
+interface DragItem {
+  id: string | number;
+  index: number;
 }
 
-export default withDropTarget(withDropSource(ReorderableListItem));
+export interface ReorderableListItemProps {
+  id: string | number;
+  index: number;
+  moveListItem: (dragIndex: number, hoverIndex: number) => void;
+  handleDragStart: (id: string | number) => void;
+  handleDragEnd: (didDropOnTarget: boolean) => void;
+  offsetY?: number;
+  animateReorder?: boolean;
+  transitionDurationMs?: number;
+  transitionEasing?: string;
+  hoverInsetRatio?: number;
+  reorderTrigger?: 'edge' | 'midpoint';
+  hideDraggedSource?: boolean;
+  contentStyle?: React.CSSProperties;
+  contentProps?: React.HTMLAttributes<HTMLDivElement>;
+  onMeasureRef?: (id: string | number, node: HTMLDivElement | null) => void;
+  handleItemClick: () => void;
+  children: React.ReactNode;
+}
+
+function clampHoverInsetRatio(value: number) {
+  if (Number.isNaN(value)) {
+    return HOVER_INSET_RATIO;
+  }
+  return Math.max(0, Math.min(0.49, value));
+}
+
+const ReorderableListItem = (props: ReorderableListItemProps) => {
+  const theme = useTheme();
+  const ref = React.useRef<HTMLDivElement | null>(null);
+  const {
+    id,
+    index,
+    moveListItem,
+    offsetY = 0,
+    animateReorder = false,
+    transitionDurationMs = theme.transitions.duration.shortest,
+    transitionEasing = theme.transitions.easing.easeOut,
+    hoverInsetRatio = HOVER_INSET_RATIO,
+    reorderTrigger = 'edge',
+    hideDraggedSource = true,
+    contentStyle,
+    contentProps,
+    onMeasureRef,
+    handleItemClick,
+    children,
+  } = props;
+
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: LIST_ITEM_TYPE,
+    item: () => {
+      props.handleDragStart(id);
+      return { id, index };
+    },
+    end: (_item, monitor) => {
+      props.handleDragEnd(monitor.didDrop());
+    },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }), [id, index, props]);
+
+  const [, drop] = useDrop<DragItem, void, unknown>(() => ({
+    accept: LIST_ITEM_TYPE,
+    drop: () => ({}),
+    hover(item, monitor) {
+      const dragIndex = item.index;
+      const hoverIndex = index;
+
+      // Don't replace items with themselves
+      if (dragIndex === hoverIndex) {
+        return;
+      }
+      if (item.id === id) {
+        return;
+      }
+
+      const node = ref.current;
+      if (!node) {
+        return;
+      }
+
+      const clientOffset = monitor.getClientOffset();
+      if (!clientOffset) {
+        return;
+      }
+      const hoverBoundingRect = node.getBoundingClientRect();
+      const hoverHeight = hoverBoundingRect.bottom - hoverBoundingRect.top;
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      const hoverRatio = hoverHeight > 0 ? hoverClientY / hoverHeight : 0.5;
+      const insetRatio = clampHoverInsetRatio(hoverInsetRatio);
+
+      if (reorderTrigger === 'midpoint') {
+        const hoverMiddleY = hoverHeight / 2;
+        if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+          return;
+        }
+        if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+          return;
+        }
+      } else {
+        // Use a slightly smaller target zone inside each card to reduce
+        // flip-flop when the pointer sits near card boundaries.
+        if (hoverRatio < insetRatio || hoverRatio > (1 - insetRatio)) {
+          return;
+        }
+      }
+
+      moveListItem(dragIndex, hoverIndex);
+      item.index = hoverIndex;
+    },
+  }), [id, index, moveListItem, hoverInsetRatio, reorderTrigger]);
+
+  drag(drop(ref));
+
+  const opacity = (isDragging && hideDraggedSource) ? 0 : 1;
+  const transition = animateReorder
+    ? theme.transitions.create('transform', {
+      duration: transitionDurationMs,
+      easing: transitionEasing,
+    })
+    : 'none';
+  const transform = `translateY(${offsetY}px)`;
+
+  return (
+    <div
+      ref={(node) => {
+        ref.current = node;
+        if (onMeasureRef) {
+          onMeasureRef(id, node);
+        }
+      }}
+      style={{ ...style, opacity }}
+    >
+      <div
+        style={{
+          transform,
+          transition,
+          ...contentStyle,
+        }}
+        {...contentProps}
+      >
+        <ListItem onClick={handleItemClick}>{children}</ListItem>
+      </div>
+    </div>
+  );
+};
+
+export default ReorderableListItem;

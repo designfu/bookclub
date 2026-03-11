@@ -1,7 +1,8 @@
 import * as express from 'express';
 const routes = express.Router();
+import mongoose from 'lib/mongoose';
 import { requireAuthentication, requireAdmin, setReqDate } from 'middleware/index';
-import bookscraps from 'services/bookscraps';
+import goodreads from 'services/goodreads';
 import { BookModel } from 'schemas/book';
 import { SeasonModel } from 'schemas/season';
 import { VotingSessionModel } from 'schemas/voting-session';
@@ -28,14 +29,12 @@ routes.post('/start-new-season',
       }
       const entry = await SeasonModel.create(req.body);
 
-      await VotingSessionModel.update({
+      await VotingSessionModel.updateMany({
         "dates.finished": {
           $exists: false,
         },
       }, {
         $set: { 'dates.finished': now }
-      }, {
-        multi: true,
       });
 
       entry.votingSession = await VotingSessionModel.create({
@@ -78,7 +77,7 @@ routes.post('/close-current-season',
 
       const season = await SeasonModel.findById({ _id: openSeason._id });
 
-      const updateBookTransaction = await BookModel.update({ _id: season.book }, {
+      const updateBookTransaction = await BookModel.updateOne({ _id: season.book }, {
         $set: { 'dates.finished': now },
       });
 
@@ -124,12 +123,21 @@ routes.post('/close-current-voting-session',
   async (req, res, next) => {
     const bookID = req.body.book;
 
-    const book = await BookModel.findOne({ _id: bookID });
+    if(!bookID || typeof bookID !== 'string' || !mongoose.Types.ObjectId.isValid(bookID)) {
+      return res.status(400).send(`Cannot close voting session with invalid book ID ${bookID}.`);
+    }
 
-    if(book) {
-      next();
-    } else {
-      res.status(403).send(`Cannot close voting session with invalid book ID ${bookID}.`);
+    try {
+      const book = await BookModel.findOne({ _id: bookID });
+
+      if(book) {
+        next();
+      } else {
+        res.status(403).send(`Cannot close voting session with invalid book ID ${bookID}.`);
+      }
+    } catch(err) {
+      console.log(err);
+      res.status(500).send(err);
     }
   },
   async (req, res) => {
@@ -153,8 +161,8 @@ routes.post('/close-current-voting-session',
         },
       });
 
-      const updateBookTransaction = await BookModel.update({ _id: bookId }, {
-        'dates.chosen': now,
+      const updateBookTransaction = await BookModel.updateOne({ _id: bookId }, {
+        $set: { 'dates.chosen': now },
       });
 
       const season = await SeasonModel
@@ -181,8 +189,12 @@ routes.post('/vote-for-session',
   async (req, res) => {
     try {
       const session = await VotingSessionModel.getCurrentSession();
+      const user = req.user as any;
+      if (!user || !user._id) {
+        return res.status(401).send('Not authenticated.');
+      }
 
-      const result = await session.replaceVotesFromUser(req.user._id.toString(), req.body);
+      const result = await session.replaceVotesFromUser(user._id.toString(), req.body);
 
       res.status(200).json(result);
     } catch(err) {
@@ -197,7 +209,7 @@ routes.get('/find-book-details',
   async (req, res) => {
     const url = req.query.url;
     try {
-      const details = await bookscraps.discover(url);
+      const details = await goodreads.discover(url);
       res.status(200).json(details);
     } catch(err) {
       let body = err;

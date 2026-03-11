@@ -37,6 +37,33 @@ routes.get('/latest',
       });
   }
 );
+routes.get('/latest-with-user-votes',
+  requireAuthentication,
+  (req, res) => {
+    const user = req.user as any;
+    const userId = user && user._id ? user._id.toString() : null;
+    if (!userId) {
+      return res.status(401).send('Not authenticated.');
+    }
+    VotingSessionModel.find({
+      'dates.finished': {
+        $exists: true,
+      },
+      'votes.user': userId,
+    }).sort({ 'dates.finished': 'descending' })
+      .then(sessions => {
+        if (sessions[0]) {
+          res.status(200).json(sessions[0]);
+        } else {
+          res.status(404).json({});
+        }
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).send(err);
+      });
+  }
+);
 routes.get('/:_id', mongoLayers.findOne(VotingSessionModel));
 routes.post('/',
   requireAuthentication,

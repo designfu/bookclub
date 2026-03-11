@@ -1,0 +1,71 @@
+import * as React from 'react';
+import type { SxProps, Theme } from '@mui/material/styles';
+import { MultiBackend } from 'react-dnd-multi-backend';
+import { HTML5toTouch } from 'rdndmb-html5-to-touch';
+import ReorderableList, { ReorderableListProps } from './ReorderableList';
+import ReorderableVotingListItem from './ReorderableVotingListItem';
+
+const TOUCH_DRAG_DELAY_MS = 140;
+
+const HTML5toTouchWithDelay = {
+  ...HTML5toTouch,
+  backends: HTML5toTouch.backends.map((backend: any) => (
+    backend.id === 'touch'
+      ? {
+        ...backend,
+        options: {
+          ...(backend.options && typeof backend.options === 'object' ? backend.options : {}),
+          delayTouchStart: TOUCH_DRAG_DELAY_MS,
+        },
+      }
+      : backend
+  )),
+};
+
+type ReorderableVotingListProps = Omit<ReorderableListProps, 'enableTransitions' | 'listSx'> & {
+  listSx?: ReorderableListProps['listSx'];
+};
+
+function ReorderableVotingList({
+  listSx,
+  ...props
+}: ReorderableVotingListProps) {
+  const mergedListSx = [{ maxWidth: 400 }, listSx].filter(Boolean) as SxProps<Theme>;
+  const handleReorderStarted = React.useCallback((items) => {
+    if (props.onReorderStarted) {
+      props.onReorderStarted(items);
+    }
+  }, [props]);
+
+  const handleReorderComplete = React.useCallback((items) => {
+    if (props.onReorderComplete) {
+      props.onReorderComplete(items);
+    }
+  }, [props]);
+
+  return (
+    <ReorderableList
+      {...props}
+      onReorderStarted={handleReorderStarted}
+      onReorderComplete={handleReorderComplete}
+      enableTransitions
+      transitionDurationMs={180}
+      transitionEasing='ease-out'
+      hoverInsetRatio={0.12}
+      reorderTrigger='edge'
+      hideDraggedSource
+      onUpdateMode='during-drag'
+      restoreOnFailedDrop
+      syncChildrenWhileDragging
+      listSx={mergedListSx}
+      dndBackend={MultiBackend}
+      dndBackendOptions={HTML5toTouchWithDelay}
+      itemComponent={ReorderableVotingListItem}
+      itemComponentProps={{
+        touchHighlightDelayMs: TOUCH_DRAG_DELAY_MS,
+      }}
+    />
+  );
+}
+
+export default ReorderableVotingList;

@@ -5,6 +5,7 @@ import { SeasonActionTypes } from 'actions/SeasonActions';
 type VotingSessionState = {
   currentId: string;
   latestId: string;
+  latestWithUserVotesId: string;
   sessions: {
     [key: string]: VotingSession;
   };
@@ -13,6 +14,7 @@ type VotingSessionState = {
 const defaultState: VotingSessionState = {
   currentId: null,
   latestId: null,
+  latestWithUserVotesId: null,
   sessions: {},
 };
 
@@ -30,6 +32,15 @@ export const VotingSessionReducer = (state: VotingSessionState = defaultState, a
       return {
         ...state,
         latestId: action.votingSession._id,
+        sessions: {
+          ...state.sessions,
+          [action.votingSession._id]: action.votingSession,
+        },
+      };
+    case VotingSessionActionTypes.GOT_LATEST_WITH_USER_VOTES:
+      return {
+        ...state,
+        latestWithUserVotesId: action.votingSession._id,
         sessions: {
           ...state.sessions,
           [action.votingSession._id]: action.votingSession,
@@ -92,6 +103,18 @@ export const VotingSessionReducer = (state: VotingSessionState = defaultState, a
           ...state.sessions,
           [action.season && action.season.votingSession ? action.season.votingSession._id : null]: action.season.votingSession,
         },
+      };
+    case SeasonActionTypes.GOT_DELETE:
+      if(!action.votingSessionId) {
+        return state;
+      }
+      const { [action.votingSessionId]: removedVotingSession, ...remainingSessions } = state.sessions;
+      return {
+        ...state,
+        sessions: remainingSessions,
+        currentId: state.currentId === action.votingSessionId ? null : state.currentId,
+        latestId: state.latestId === action.votingSessionId ? null : state.latestId,
+        latestWithUserVotesId: state.latestWithUserVotesId === action.votingSessionId ? null : state.latestWithUserVotesId,
       };
     default:
       return state
