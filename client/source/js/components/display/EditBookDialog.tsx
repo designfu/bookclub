@@ -1,11 +1,14 @@
 import * as React from 'react';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Grid from '@mui/material/Grid';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import { debounce } from '@shared/utils/functions';
 import { Book } from 'types';
 import ActionClient from 'clients/ActionClient';
@@ -52,7 +55,7 @@ const getFormState = ({ book } = { book: null }) => {
 };
 
 function validate(formState) {
-  const isUrlRegExp = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
+  const isUrlRegExp = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/i;
   formState.submittable = true;
 
   const requiredFields = [
@@ -92,85 +95,117 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
   render() {
     return (
       <Dialog
-        className='c-edit-book-dialog'
         aria-labelledby='edit-book-dialog-title'
         open={this.props.open}
         onClose={this.handleCancel.bind(this)}
+        fullWidth
+        maxWidth='md'
       >
         <DialogTitle id='edit-book-dialog-title'>
-          {this.props.book ? 'Edit book' : 'Add a book'}
-          <div className='o-spinner-anchor'>
-            {this.state.loading ? <div className='o-spinner'/> : null}
-          </div>
+          {this.props.book ? `Edit book (${this.props.book._id})` : 'Add a book'}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              transform: 'translate(-50%, -20%)',
+            }}
+          >
+            {this.state.loading ? <CircularProgress size={20} thickness={5} /> : null}
+          </Box>
         </DialogTitle>
-        <DialogContent className='c-edit-book-dialog__content'>
-          <div className='u-flex u-flex--row u-space--bot-large'>
-            <div className='u-flex--col'>
-              <TextField
-                id='goodreads'
-                label='Goodreanks Link **'
-                className='o-field o-field--text'
-                value={this.state.goodreads.value}
-                onChange={this.handleChange('goodreads')}
-                margin='normal'
-                type='url'
-                error={!!this.state.goodreads.error}
-              />
-              <TextField
-                id='image'
-                label='Cover Image URL'
-                className='o-field o-field--text'
-                value={this.state.image.value}
-                onChange={this.handleChange('image')}
-                margin='normal'
-                error={!!this.state.image.error}
-              />
-              <div className='c-edit-book-dialog__cover-image-container'>
-                <img className='c-edit-book-dialog__cover-image' src={this.state.image.value || defaultImageSrc} />
-              </div>
-            </div>
-            <div className='u-flex--col'>
+        <DialogContent sx={{ maxWidth: 'none' }}>
+          <Grid container spacing={1.5} sx={{ mb: 4 }}>
+            <Grid size={{ xs: 12, md: 7 }} sx={{ minWidth: 0 }}>
               <TextField
                 id='title'
                 label='Title *'
-                className='o-field o-field--text'
+                fullWidth
                 value={this.state.title.value}
                 onChange={this.handleChange('title')}
                 margin='normal'
                 error={!!this.state.title.error}
+                sx={{ display: 'block', mx: 0 }}
               />
               <TextField
                 id='author'
                 label='Author *'
-                className='o-field o-field--text'
+                fullWidth
                 value={this.state.author.value}
                 onChange={this.handleChange('author')}
                 margin='normal'
                 error={!!this.state.author.error}
+                sx={{ display: 'block', mx: 0 }}
               />
               <TextField
                 id='genre'
                 label='Genre'
-                className='o-field o-field--text'
+                fullWidth
                 value={this.state.genre.value}
                 onChange={this.handleChange('genre')}
                 margin='normal'
                 error={!!this.state.genre.error}
+                sx={{ display: 'block', mx: 0 }}
               />
               <TextField
                 id='pitch'
                 label='Pitch'
                 placeholder="Describe your book and why it's interesting"
                 multiline
-                rows='3'
-                className='o-field o-field--text'
+                rows='6'
+                fullWidth
                 value={this.state.pitch.value}
                 onChange={this.handleChange('pitch')}
                 margin='normal'
                 error={!!this.state.pitch.error}
+                sx={{ display: 'block', mx: 0 }}
               />
-            </div>
-          </div>
+            </Grid>
+            <Grid size={{ xs: 12, md: 5 }} sx={{ minWidth: 0 }}>
+              <TextField
+                id='goodreads'
+                label='Goodreads Link **'
+                fullWidth
+                value={this.state.goodreads.value}
+                onChange={this.handleChange('goodreads')}
+                margin='normal'
+                type='url'
+                error={!!this.state.goodreads.error}
+                sx={{ display: 'block', mx: 0 }}
+              />
+              <TextField
+                id='image'
+                label='Cover Image URL'
+                fullWidth
+                value={this.state.image.value}
+                onChange={this.handleChange('image')}
+                margin='normal'
+                error={!!this.state.image.error}
+                sx={{ display: 'block', mx: 0 }}
+              />
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#f8f8f8',
+                  border: '1px solid #f2f2f2',
+                  borderRadius: '3px',
+                  boxSizing: 'border-box',
+                  p: 0.375,
+                  width: '100%',
+                  minHeight: 158,
+                  ml: 0,
+                }}
+              >
+                <Box
+                  component='img'
+                  src={this.state.image.value || defaultImageSrc}
+                  sx={{ maxWidth: 150, maxHeight: 150 }}
+                />
+              </Box>
+            </Grid>
+          </Grid>
           <DialogContentText>
             * Required
           </DialogContentText>
@@ -232,8 +267,17 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
     });
     ActionClient.findBookDetails(url)
       .then(details => {
+        if(!details || typeof details !== 'object') {
+          this.setState({ loading: false });
+          return;
+        }
+
         const stateDelta = {};
         for(const key in details) {
+          if(!this.state[key]) {
+            continue;
+          }
+
           const value = details[key];
           const hasValue = !!this.state[key].value;
           if(!hasValue) {
@@ -253,13 +297,20 @@ export class EditBookDialog extends React.Component<EditBookDialogProps, any> {
           formState = validate(formState);
 
           this.setState(formState);
+        } else {
+          this.setState({ loading: false });
         }
+      })
+      .catch(() => {
+        this.setState({ loading: false });
       });
   }
 
-  componentWillReceiveProps(nextProps) {
-    const newState = getFormState({ book: nextProps.book });
-    const formState = validate(newState);
-    this.setState(formState);
+  componentDidUpdate(prevProps) {
+    if (prevProps.book !== this.props.book || prevProps.open !== this.props.open) {
+      const newState = getFormState({ book: this.props.book });
+      const formState = validate(newState);
+      this.setState(formState);
+    }
   }
 }

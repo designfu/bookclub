@@ -1,9 +1,12 @@
 import * as React from 'react';
-import { Router, Route, Switch, browserHistory } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
-import { withRouter } from 'react-router';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { timeOf, toStandardString } from '@client/utils/dates';
 import { SeasonActions } from 'actions/SeasonActions';
 import { BookActions } from 'actions/BookActions';
@@ -12,30 +15,159 @@ import { SeasonInfoWeighted } from 'components/display/SeasonInfoWeighted';
 import { VotingSessionActions } from '@client/actions/VotingSessionActions';
 import { Book, Season, SeasonStatus } from '@shared/types';
 import { SeasonInfoAdvancedAcceptance } from '@client/components/display/SeasonInfoAdvancedAcceptance';
+import { dropdownFormControlSx } from 'components/form-control-sx';
+
+const PREVIOUS_SEASONS_MULTI_COLUMN_MIN = 1056;
+
+const seasonsPageContainerSx = {
+  px: { xs: 2, md: 2.5 },
+  py: 1.25,
+  maxWidth: 'none',
+};
+
+const previousSeasonsListSx = (singleColumn) => (
+  singleColumn
+    ? {}
+    : {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
+      gap: 2,
+      alignItems: 'start',
+    }
+);
+
+const seasonRowSx = (singleColumn) => ({
+  display: 'flex',
+  gap: singleColumn ? 0.75 : 1.5,
+  flexDirection: singleColumn ? 'column' : 'row',
+});
+
+const seasonRankSx = (singleColumn) => ({
+  width: singleColumn ? 'auto' : 36,
+  minWidth: singleColumn ? 0 : 36,
+  pt: singleColumn ? 2 : 2,
+  color: 'text.secondary',
+  fontWeight: 500,
+  fontSize: '14pt',
+  lineHeight: 1,
+  background: 'transparent',
+  boxShadow: 'none',
+});
+
+const seasonCardSx = {
+  flex: '1 1 auto',
+  minWidth: 0,
+  maxWidth: 800,
+};
+
+function averageRatingOf(book): number {
+  if (!book) {
+    return -1;
+  }
+  if (typeof book.averageRating === 'number' && book.averageRating >= 0) {
+    return book.averageRating;
+  }
+  const ratings = Array.isArray(book.ratings) ? book.ratings : [];
+  if (!ratings.length) {
+    return -1;
+  }
+  const total = ratings.reduce((sum, rating) => sum + (rating && typeof rating.value === 'number' ? rating.value : 0), 0);
+  return total / ratings.length;
+}
+
+function userRatingOf(book, myId): number {
+  if (!book || !myId) {
+    return -1;
+  }
+  const ratings = Array.isArray(book.ratings) ? book.ratings : [];
+  const myRating = ratings.find((rating) => {
+    if (!rating || typeof rating.value !== 'number') {
+      return false;
+    }
+    const ratingUser = rating.user && rating.user._id ? rating.user._id : rating.user;
+    return ratingUser === myId;
+  });
+  return myRating ? myRating.value : -1;
+}
+
+function resolvedSeasonBook(season, books = {}) {
+  if (!season || !season.book) {
+    return null;
+  }
+  const seasonBookId = season.book._id || season.book;
+  return books[seasonBookId] || season.book;
+}
 
 class SeasonsPage_ extends React.Component<any, any> {
+  state = {
+    sortMode: 'finishedDate',
+  };
+
   render() {
     const {
       seasons,
       isLoggedIn,
       isAdmin,
       myId,
+      singleColumn,
     } = this.props;
 
     const seasonList = Object.keys(seasons)
       .map(id => seasons[id])
       .filter(season => season.status === SeasonStatus.COMPLETE)
-      .sort((a, b) => timeOf(b.dates.finished) - timeOf(a.dates.finished));
+      .filter((season) => {
+        const book = resolvedSeasonBook(season, this.props.books);
+        if (this.state.sortMode !== 'personalBookRating') {
+          return true;
+        }
+        return userRatingOf(book, myId) >= 0;
+      })
+      .sort((a, b) => {
+        const aBook = resolvedSeasonBook(a, this.props.books);
+        const bBook = resolvedSeasonBook(b, this.props.books);
+        if (this.state.sortMode === 'bookRating') {
+          const aRating = averageRatingOf(aBook);
+          const bRating = averageRatingOf(bBook);
+          return bRating - aRating
+            || timeOf(b.dates.finished) - timeOf(a.dates.finished);
+        }
+        if (this.state.sortMode === 'personalBookRating') {
+          const aRating = userRatingOf(aBook, myId);
+          const bRating = userRatingOf(bBook, myId);
+          return bRating - aRating
+            || timeOf(b.dates.finished) - timeOf(a.dates.finished);
+        }
+        return timeOf(b.dates.finished) - timeOf(a.dates.finished);
+      });
+    const sortLabelId = 'previous-seasons-sort-label';
 
     return (
-      <div className='l-current-page'>
-        {seasonList.map((season, i) => {
-          if (season.book) {
-            season.book = this.props.books[season.book._id || season.book] || season.book;
-          }
+      <Container maxWidth={false} disableGutters sx={seasonsPageContainerSx}>
+        <Box>
+          <Box sx={{ mb: 2 }}>
+            <FormControl sx={dropdownFormControlSx}>
+              <InputLabel id={sortLabelId}>Sort Previous Seasons</InputLabel>
+              <Select
+                id='previous-seasons-sort'
+                labelId={sortLabelId}
+                label='Sort Previous Seasons'
+                name='sortMode'
+                size='small'
+                value={this.state.sortMode}
+                onChange={this.handleSortModeChange.bind(this)}
+              >
+                <MenuItem value='finishedDate'>Finish Date (Most Recent)</MenuItem>
+                <MenuItem value='bookRating'>Book Rating (Highest)</MenuItem>
+                <MenuItem value='personalBookRating'>Your Book Rating (Highest)</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+          <Box sx={previousSeasonsListSx(singleColumn)}>
+            {seasonList.map((season, i) => {
+          const seasonBook = resolvedSeasonBook(season, this.props.books);
 
-          const title = season.book && season.book.title
-            ? season.book.title
+          const title = seasonBook && seasonBook.title
+            ? seasonBook.title
             : season.dates.finished
               ? toStandardString(season.dates.finished)
               : 'Current Season';
@@ -57,26 +189,51 @@ class SeasonsPage_ extends React.Component<any, any> {
             ['WEIGHTED_3X']: SeasonInfoWeighted,
           }[votingSession.system] || SeasonInfoWeighted;
 
-          return <SeasonInfo
-            key={i}
-            books={books}
-            title={title}
-            season={season}
-            votingSession={votingSession}
-            onSeasonRename={isLoggedIn && isAdmin && season && season.status === SeasonStatus.COMPLETE && this.props.renameSeason.bind(this, season)}
-            onSeasonClose={this.props.closeSeason.bind(this, season)}
-            onRateBook={isLoggedIn && season && season.status === SeasonStatus.COMPLETE &&  this.props.rateBook.bind(this)}
-            allowClosing={isLoggedIn && isAdmin && season && season.status === SeasonStatus.STARTED}
-            startVotingOpen={false}
-            myId={myId}
-          />
-        })}
-      </div>
+          const rankNumber = this.state.sortMode === 'finishedDate'
+            ? seasonList.length - i
+            : i + 1;
+
+          return (
+              <Box sx={seasonRowSx(singleColumn)} key={i}>
+                <Box sx={seasonRankSx(singleColumn)}>#{rankNumber}</Box>
+                <Box sx={seasonCardSx}>
+                  <SeasonInfo
+                    books={books}
+                    title={title}
+                    season={{
+                      ...season,
+                      book: seasonBook,
+                    }}
+                    votingSession={votingSession}
+                    onSeasonRename={isLoggedIn && isAdmin && season && season.status === SeasonStatus.COMPLETE && this.props.renameSeason.bind(this, season)}
+                    onSeasonDelete={isLoggedIn && isAdmin && season && season.status === SeasonStatus.COMPLETE && this.props.deleteSeason.bind(this, season)}
+                    onSeasonClose={this.props.closeSeason.bind(this, season)}
+                    onRateBook={isLoggedIn && season && season.status === SeasonStatus.COMPLETE &&  this.props.rateBook.bind(this)}
+                    allowClosing={isLoggedIn && isAdmin && season && season.status === SeasonStatus.STARTED}
+                    startVotingOpen={false}
+                    myId={myId}
+                    hideBookPitch={true}
+                    hideBookBadges={true}
+                    isSmallScreen={singleColumn}
+                  />
+                </Box>
+              </Box>
+            );
+            })}
+          </Box>
+        </Box>
+      </Container>
     );
   }
 
   componentDidMount() {
     this.props.componentDidMount();
+  }
+
+  handleSortModeChange(event) {
+    this.setState({
+      sortMode: event.target.value,
+    });
   }
 }
 
@@ -117,6 +274,10 @@ const mapDispatchToProps = (dispatch: any) => {
       dispatch(SeasonActions.openSeason());
     },
 
+    deleteSeason(season: Season) {
+      dispatch(SeasonActions.deleteSeason(season));
+    },
+
     rateBook({ book, value } : { book: Book, value: number }) {
       const user = this.props.myId;
       dispatch(BookActions.rateBook(book, {
@@ -127,7 +288,12 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
-export const SeasonsPage = withRouter(connect(
+const SeasonsPageConnected = connect(
   mapStateToProps,
   mapDispatchToProps,
-)(SeasonsPage_));
+)(SeasonsPage_);
+
+export const SeasonsPage = () => {
+  const singleColumn = useMediaQuery(`(max-width:${PREVIOUS_SEASONS_MULTI_COLUMN_MIN - 0.05}px)`);
+  return <SeasonsPageConnected singleColumn={singleColumn} />;
+};
