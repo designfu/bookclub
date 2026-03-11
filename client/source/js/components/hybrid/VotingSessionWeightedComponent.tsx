@@ -70,6 +70,13 @@ class VotingSessionWeightedContainer_ extends VotingSessionContainerBase<any, an
       myId: this.props.myId,
     });
   }
+
+  rankedBookIds(books = this.state.books) {
+    return books
+      .slice(0, Config.MAX_VOTES)
+      .map((book) => toBookId(book))
+      .filter((id) => !!id);
+  }
 }
 
 const mapStateToProps = (state: any) => {
@@ -85,13 +92,26 @@ const mapDispatchToProps = (dispatch: any) => {
         book: book._id,
       }));
       dispatch(ReduxActions.onNext(VotingSessionActionTypes.GOT_VOTES_CAST, () => {
+        const rankedBookIds = this.rankedBookIds(this.state.books);
+        const newlySuggestedBookIds = this.state.newlySuggestedBookIds
+          .filter((id) => rankedBookIds.indexOf(id) < 0);
         this.setState({
           enabled: false,
-          newlySuggestedBookIds: [],
+          newlySuggestedBookIds,
         });
-        this.persistVoteOrderDraft(this.state.books, []);
+        this.persistVoteOrderDraft(this.state.books, newlySuggestedBookIds);
       }));
       dispatch(VotingSessionActions.castVotes(votes));
+    },
+
+    removeVotes() {
+      dispatch(ReduxActions.onNext(VotingSessionActionTypes.GOT_VOTES_CAST, () => {
+        this.setState({
+          enabled: true,
+        });
+        this.persistVoteOrderDraft(this.state.books, this.state.newlySuggestedBookIds);
+      }));
+      dispatch(VotingSessionActions.castVotes([]));
     },
 
     closeVotingSession(book) {

@@ -1,7 +1,10 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Fade from '@mui/material/Fade';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { VotingSessionStatus } from 'types';
 import { ReorderableVotingList } from 'lib/reorderable-lists';
 import { UserList } from 'components/display/UserList';
@@ -37,11 +40,36 @@ const votingSessionActionsSx = {
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
-  justifyContent: 'flex-start',
+  justifyContent: 'space-between',
   flexWrap: 'nowrap',
   gap: 1.25,
   position: 'relative',
   zIndex: 10,
+  width: '100%',
+  maxWidth: 400,
+  pr: 2,
+};
+
+const votingSessionListSx = {
+  transition: 'opacity 160ms ease-out',
+};
+
+const votingSessionActionsLeftSx = {
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+  flexWrap: 'nowrap',
+  gap: 1.25,
+  minWidth: 0,
+};
+
+const savedVoteIndicatorSx = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 0.5,
+  color: 'success.main',
+  flexShrink: 0,
 };
 
 function shouldBootstrapVoteState(props) {
@@ -97,31 +125,52 @@ export abstract class VotingSessionContainerBase<
           </Box>
         : null}
         <Box sx={votingSessionActionsSx}>
-          {isOpen ?
-            <Button
-              onClick={(this.props as any).castVotes.bind(this)}
-              disabled={!enabled}
-            >
-              {hasVoted ? 'Update Vote' : 'Cast Vote'}
-            </Button>
-          : null}
-          {isOpen ?
-            <Tooltip title='Reset to votes for this season, or votes from your most recent season.'>
-              <Button onClick={this.resetFromVotes}>
-                Reset
+          <Box sx={votingSessionActionsLeftSx}>
+            {isOpen && !hasVoted ?
+              <Button
+                onClick={(this.props as any).castVotes.bind(this)}
+                disabled={!enabled}
+              >
+                Cast Vote
               </Button>
-            </Tooltip>
-          : null}
-          {isAdmin ? this.renderCloseVotingButton(votingSession) : null}
+            : null}
+            {isOpen && hasVoted ?
+              <Button
+                onClick={(this.props as any).removeVotes.bind(this)}
+              >
+                Unvote
+              </Button>
+            : null}
+            {isOpen ?
+              <Tooltip title='Reset to votes from your most recent finished season.'>
+                <Button onClick={this.resetFromVotes}>
+                  Reset
+                </Button>
+              </Tooltip>
+            : null}
+            {isAdmin ? this.renderCloseVotingButton(votingSession) : null}
+          </Box>
+          <Fade in={isOpen && hasVoted && !enabled} mountOnEnter unmountOnExit timeout={180}>
+            <Box sx={savedVoteIndicatorSx}>
+              <CheckCircleIcon sx={{ fontSize: 18 }} />
+              <Typography variant='body2' component='span' sx={{ color: 'inherit' }}>
+                Saved
+              </Typography>
+            </Box>
+          </Fade>
         </Box>
         {isOpen && hasCompletedInitialBootstrap ?
-          <ReorderableVotingList
-            onReorderStarted={this.onReorderStarted}
-            onReorderComplete={this.onReorderComplete}
-            onUpdate={this.onListUpdate}
+          <Box
+            sx={votingSessionListSx}
           >
-            {this.renderVoteRows(books)}
-          </ReorderableVotingList> : null}
+            <ReorderableVotingList
+              onReorderStarted={this.onReorderStarted}
+              onReorderComplete={this.onReorderComplete}
+              onUpdate={this.onListUpdate}
+            >
+              {this.renderVoteRows(books)}
+            </ReorderableVotingList>
+          </Box> : null}
       </Box>
     );
   }
@@ -168,22 +217,15 @@ export abstract class VotingSessionContainerBase<
 
   onReorderComplete = () => {
     window.dispatchEvent(new Event(REORDER_COMPLETE_EVENT));
+    const props: any = this.props;
+    const votingSession = hydrateVotingSession(props.votingSession, props.books, props.users);
+    if (hasUserVoted(votingSession.votes, props.myId)) {
+      props.castVotes.call(this);
+    }
   };
 
   resetFromVotes = async () => {
     const props: any = this.props;
-    const votingSession = hydrateVotingSession(props.votingSession, props.books, props.users);
-    if (hasUserVoted(votingSession.votes, props.myId)) {
-      const books = this.extractBookList(props);
-      this.persistVoteOrderDraft(books, []);
-      this.setState({
-        books,
-        enabled: true,
-        newlySuggestedBookIds: [],
-      } as Pick<S, 'books' | 'enabled' | 'newlySuggestedBookIds'>);
-      return;
-    }
-
     const latestVotingSession = await props.fetchLatestWithUserVotes();
     const previousSession = latestVotingSession || props.latestVotingSession;
     const resetBooks = this.buildResetBooks(previousSession);

@@ -83,7 +83,8 @@ export const VoteCardBase = React.forwardRef<HTMLDivElement, VoteCardBaseProps>(
     voteCardBaseCardSx,
     {
       cursor: 'move',
-      ...(newlySuggested ? { backgroundColor: '#e8f5e9' } : {}),
+      backgroundColor: newlySuggested ? '#e8f5e9' : 'background.paper',
+      transition: 'background-color 220ms ease-out',
     },
     ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
   ];

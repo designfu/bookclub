@@ -77,5 +77,9 @@ export function buildAcceptanceResetBooks({
     requireNonNegative: true,
   });
 
+  if (topBooks.length < 1) {
+    return [...currentBooks, ACCEPTANCE_DIVIDER_BOOK];
+  }
+
   return [...topBooks, ACCEPTANCE_DIVIDER_BOOK, ...bottomBooks];
 }
